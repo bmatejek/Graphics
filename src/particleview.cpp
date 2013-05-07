@@ -39,17 +39,6 @@ static int show_faces = 1;
 static int show_edges = 0;
 static int show_bboxes = 0;
 static int show_lights = 0;
-
-static int add_sinks = 0;
-static int add_sources = 0;
-static int increase_sourceRate = 0;
-static int decrease_sourceRate = 0;
-static int increase_sourceVel = 0;
-static int decrease_sourceVel = 0;
-static int increase_sinkForce = 0;
-static int decrease_sinkForce = 0;
-static int show_tails = 0;
-
 static int show_camera = 0;
 static int show_particles = 1;
 static int show_particle_springs = 1;
@@ -79,15 +68,6 @@ enum {
     DISPLAY_BBOXES_TOGGLE_COMMAND,
     DISPLAY_LIGHTS_TOGGLE_COMMAND,
     DISPLAY_CAMERA_TOGGLE_COMMAND,
-    DISPLAY_TAILS_TOGGLE_COMMAND,
-    DISPLAY_ADD_SINKS_TOGGLE_COMMAND,
-    DISPLAY_ADD_SOURCES_TOGGLE_COMMAND,
-    DISPLAY_INCREASE_SOURCE_COMMAND,
-    DISPLAY_DECREASE_SOURCE_COMMAND,
-    DISPLAY_DECREASE_SOURCE_VEL,
-    DISPLAY_INCREASE_SOURCE_VEL,
-    DISPLAY_INCREASE_SINK_COMMAND,
-    DISPLAY_DECREASE_SINK_COMMAND, 
     DISPLAY_PARTICLES_TOGGLE_COMMAND,
     DISPLAY_PARTICLE_SPRINGS_TOGGLE_COMMAND,
     DISPLAY_PARTICLE_SOURCES_AND_SINKS_TOGGLE_COMMAND,
@@ -286,7 +266,6 @@ void LoadMaterial(R3Material *material)
 
 void LoadCamera(R3Camera *camera)
 {
-
     // Set projection transformation
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -307,7 +286,6 @@ void LoadCamera(R3Camera *camera)
 
 void LoadLights(R3Scene *scene)
 {
-
     GLfloat buffer[4];
     
     // Load ambient light
@@ -317,19 +295,15 @@ void LoadLights(R3Scene *scene)
     ambient[2] = scene->ambient[2];
     ambient[3] = 1;
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient);
-
+    
     // Load scene lights
     for (int i = 0; i < (int) scene->lights.size(); i++) {
-
-
-
         R3Light *light = scene->lights[i];
-
         int index = GL_LIGHT0 + i;
-
+        
         // Temporarily disable light
         glDisable(index);
-
+        
         // Load color
         buffer[0] = light->color[0];
         buffer[1] = light->color[1];
@@ -337,7 +311,7 @@ void LoadLights(R3Scene *scene)
         buffer[3] = 1.0;
         glLightfv(index, GL_DIFFUSE, buffer);
         glLightfv(index, GL_SPECULAR, buffer);
-
+        
         // Load attenuation with distance
         buffer[0] = light->constant_attenuation;
         buffer[1] = light->linear_attenuation;
@@ -345,13 +319,13 @@ void LoadLights(R3Scene *scene)
         glLightf(index, GL_CONSTANT_ATTENUATION, buffer[0]);
         glLightf(index, GL_LINEAR_ATTENUATION, buffer[1]);
         glLightf(index, GL_QUADRATIC_ATTENUATION, buffer[2]);
-
+        
         // Load spot light behavior
         buffer[0] = 180.0 * light->angle_cutoff / M_PI;
         buffer[1] = light->angle_attenuation;
         glLightf(index, GL_SPOT_CUTOFF, buffer[0]);
         glLightf(index, GL_SPOT_EXPONENT, buffer[1]);
-
+        
         // Load positions/directions
         if (light->type == R3_DIRECTIONAL_LIGHT) {
             // Load direction
@@ -406,9 +380,7 @@ void LoadLights(R3Scene *scene)
         
         // Enable light
         glEnable(index);
-
     }
-
 }
 
 
@@ -560,7 +532,6 @@ void DrawCamera(R3Scene *scene)
 
 void DrawScene(R3Scene *scene)
 {
-
     // Draw nodes recursively
     DrawNode(scene, scene->root);
 }
@@ -568,8 +539,6 @@ void DrawScene(R3Scene *scene)
 
 void DrawParticles(R3Scene *scene)
 {
-
-
     // Get current time (in seconds) since start of execution
     double current_time = GetTime();
     static double previous_time = 0;
@@ -581,11 +550,11 @@ void DrawParticles(R3Scene *scene)
     
     // program just started up?
     if (previous_time == 0) previous_time = current_time;
-
+    
     // time passed since starting
     double delta_time = current_time - previous_time;
     
-
+    
     if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
         delta_time = VIDEO_FRAME_DELAY;
         // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
@@ -594,27 +563,17 @@ void DrawParticles(R3Scene *scene)
         delta_time = current_time - previous_time;
     }
     
-    
-    scene->root->transformation.Translate(R3Vector(0, 0,-.01));
-
     // Update particles
     UpdateParticles(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    
     // Generate new particles
-
-
     GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
-
-
+    
     // Render particles
     if (show_particles) RenderParticles(scene, current_time - time_lost_taking_videos, delta_time);
-
-//    if (show_tails) RenderTails(scene, current_time - time_lost_taking_videos, delta_time);
-
     
     // Remember previous time
     previous_time = current_time;
-
-    
 }
 
 
@@ -658,14 +617,13 @@ void DrawParticleSources(R3Scene *scene)
 
 void DrawParticleSinks(R3Scene *scene)
 {
-
     // Check if should draw particle sinks
     if (!show_particle_sources_and_sinks) return;
-
+    
     // Setup
     GLboolean lighting = glIsEnabled(GL_LIGHTING);
     glEnable(GL_LIGHTING);
-
+    
     // Define sink material
     static R3Material sink_material;
     if (sink_material.id != 33) {
@@ -680,7 +638,7 @@ void DrawParticleSinks(R3Scene *scene)
         sink_material.texture_index = -1;
         sink_material.id = 33;
     }
-
+    
     // Draw all particle sinks
     glEnable(GL_LIGHTING);
     LoadMaterial(&sink_material);
@@ -688,7 +646,6 @@ void DrawParticleSinks(R3Scene *scene)
         R3ParticleSink *sink = scene->ParticleSink(i);
         DrawShape(sink->shape);
     }
-
     
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
@@ -985,108 +942,6 @@ void GLUTMouse(int button, int state, int x, int y)
     // Process mouse button event
     if (state == GLUT_DOWN) {
         if (button == GLUT_LEFT_BUTTON) {
-            
-            //these points are used for creating rays through each pixel
-            R3Camera camera = scene->camera;
-            R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
-            R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
-            R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
-            
-            //create ray through each pixel
-            R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
-            R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
-            
-            R3Point p = p1 + upVector + acrossVector;
-            R3Vector vector = p - camera.eye;
-            vector.Normalize();
-            
-            //check to see if intersected source
-            bool newSourceNeeded = true;
-            R3Intersection *intersection = new R3Intersection();
-            intersection->t = INFINITY;
-            R3Ray *ray = new R3Ray(camera.eye, vector);
-            for (int i = 0; i < scene->NParticleSources(); i++) {
-                if (sphereIntersection(scene->particle_sources[i]->shape->sphere, ray, intersection)) {
-                    printf("intersection!\n"); 
-                    newSourceNeeded = false;
-                    if (increase_sourceRate) {
-                        scene->particle_sources[i]->rate *= 1.1;
-                        printf("rate increased\n");
-                    }
-                    if (decrease_sourceRate) {
-                        scene->particle_sources[i]->rate *= .9;
-                        printf("rate decreased \n");
-                    }
-                    if (increase_sourceVel) {
-                        scene->particle_sources[i]->velocity *= 1.1;
-                    }
-                    if (decrease_sourceVel)
-                        scene->particle_sources[i]->velocity *= .9;
-                    break;
-                }
-            }
-            
-            bool newSinkNeeded = true;
-            intersection->t = INFINITY;
-            intersection->hit = false;
-            for (int i = 0; i < scene->NParticleSinks(); i++) {
-                if (sphereIntersection(scene->particle_sinks[i]->shape->sphere, ray, intersection)) {
-                    newSinkNeeded = false;
-                    printf("intersection!\n");
-                    if (increase_sinkForce) {
-                        scene->particle_sinks[i]->intensity *= 1.1;
-                        printf("increased intensity \n");
-                    }
-                    if (decrease_sinkForce) {
-                        scene->particle_sinks[i]->intensity *= .9;
-                        printf("decreased intensity \n");
-                    }
-                    break;
-                }
-            }
-            
-            
-            
-            if (add_sinks && newSinkNeeded) {
-                //otherwise create new sink
-                R3ParticleSink *sink = new R3ParticleSink();
-                R3Shape *shape = new R3Shape;
-                shape->type = R3_SPHERE_SHAPE;
-                R3Sphere *sphere = new R3Sphere(scene->camera.eye + 15*vector,.4);
-                shape->sphere = sphere;
-                sink->shape = shape;
-                sink->intensity = .5;
-                sink->constant_attenuation = 1;
-                sink->linear_attenuation = 1;
-                sink->quadratic_attenuation = 1;
-                scene->particle_sinks.push_back(sink);
-                
-            }
-            else if (add_sources) {
-                if (newSourceNeeded) {
-                    R3ParticleSource *source = new R3ParticleSource();
-                    R3Shape *shape = new R3Shape;
-                    shape->type = R3_SPHERE_SHAPE;
-                    R3Sphere *sphere = new R3Sphere(scene->camera.eye + 4*vector,.1);
-                    shape->sphere = sphere;
-                    source->shape = shape;
-                    source->mass = .0001;
-                    source->fixed = false;
-                    source->drag= 0;
-                    source->elasticity = 1;
-                    source->lifetime = .5;
-                    source->rate = 20;
-                    source->velocity = 20;
-                    source->angle_cutoff = 0;
-                    R3Material *material = new R3Material();
-                    material->kd[0] = 0;
-                    material->kd[1] = 0;
-                    material->kd[2] = 1;
-                    source->material = material;
-                    scene->particle_sources.push_back(source);
-                }
-                
-            }
         }
         else if (button == GLUT_MIDDLE_BUTTON) {
         }
@@ -1145,9 +1000,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     y = GLUTwindow_height - y;
     
     // Process keyboard button event
-    printf("%c \n", key);
     switch (key) {
-            
             
         case 'W':
         case 'w':
@@ -1168,45 +1021,16 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'a':
             scene->root->transformation.XTranslate(-.2);
             break;
-            
-            
+
         case 'B':
         case 'b':
             show_bboxes = !show_bboxes;
             break;
-
             
         case 'C':
         case 'c':
             show_camera = !show_camera;
             break;
-            
-       /*
-        case 'D':
-            increase_sourceRate = !increase_sourceRate;
-            if (increase_sourceRate)
-                decrease_sourceRate = 0;
-            break;
-            
-        case 'd':
-            decrease_sourceRate = !decrease_sourceRate;
-            if (decrease_sourceRate)
-                increase_sourceRate = 0;
-            break;
-        */
-            
-        case 'h':
-            decrease_sourceVel = !decrease_sourceVel;
-            if (decrease_sourceVel)
-                increase_sourceVel = 0;
-            break;
-            
-        case 'H':
-            increase_sourceVel = !increase_sourceVel;
-            if (increase_sourceVel)
-                decrease_sourceVel = 0;
-            break;
-            
             
         case 'E':
         case 'e':
@@ -1218,26 +1042,9 @@ void GLUTKeyboard(unsigned char key, int x, int y)
             show_faces = !show_faces;
             break;
             
-        case 'G':
-            increase_sinkForce = !increase_sinkForce;
-            if (increase_sinkForce)
-                decrease_sinkForce = 0;
-            break;
-            
-        case 'g':
-            decrease_sinkForce = !decrease_sinkForce;
-            if (decrease_sinkForce)
-                increase_sinkForce = 0;
-            break;
-            
         case 'L':
         case 'l':
             show_lights = !show_lights;
-            break;
-            
-        case 'T':
-        case 't':
-            show_tails = !show_tails;
             break;
             
         case 'P':
@@ -1249,24 +1056,10 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'r':
             show_particle_springs = !show_particle_springs;
             break;
-            /*
+            
         case 'S':
         case 's':
             show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
-            break;
-            */
-        case 'X':
-        case 'x':
-            add_sinks = !add_sinks;
-            if (add_sinks)
-                add_sources = 0;
-            break;
-            
-        case 'Y':
-        case 'y':
-            add_sources = !add_sources;
-            if (add_sources)
-                add_sinks = 0;
             break;
             
         case 'Q':
@@ -1308,15 +1101,6 @@ void GLUTCommand(int cmd)
         case DISPLAY_EDGE_TOGGLE_COMMAND: show_edges = !show_edges; break;
         case DISPLAY_BBOXES_TOGGLE_COMMAND: show_bboxes = !show_bboxes; break;
         case DISPLAY_LIGHTS_TOGGLE_COMMAND: show_lights = !show_lights; break;
-        case DISPLAY_ADD_SINKS_TOGGLE_COMMAND: add_sinks = !add_sinks; break;
-        case DISPLAY_ADD_SOURCES_TOGGLE_COMMAND: add_sources = !add_sources; break;
-        case DISPLAY_INCREASE_SOURCE_COMMAND: increase_sourceRate = !increase_sourceRate; break;
-        case DISPLAY_DECREASE_SOURCE_COMMAND: decrease_sourceRate = !decrease_sourceRate; break;
-        case DISPLAY_DECREASE_SOURCE_VEL: decrease_sourceVel = !decrease_sourceVel; break;
-        case DISPLAY_INCREASE_SOURCE_VEL: increase_sourceRate = !increase_sourceRate; break;
-        case DISPLAY_DECREASE_SINK_COMMAND: decrease_sinkForce = !decrease_sinkForce; break;
-        case DISPLAY_INCREASE_SINK_COMMAND: increase_sinkForce = !increase_sinkForce; break; 
-        case DISPLAY_TAILS_TOGGLE_COMMAND: show_tails = !show_tails; break;
         case DISPLAY_CAMERA_TOGGLE_COMMAND: show_camera = !show_camera; break;
         case SAVE_IMAGE_COMMAND: save_image = 1; break;
         case SAVE_VIDEO_COMMAND: save_video = save_video ^ 1; break;
@@ -1341,15 +1125,6 @@ void GLUTCreateMenu(void)
     glutAddMenuEntry("Bounding boxes (B)", DISPLAY_BBOXES_TOGGLE_COMMAND);
     glutAddMenuEntry("Lights (L)", DISPLAY_LIGHTS_TOGGLE_COMMAND);
     glutAddMenuEntry("Camera (C)", DISPLAY_CAMERA_TOGGLE_COMMAND);
-    glutAddMenuEntry("Tails (T)", DISPLAY_TAILS_TOGGLE_COMMAND);
-    glutAddMenuEntry("Add Sinks (X)", DISPLAY_ADD_SINKS_TOGGLE_COMMAND);
-    glutAddMenuEntry("Add Sources (Y)", DISPLAY_ADD_SOURCES_TOGGLE_COMMAND);
-    glutAddMenuEntry("Increase Source Rate (D)", DISPLAY_INCREASE_SOURCE_COMMAND);
-    glutAddMenuEntry("Decrease Source Rate (d)", DISPLAY_DECREASE_SOURCE_COMMAND);
-    glutAddMenuEntry("Increase Sink Intensity (G)", DISPLAY_INCREASE_SINK_COMMAND);
-    glutAddMenuEntry("Decrease Sink Intensity (g)", DISPLAY_DECREASE_SINK_COMMAND);
-    glutAddMenuEntry("Increase Sink Velocity (H)", DISPLAY_INCREASE_SOURCE_VEL);
-    glutAddMenuEntry("Decrease Sink Velocity (h)", DISPLAY_DECREASE_SOURCE_VEL);
     
     // Main menu
     glutCreateMenu(GLUTCommand);
@@ -1484,22 +1259,20 @@ main(int argc, char **argv)
 {
     // Parse program arguments
     if (!ParseArgs(argc, argv)) exit(1);
-
+    
     // Initialize GLUT
     GLUTInit(&argc, argv);
-
+    
     // Read scene
     scene = ReadScene(input_scene_name);
     if (!scene) exit(-1);
-
+    
     // Run GLUT interface
     GLUTMainLoop();
-
+    
     // Return success 
     return 0;
 }
-
-
 
 
 

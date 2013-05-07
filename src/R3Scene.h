@@ -85,17 +85,6 @@ struct R3Node {
 };
 
 
-struct R3Intersection {
-    bool hit;
-    R3Node * node;
-    R3MeshFace *face;
-    R3Point position;
-    R3Vector normal;
-    double t;
-};
-
-
-
 // Particle system definitions
 
 struct R3Particle {
@@ -103,9 +92,9 @@ struct R3Particle {
     R3Vector velocity;
     double mass;
     bool fixed;
-    bool tail;
     double drag;
     double elasticity;
+    bool lifetimeactive;
     double lifetime;
     R3Material *material;
     vector<struct R3ParticleSpring *> springs;
@@ -117,10 +106,11 @@ struct R3ParticleSource {
     double velocity;
     double angle_cutoff;
     double mass;
-    int numParticlesMade; 
     bool fixed;
+    double remainder;
     double drag;
     double elasticity;
+    bool lifetimeactive;
     double lifetime;
     R3Material *material;
 };
@@ -170,7 +160,6 @@ public:
 public:
     R3Node *root;
     vector<R3Particle *> particles;
-//    vector<R3Particle *> tails;
     vector<R3ParticleSource *> particle_sources;
     vector<R3ParticleSink *> particle_sinks;
     vector<R3ParticleSpring *> particle_springs;
@@ -282,6 +271,8 @@ Particle(int k) const
     // Return kth particle 
     return particles[k];
 }
+
+
 
 
 
