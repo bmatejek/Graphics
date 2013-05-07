@@ -1,0 +1,6 @@
+1. w-a-s-d to rotate 
+2. random spheres that do not get transformed (hardcode input folder)
+3. texture mapping on the spheres
+4. put in sphere intersection into rayview
+5. have a plane inside a sphere, can control seperate from sphere
+
