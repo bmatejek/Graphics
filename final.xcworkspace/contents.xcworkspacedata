@@ -1,0 +1,1227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <Group
+      location = "group:"
+      name = "">
+      <FileRef
+         location = "group:final.xcworkspace">
+      </FileRef>
+      <Group
+         location = "group:input"
+         name = "input">
+         <FileRef
+            location = "group:#springTest.scn#">
+         </FileRef>
+         <FileRef
+            location = "group:#stack.scn#">
+         </FileRef>
+         <FileRef
+            location = "group:#starburst.scn#">
+         </FileRef>
+         <FileRef
+            location = "group:angle_cutoff.scn">
+         </FileRef>
+         <FileRef
+            location = "group:artsy.scn">
+         </FileRef>
+         <FileRef
+            location = "group:artsy.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:artsy1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:artsy1.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:artsy[Conflict].scn~">
+         </FileRef>
+         <FileRef
+            location = "group:box1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:box2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cannonball.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cannonBox.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cannonSphere.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cannonSphere.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:checker.bmp">
+         </FileRef>
+         <FileRef
+            location = "group:cheetah.off">
+         </FileRef>
+         <FileRef
+            location = "group:cheetah.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cheetah.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:cheetah[Conflict].scn~">
+         </FileRef>
+         <FileRef
+            location = "group:cloth.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cloth.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:clothBox.scn">
+         </FileRef>
+         <FileRef
+            location = "group:clothBox1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:commands.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:cone1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cone2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:Cube.001.off">
+         </FileRef>
+         <FileRef
+            location = "group:Cube.002.off">
+         </FileRef>
+         <FileRef
+            location = "group:Cube.003.off">
+         </FileRef>
+         <FileRef
+            location = "group:Cube.004.off">
+         </FileRef>
+         <FileRef
+            location = "group:cube.off">
+         </FileRef>
+         <FileRef
+            location = "group:cylinder1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:cylinder2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:debug.scn">
+         </FileRef>
+         <FileRef
+            location = "group:differentLifetimes.scn">
+         </FileRef>
+         <FileRef
+            location = "group:differentLifetimes.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:diffuse.scn">
+         </FileRef>
+         <FileRef
+            location = "group:dinopet_reflection.scn">
+         </FileRef>
+         <FileRef
+            location = "group:dirlight1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:dirlight2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:distributed-box.off">
+         </FileRef>
+         <FileRef
+            location = "group:distributed-ceilinglight.off">
+         </FileRef>
+         <FileRef
+            location = "group:distributed-left.off">
+         </FileRef>
+         <FileRef
+            location = "group:distributed-right.off">
+         </FileRef>
+         <FileRef
+            location = "group:distributed-slow.scn">
+         </FileRef>
+         <FileRef
+            location = "group:distributed.scn">
+         </FileRef>
+         <FileRef
+            location = "group:dodeca.off">
+         </FileRef>
+         <FileRef
+            location = "group:dragrace.scn">
+         </FileRef>
+         <FileRef
+            location = "group:empty.scn">
+         </FileRef>
+         <FileRef
+            location = "group:empty.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:fourspheres.scn">
+         </FileRef>
+         <FileRef
+            location = "group:gravity.scn">
+         </FileRef>
+         <FileRef
+            location = "group:hardshadow.scn">
+         </FileRef>
+         <FileRef
+            location = "group:ico.off">
+         </FileRef>
+         <FileRef
+            location = "group:ico.scn">
+         </FileRef>
+         <FileRef
+            location = "group:lBox.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:lights.scn">
+         </FileRef>
+         <FileRef
+            location = "group:lines.scn">
+         </FileRef>
+         <FileRef
+            location = "group:lTeapot.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:materials.scn">
+         </FileRef>
+         <FileRef
+            location = "group:mixedprimitives1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:mixedprimitives1.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:mixedprimitives2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:mixedprimitives2.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:mixedprimitives3.scn">
+         </FileRef>
+         <FileRef
+            location = "group:nSpecular.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:nSpecular.png">
+         </FileRef>
+         <FileRef
+            location = "group:octa.off">
+         </FileRef>
+         <FileRef
+            location = "group:oneparticle.scn">
+         </FileRef>
+         <FileRef
+            location = "group:opposites.scn">
+         </FileRef>
+         <FileRef
+            location = "group:particleWithSink.scn">
+         </FileRef>
+         <FileRef
+            location = "group:particleWithSink.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:pBox.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:plTeapot.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:pointlight1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:pointlight2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:pSpecular.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:psSpecular.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:pstSpecular.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:pTeapot.jpg">
+         </FileRef>
+         <FileRef
+            location = "group:refraction.scn">
+         </FileRef>
+         <FileRef
+            location = "group:rope.scn">
+         </FileRef>
+         <FileRef
+            location = "group:shininess.scn">
+         </FileRef>
+         <FileRef
+            location = "group:simpleshapes.scn">
+         </FileRef>
+         <FileRef
+            location = "group:sinks.scn">
+         </FileRef>
+         <FileRef
+            location = "group:sixtriangles.scn">
+         </FileRef>
+         <FileRef
+            location = "group:smoothCheetah.off">
+         </FileRef>
+         <FileRef
+            location = "group:smoothCheetah.scn">
+         </FileRef>
+         <FileRef
+            location = "group:smoothCheetah.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:softshadow.scn">
+         </FileRef>
+         <FileRef
+            location = "group:source.scn">
+         </FileRef>
+         <FileRef
+            location = "group:sources.scn">
+         </FileRef>
+         <FileRef
+            location = "group:specular.scn">
+         </FileRef>
+         <FileRef
+            location = "group:sphere.scn">
+         </FileRef>
+         <FileRef
+            location = "group:sphere.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:sphere2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:spotlight.scn">
+         </FileRef>
+         <FileRef
+            location = "group:spotlight1.scn">
+         </FileRef>
+         <FileRef
+            location = "group:spotlight2.scn">
+         </FileRef>
+         <FileRef
+            location = "group:stack.scn">
+         </FileRef>
+         <FileRef
+            location = "group:starburst.scn">
+         </FileRef>
+         <FileRef
+            location = "group:starburst.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:stilllife.scn">
+         </FileRef>
+         <FileRef
+            location = "group:swirl.scn">
+         </FileRef>
+         <FileRef
+            location = "group:teapot.off">
+         </FileRef>
+         <FileRef
+            location = "group:teapot.scn">
+         </FileRef>
+         <FileRef
+            location = "group:test.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:tetra.off">
+         </FileRef>
+         <FileRef
+            location = "group:tetra.scn">
+         </FileRef>
+         <FileRef
+            location = "group:texture.scn">
+         </FileRef>
+         <FileRef
+            location = "group:transform.scn">
+         </FileRef>
+         <FileRef
+            location = "group:transform.scn~">
+         </FileRef>
+         <FileRef
+            location = "group:transmission.scn">
+         </FileRef>
+         <FileRef
+            location = "group:tri.scn">
+         </FileRef>
+         <FileRef
+            location = "group:twoparticles.scn">
+         </FileRef>
+      </Group>
+      <FileRef
+         location = "group:README.md">
+      </FileRef>
+      <Group
+         location = "group:src"
+         name = "src">
+         <FileRef
+            location = "group:cos426_opengl.h">
+         </FileRef>
+         <Group
+            location = "group:glut"
+            name = "glut">
+            <Group
+               location = "group:GL"
+               name = "GL">
+               <FileRef
+                  location = "group:glut.h">
+               </FileRef>
+            </Group>
+            <FileRef
+               location = "group:glut.def">
+            </FileRef>
+            <FileRef
+               location = "group:glut32.dll">
+            </FileRef>
+            <FileRef
+               location = "group:glut32.lib">
+            </FileRef>
+            <FileRef
+               location = "group:README-win32.txt">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:jpeg"
+            name = "jpeg">
+            <FileRef
+               location = "group:ansi2knr.1">
+            </FileRef>
+            <FileRef
+               location = "group:ansi2knr.c">
+            </FileRef>
+            <FileRef
+               location = "group:cderror.h">
+            </FileRef>
+            <FileRef
+               location = "group:cdjpeg.c">
+            </FileRef>
+            <FileRef
+               location = "group:cdjpeg.h">
+            </FileRef>
+            <FileRef
+               location = "group:change.log">
+            </FileRef>
+            <FileRef
+               location = "group:cjpeg.1">
+            </FileRef>
+            <FileRef
+               location = "group:cjpeg.c">
+            </FileRef>
+            <FileRef
+               location = "group:ckconfig.c">
+            </FileRef>
+            <FileRef
+               location = "group:coderules.doc">
+            </FileRef>
+            <FileRef
+               location = "group:config.guess">
+            </FileRef>
+            <FileRef
+               location = "group:config.sub">
+            </FileRef>
+            <FileRef
+               location = "group:configure">
+            </FileRef>
+            <FileRef
+               location = "group:djpeg.1">
+            </FileRef>
+            <FileRef
+               location = "group:djpeg.c">
+            </FileRef>
+            <FileRef
+               location = "group:example.c">
+            </FileRef>
+            <FileRef
+               location = "group:filelist.doc">
+            </FileRef>
+            <FileRef
+               location = "group:install-sh">
+            </FileRef>
+            <FileRef
+               location = "group:install.doc">
+            </FileRef>
+            <FileRef
+               location = "group:jcapimin.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcapimin.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcapistd.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcapistd.o">
+            </FileRef>
+            <FileRef
+               location = "group:jccoefct.c">
+            </FileRef>
+            <FileRef
+               location = "group:jccoefct.o">
+            </FileRef>
+            <FileRef
+               location = "group:jccolor.c">
+            </FileRef>
+            <FileRef
+               location = "group:jccolor.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcdctmgr.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcdctmgr.o">
+            </FileRef>
+            <FileRef
+               location = "group:jchuff.c">
+            </FileRef>
+            <FileRef
+               location = "group:jchuff.h">
+            </FileRef>
+            <FileRef
+               location = "group:jchuff.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcinit.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcinit.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcmainct.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcmainct.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcmarker.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcmarker.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcmaster.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcmaster.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcomapi.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcomapi.o">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.bcc">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.cfg">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.dj">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.doc">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.h">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.mac">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.manx">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.mc6">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.sas">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.st">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.vc">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.vms">
+            </FileRef>
+            <FileRef
+               location = "group:jconfig.wat">
+            </FileRef>
+            <FileRef
+               location = "group:jcparam.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcparam.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcphuff.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcphuff.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcprepct.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcprepct.o">
+            </FileRef>
+            <FileRef
+               location = "group:jcsample.c">
+            </FileRef>
+            <FileRef
+               location = "group:jcsample.o">
+            </FileRef>
+            <FileRef
+               location = "group:jctrans.c">
+            </FileRef>
+            <FileRef
+               location = "group:jctrans.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdapimin.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdapimin.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdapistd.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdapistd.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdatadst.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdatadst.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdatasrc.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdatasrc.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdcoefct.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdcoefct.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdcolor.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdcolor.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdct.h">
+            </FileRef>
+            <FileRef
+               location = "group:jddctmgr.c">
+            </FileRef>
+            <FileRef
+               location = "group:jddctmgr.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdhuff.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdhuff.h">
+            </FileRef>
+            <FileRef
+               location = "group:jdhuff.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdinput.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdinput.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdmainct.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdmainct.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdmarker.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdmarker.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdmaster.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdmaster.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdmerge.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdmerge.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdphuff.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdphuff.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdpostct.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdpostct.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdsample.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdsample.o">
+            </FileRef>
+            <FileRef
+               location = "group:jdtrans.c">
+            </FileRef>
+            <FileRef
+               location = "group:jdtrans.o">
+            </FileRef>
+            <FileRef
+               location = "group:jerror.c">
+            </FileRef>
+            <FileRef
+               location = "group:jerror.h">
+            </FileRef>
+            <FileRef
+               location = "group:jerror.o">
+            </FileRef>
+            <FileRef
+               location = "group:jfdctflt.c">
+            </FileRef>
+            <FileRef
+               location = "group:jfdctflt.o">
+            </FileRef>
+            <FileRef
+               location = "group:jfdctfst.c">
+            </FileRef>
+            <FileRef
+               location = "group:jfdctfst.o">
+            </FileRef>
+            <FileRef
+               location = "group:jfdctint.c">
+            </FileRef>
+            <FileRef
+               location = "group:jfdctint.o">
+            </FileRef>
+            <FileRef
+               location = "group:jidctflt.c">
+            </FileRef>
+            <FileRef
+               location = "group:jidctflt.o">
+            </FileRef>
+            <FileRef
+               location = "group:jidctfst.c">
+            </FileRef>
+            <FileRef
+               location = "group:jidctfst.o">
+            </FileRef>
+            <FileRef
+               location = "group:jidctint.c">
+            </FileRef>
+            <FileRef
+               location = "group:jidctint.o">
+            </FileRef>
+            <FileRef
+               location = "group:jidctred.c">
+            </FileRef>
+            <FileRef
+               location = "group:jidctred.o">
+            </FileRef>
+            <FileRef
+               location = "group:jinclude.h">
+            </FileRef>
+            <FileRef
+               location = "group:jmemansi.c">
+            </FileRef>
+            <FileRef
+               location = "group:jmemdos.c">
+            </FileRef>
+            <FileRef
+               location = "group:jmemdosa.asm">
+            </FileRef>
+            <FileRef
+               location = "group:jmemmac.c">
+            </FileRef>
+            <FileRef
+               location = "group:jmemmgr.c">
+            </FileRef>
+            <FileRef
+               location = "group:jmemmgr.o">
+            </FileRef>
+            <FileRef
+               location = "group:jmemname.c">
+            </FileRef>
+            <FileRef
+               location = "group:jmemnobs.c">
+            </FileRef>
+            <FileRef
+               location = "group:jmemnobs.o">
+            </FileRef>
+            <FileRef
+               location = "group:jmemsys.h">
+            </FileRef>
+            <FileRef
+               location = "group:jmorecfg.h">
+            </FileRef>
+            <FileRef
+               location = "group:jpegint.h">
+            </FileRef>
+            <FileRef
+               location = "group:jpeglib.h">
+            </FileRef>
+            <FileRef
+               location = "group:jpegtran.1">
+            </FileRef>
+            <FileRef
+               location = "group:jpegtran.c">
+            </FileRef>
+            <FileRef
+               location = "group:jquant1.c">
+            </FileRef>
+            <FileRef
+               location = "group:jquant1.o">
+            </FileRef>
+            <FileRef
+               location = "group:jquant2.c">
+            </FileRef>
+            <FileRef
+               location = "group:jquant2.o">
+            </FileRef>
+            <FileRef
+               location = "group:jutils.c">
+            </FileRef>
+            <FileRef
+               location = "group:jutils.o">
+            </FileRef>
+            <FileRef
+               location = "group:jversion.h">
+            </FileRef>
+            <FileRef
+               location = "group:libjpeg.a">
+            </FileRef>
+            <FileRef
+               location = "group:libjpeg.doc">
+            </FileRef>
+            <FileRef
+               location = "group:libjpeg.lib">
+            </FileRef>
+            <FileRef
+               location = "group:ltconfig">
+            </FileRef>
+            <FileRef
+               location = "group:ltmain.sh">
+            </FileRef>
+            <FileRef
+               location = "group:makcjpeg.st">
+            </FileRef>
+            <FileRef
+               location = "group:makdjpeg.st">
+            </FileRef>
+            <FileRef
+               location = "group:makeapps.ds">
+            </FileRef>
+            <FileRef
+               location = "group:Makefile">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.ansi">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.bcc">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.cfg">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.dj">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.manx">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.mc6">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.mms">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.sas">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.unix">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.vc">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.vms">
+            </FileRef>
+            <FileRef
+               location = "group:makefile.wat">
+            </FileRef>
+            <FileRef
+               location = "group:makelib.ds">
+            </FileRef>
+            <FileRef
+               location = "group:makeproj.mac">
+            </FileRef>
+            <FileRef
+               location = "group:makljpeg.st">
+            </FileRef>
+            <FileRef
+               location = "group:maktjpeg.st">
+            </FileRef>
+            <FileRef
+               location = "group:makvms.opt">
+            </FileRef>
+            <FileRef
+               location = "group:rdbmp.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdcolmap.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdgif.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdjpgcom.1">
+            </FileRef>
+            <FileRef
+               location = "group:rdjpgcom.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdppm.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdrle.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdswitch.c">
+            </FileRef>
+            <FileRef
+               location = "group:rdtarga.c">
+            </FileRef>
+            <FileRef
+               location = "group:README">
+            </FileRef>
+            <FileRef
+               location = "group:structure.doc">
+            </FileRef>
+            <FileRef
+               location = "group:transupp.c">
+            </FileRef>
+            <FileRef
+               location = "group:transupp.h">
+            </FileRef>
+            <FileRef
+               location = "group:usage.doc">
+            </FileRef>
+            <FileRef
+               location = "group:wizard.doc">
+            </FileRef>
+            <FileRef
+               location = "group:wrbmp.c">
+            </FileRef>
+            <FileRef
+               location = "group:wrgif.c">
+            </FileRef>
+            <FileRef
+               location = "group:wrjpgcom.1">
+            </FileRef>
+            <FileRef
+               location = "group:wrjpgcom.c">
+            </FileRef>
+            <FileRef
+               location = "group:wrppm.c">
+            </FileRef>
+            <FileRef
+               location = "group:wrrle.c">
+            </FileRef>
+            <FileRef
+               location = "group:wrtarga.c">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:Makefile">
+         </FileRef>
+         <FileRef
+            location = "group:particle.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:particle.h">
+         </FileRef>
+         <FileRef
+            location = "group:particle.o">
+         </FileRef>
+         <FileRef
+            location = "group:particleview">
+         </FileRef>
+         <FileRef
+            location = "group:particleview.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:particleview.o">
+         </FileRef>
+         <FileRef
+            location = "group:particleview.sln">
+         </FileRef>
+         <FileRef
+            location = "group:particleview.vcxproj">
+         </FileRef>
+         <FileRef
+            location = "group:particleview.vcxproj.filters">
+         </FileRef>
+         <Group
+            location = "group:R2"
+            name = "R2">
+            <FileRef
+               location = "group:libR2.a">
+            </FileRef>
+            <FileRef
+               location = "group:Makefile">
+            </FileRef>
+            <FileRef
+               location = "group:R2.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Distance.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Distance.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Distance.o">
+            </FileRef>
+            <FileRef
+               location = "group:R2Image.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Image.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Image.o">
+            </FileRef>
+            <FileRef
+               location = "group:R2Line.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Line.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Line.o">
+            </FileRef>
+            <FileRef
+               location = "group:R2Pixel.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Pixel.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Pixel.o">
+            </FileRef>
+            <FileRef
+               location = "group:R2Point.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Point.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Point.o">
+            </FileRef>
+            <FileRef
+               location = "group:R2Segment.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Segment.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Segment.o">
+            </FileRef>
+            <FileRef
+               location = "group:R2Vector.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R2Vector.h">
+            </FileRef>
+            <FileRef
+               location = "group:R2Vector.o">
+            </FileRef>
+         </Group>
+         <Group
+            location = "group:R3"
+            name = "R3">
+            <FileRef
+               location = "group:libR3.a">
+            </FileRef>
+            <FileRef
+               location = "group:Makefile">
+            </FileRef>
+            <FileRef
+               location = "group:R3.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Box.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Box.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Box.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Circle.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Circle.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Circle.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Cone.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Cone.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Cone.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Cylinder.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Cylinder.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Cylinder.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Distance.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Distance.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Distance.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Line.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Line.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Line.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Matrix.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Matrix.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Matrix.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Mesh.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Mesh.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Mesh.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Plane.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Plane.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Plane.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Point.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Point.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Point.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Ray.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Ray.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Ray.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Segment.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Segment.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Segment.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Sphere.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Sphere.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Sphere.o">
+            </FileRef>
+            <FileRef
+               location = "group:R3Vector.cpp">
+            </FileRef>
+            <FileRef
+               location = "group:R3Vector.h">
+            </FileRef>
+            <FileRef
+               location = "group:R3Vector.o">
+            </FileRef>
+         </Group>
+         <FileRef
+            location = "group:R3Scene.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:R3Scene.h">
+         </FileRef>
+         <FileRef
+            location = "group:R3Scene.o">
+         </FileRef>
+         <FileRef
+            location = "group:script">
+         </FileRef>
+         <FileRef
+            location = "group:script~">
+         </FileRef>
+      </Group>
+   </Group>
+</Workspace>

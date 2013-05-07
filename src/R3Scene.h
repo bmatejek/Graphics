@@ -84,6 +84,7 @@ struct R3Node {
     R3Box bbox;
 };
 
+
 struct R3Intersection {
     bool hit;
     R3Node * node;

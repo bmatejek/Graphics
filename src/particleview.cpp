@@ -608,7 +608,7 @@ void DrawParticles(R3Scene *scene)
     // Render particles
     if (show_particles) RenderParticles(scene, current_time - time_lost_taking_videos, delta_time);
 
-    if (show_tails) RenderTails(scene, current_time - time_lost_taking_videos, delta_time);
+//    if (show_tails) RenderTails(scene, current_time - time_lost_taking_videos, delta_time);
 
     
     // Remember previous time
@@ -1149,10 +1149,10 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     switch (key) {
             
             
-   //     case 'W':
-     //   case 'w':
-       //     scene->root->transformation
-         //   break;
+        case 'W':
+        case 'w':
+            scene->root->transformation
+            break;
 
         case 'S':
         case 's':

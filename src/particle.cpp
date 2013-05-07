@@ -748,6 +748,7 @@ void UpdateParticle(R3Scene *scene, R3Particle *particle, double current_time, d
             UpdateParticle(scene, particle, current_time + elasped_time, delta_time - elasped_time, integration_type);
             
         }
+        
         // if no collision
         else {
             particle->position = newPosition;
