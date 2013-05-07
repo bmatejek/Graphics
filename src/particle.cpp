@@ -405,7 +405,8 @@ void UpdateParticles(R3Scene *scene, double current_time, double delta_time, int
         R3Vector nextvel = particle->velocity + velocitychange;
         
         // check if particle needs to deleted
-        for (int i = 0; i < scene->NParticleSinks(); i++) {
+        int i = 0;
+        for (; i < scene->NParticleSinks(); i++) {
             R3ParticleSink *sink = scene->ParticleSink(i);
             
             //sphere sink
@@ -512,7 +513,7 @@ void RenderParticles(R3Scene *scene, double current_time, double delta_time)
         glColor3d(particle->material->kd[0], particle->material->kd[1], particle->material->kd[2]);
         const R3Point& position = particle->position;
         glVertex3d(position[0], position[1], position[2]);
-    }   
+    }
     glEnd();
 }
 

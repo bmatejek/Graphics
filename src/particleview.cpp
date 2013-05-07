@@ -1002,10 +1002,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     // Process keyboard button event
     switch (key) {
             
-        case 'W':
-        case 'w':
-            scene->root->transformation
-            break;
 
         case 'S':
         case 's':
@@ -1056,11 +1052,11 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'r':
             show_particle_springs = !show_particle_springs;
             break;
-            
+            /*
         case 'S':
         case 's':
             show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
-            break;
+            break; */
             
         case 'Q':
         case 'q':
