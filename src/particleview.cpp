@@ -1001,7 +1001,11 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     
     // Process keyboard button event
     switch (key) {
-            
+          
+        case 'W':
+        case 'w':
+            scene->root->transformation.ZTranslate(-.2);
+            break;
 
         case 'S':
         case 's':

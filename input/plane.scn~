@@ -3,4 +3,7 @@
 # It is useful for testing ray-mesh intersection.
 
 # A mesh with default material (-1) read from ico.off
-mesh   -1    ico.off
+mesh   -1    77.off
+
+sphere 
+# -1 0 0 0 10
