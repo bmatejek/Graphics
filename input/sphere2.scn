@@ -1,0 +1,8 @@
+# This scene shows one sphere 
+# with default camera, materials, and lighting.
+# It is useful to test ray-sphere intersection.
+
+dir_light  1 1 1        -3 -4 -5
+
+# A sphere with default material (-1) centered at (0,0,0) with radius 1
+sphere   -1    0 0 0    1   

@@ -1,0 +1,16 @@
+# This scene shows a close-up view of a teapot mesh
+# with default camera, materials, and lighting.
+# It is useful for testing ray-mesh intersection.
+camera  5 3 35  0 0 -1  0 1 0  0.6   0.01 1000
+
+
+#this material is dark and shiny
+material 0.2 0.2 0.2  0.1 0.1 0.1  0.95 0.95 0.95  0 0 0  0 0 0  20 0 0
+# this material is a little more colorful
+material 0.2 0.3 0.2  0.5 0.7 0.5  0.8 0.8 0.8  0 0 0   0 0 0  5 0 0
+
+
+# A mesh with default material (-1) read from cheetah.off
+mesh   0    cheetah.off
+box 1 -200 -13 -153 450 -8 23
+box 0 -200 -13 -153 650 200 -130

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+./src/particleview ./input/opposites.scn -recordandquit 200 -video_prefix ./video-frames/opposites
+
+./src/particleview ./input/cannonball.scn -recordandquit 200 -video_prefix ./video-frames/cannonball
