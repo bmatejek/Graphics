@@ -41,6 +41,7 @@ static int show_bboxes = 0;
 static int show_lights = 0;
 static int show_camera = 0;
 static int show_particles = 1;
+static int show_players = 1;
 static int show_particle_springs = 1;
 static int show_particle_sources_and_sinks = 1;
 static int save_image = 0;
@@ -535,6 +536,92 @@ void DrawScene(R3Scene *scene)
     // Draw nodes recursively
     DrawNode(scene, scene->root);
 }
+void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
+{
+    if (!show_players) return;
+    // Draw every particle
+    
+    // REPLACE CODE HERE
+    //glDisable(GL_LIGHTING);
+    //glPointSize(5);
+    //glBegin(GL_POINTS);
+    
+    // Check if should draw particle sources
+    if (!show_particle_sources_and_sinks) return;
+    
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    // Define source material
+    static R3Material source_material;
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,1,0,1);
+        source_material.ks.Reset(0,1,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,0,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+    for (int i = 0; i < scene->players.size(); i++) {
+        R3Player *player = scene->players[i];
+        player->shape->mesh->Draw(player->pos - R3Point(0,0,0), player->nose,player->wing);
+    }
+    
+    // Clean up
+    if (!lighting) glDisable(GL_LIGHTING);
+}
+
+
+void DrawPlayers(R3Scene *scene)
+{
+    // Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+    
+    
+    static double time_lost_taking_videos = 0; // for switching back and forth
+    // between recording and not
+    // recording smoothly
+    
+    // program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+    
+    
+    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
+        delta_time = VIDEO_FRAME_DELAY;
+        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
+        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
+    } else { // real time simulation
+        delta_time = current_time - previous_time;
+    }
+    
+    // Update players
+    //UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    
+    // Generate new particles
+    //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Render players
+    RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Remember previous time
+    previous_time = current_time;
+ 
+}
+
+
 
 
 void DrawParticles(R3Scene *scene)
@@ -802,6 +889,7 @@ void GLUTRedraw(void)
     
     // Draw particles
     DrawParticles(scene);
+    DrawPlayers(scene);
     
     // Draw particle sources
     DrawParticleSources(scene);
@@ -1004,22 +1092,22 @@ void GLUTKeyboard(unsigned char key, int x, int y)
           
         case 'W':
         case 'w':
-            scene->root->transformation.ZTranslate(-.2);
+            scene->players[0]->pos +=  R3Vector(0,0,1);
             break;
 
         case 'S':
         case 's':
-            scene->root->transformation.ZTranslate(.2);
+            scene->players[0]->pos +=  R3Vector(0,0,-1);
             break;
             
         case 'D':
         case 'd':
-            scene->root->transformation.XTranslate(.2);
+            scene->players[0]->pos +=  R3Vector(0,1,0);
             break;
             
         case 'A':
         case 'a':
-            scene->root->transformation.XTranslate(-.2);
+            scene->players[0]->pos +=  R3Vector(0,-1,0);
             break;
 
         case 'B':

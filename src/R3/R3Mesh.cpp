@@ -829,6 +829,24 @@ Draw(void) const
   }
 }
 
+void R3Mesh::
+Draw(R3Vector pos, R3Vector nose, R3Vector wing) const
+{
+    // Draw all faces
+    for (int i = 0; i < NFaces(); i++) {
+        glBegin(GL_POLYGON);
+        R3MeshFace *face = Face(i);
+        const R3Vector& normal = face->plane.Normal();
+        glNormal3d(normal[0], normal[1], normal[2]);
+        for (unsigned int j = 0; j < face->vertices.size(); j++) {
+            R3MeshVertex *vertex = face->vertices[j];
+            const R3Point& p = vertex->position;
+            glVertex3d(p[0] +pos[0], p[1]+pos[1], p[2]+pos[2]);
+        }
+        glEnd();
+    }
+}
+
 
 
 void R3Mesh::

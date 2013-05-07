@@ -306,6 +306,81 @@ Read(const char *filename, R3Node *node)
             // Add to list of particles available for springs
             particles_for_springs.push_back(particle);
         }
+        else if (!strcmp(cmd, "player")) {
+            // Read data
+            int m;
+            char meshname[256];
+            if (fscanf(fp, "%d%s", &m, meshname) != 2) {
+                fprintf(stderr, "Unable to parse mesh command %d in file %s\n", command_number, filename);
+                return 0;
+            }
+            
+            // Get material
+            R3Material *material = group_materials[depth];
+            if (m >= 0) {
+                if (m < (int) materials.size()) {
+                    material = materials[m];
+                }
+                else {
+                    fprintf(stderr, "Invalid material id at cone command %d in file %s\n", command_number, filename);
+                    return 0;
+                }
+            }
+            
+            // Get mesh filename
+            char buffer[2048];
+            strcpy(buffer, filename);
+            char *bufferp = strrchr(buffer, '/');
+            if (bufferp) *(bufferp+1) = '\0';
+            else buffer[0] = '\0';
+            strcat(buffer, meshname);
+            
+            // Create mesh
+            R3Mesh *mesh = new R3Mesh();
+            if (!mesh) {
+                fprintf(stderr, "Unable to allocate mesh\n");
+                return 0;
+            }
+            
+            // Read mesh file
+            if (!mesh->Read(buffer)) {
+                fprintf(stderr, "Unable to read mesh: %s\n", buffer);
+                return 0;
+            }
+            
+            // Create shape
+            R3Shape *shape = new R3Shape();
+            shape->type = R3_MESH_SHAPE;
+            shape->box = NULL;
+            shape->sphere = NULL;
+            shape->cylinder = NULL;
+            shape->cone = NULL;
+            shape->mesh = mesh;
+            shape->segment = NULL;
+
+            // Read position and velocity
+            R3Point p;
+            R3Vector n,w;
+            if (fscanf(fp, "%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+                       &p[0],&p[1],&p[2],&n[0],&n[1],&n[2],&w[0],&w[1],&w[2]) != 9) {
+                fprintf(stderr, "Unable to read particle at command %d in file %s\n", command_number, filename);
+                return 0;
+            }
+            // Create player
+            R3Player *player = new R3Player();
+            player->shape = shape;
+            player->pos = p;
+            player->nose = n;
+            player->wing = w;
+            
+            player->nose.Normalize();
+            player->nose.Normalize();
+            
+            // Add particle to scene
+            players.push_back(player);
+
+        }
+
         else if (!strcmp(cmd, "particle_source")) {
             // Read particle source parameters
             double mass, drag, elasticity, lifetime;

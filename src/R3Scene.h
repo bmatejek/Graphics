@@ -130,6 +130,13 @@ struct R3ParticleSpring {
     double kd;
 };
 
+struct R3Player {
+    R3Shape *shape;
+    R3Point pos;
+    R3Vector nose;
+    R3Vector wing;
+};
+
 
 
 // Scene graph definition
@@ -164,6 +171,7 @@ public:
     vector<R3ParticleSink *> particle_sinks;
     vector<R3ParticleSpring *> particle_springs;
     vector<R3Light *> lights;
+    vector<R3Player *> players;
     R3Vector gravity;
     R3Camera camera;
     R3Box bbox;

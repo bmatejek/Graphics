@@ -146,6 +146,7 @@ struct R3Mesh {
 
   // Drawing functions
   void Draw(void) const;
+    void Draw(R3Vector change, R3Vector nose, R3Vector wing) const;
   void Outline(void) const;
 
   // Low-level creation functions
