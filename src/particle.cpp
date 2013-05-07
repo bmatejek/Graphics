@@ -8,12 +8,17 @@
 #include "R3/R3.h"
 #include "R3Scene.h"
 #include "particle.h"
+#include "raytrace.h"
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
 #else
 #   include <sys/time.h>
 #endif
+#define PI 3.141592655359
+#define GRAV_CONSTANT 6.67428e-11
+#define ADAPTIVE_THRESHOLD 1e-2
+#define eps 2e-12
 
 
 
@@ -51,748 +56,442 @@ double RandomNumber(void)
 #endif
 }
 
-////////////////////////////////////////////////////////////
-// Finding Intersections
-////////////////////////////////////////////////////////////
-bool sphereIntersection(R3Sphere *sphere, R3Ray *ray, R3Intersection *intersection) {
-    
-    
-    R3Vector L = sphere->Center() - ray->Start();
-    double tca = L.Dot(ray->Vector());
-    if (tca < 0)
-        return false;
-    
-    double dSquared = (L.Length() * L.Length()) - (tca * tca);
-    if (dSquared > (sphere->Radius() * sphere->Radius()))
-        return false;
-    
-    double thc = sqrt((sphere->Radius() * sphere->Radius()) - dSquared);
-    
-    double t = min(tca + thc, tca - thc);
-    
-    if (t >= intersection->t)
-        return false;
-    
-    
-    intersection->t = t;
-    intersection->hit = true;
-    intersection->position = ray->Start() + (ray->Vector() * t);
-    intersection->normal = intersection->position - sphere->Center();
-    intersection->normal.Normalize();
-    return true;
-}
-
-bool sphereIntersection(R3Node *node, R3Ray *ray, R3Intersection *intersection) {
-    
-    R3Sphere *sphere = node->shape->sphere;
-    
-    R3Vector L = sphere->Center() - ray->Start();
-    double tca = L.Dot(ray->Vector());
-    if (tca < 0)
-        return false;
-    
-    double dSquared = (L.Length() * L.Length()) - (tca * tca);
-    if (dSquared > (sphere->Radius() * sphere->Radius()))
-        return false;
-    
-    double thc = sqrt((sphere->Radius() * sphere->Radius()) - dSquared);
-    
-    double t = min(tca + thc, tca - thc);
-    
-    if (t >= intersection->t)
-        return false;
-    
-    
-    intersection->t = t;
-    intersection->hit = true;
-    intersection->position = ray->Start() + (ray->Vector() * t);
-    intersection->node = node;
-    intersection->normal = intersection->position - sphere->Center();
-    intersection->normal.Normalize();
-    return true;
-}
-
-bool boxIntersection(R3Node *node, R3Ray *ray, R3Intersection *intersection) {
-    R3Box *box = node->shape->box;
-    bool updatedIntersection = false;
-    
-    //define planes
-    vector<R3Plane *> planes;
-    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(0,0,1), box->Corner(0,1,0)));
-    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(0,1,0), box->Corner(1,0,0)));
-    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(1,0,0), box->Corner(0,0,1)));
-    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(0,1,1), box->Corner(0,0,1)));
-    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(0,1,0), box->Corner(0,1,1)));
-    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(1,1,0), box->Corner(1,0,0)));
-    
-    double epsilon = .000000001;
-    
-    for (int i = 0; i < (int)planes.size(); i++) {
-        double denominator = ray->Vector().Dot(planes[i]->Normal());
-        if (denominator == 0)
-            continue;
-        
-        double numerator = planes[i]->Normal().Dot(planes[i]->Point() - ray->Start());
-        double t = numerator/denominator;
-        
-        R3Point toCheck = ray->Start() + (ray->Vector() * t);
-        
-        if ((toCheck.X() <= box->XMin() - epsilon) || toCheck.X() > box->XMax() + epsilon)
-            continue;
-        
-        if ((toCheck.Y() <= box->YMin() - epsilon) || toCheck.Y() > box->YMax() + epsilon)
-            continue;
-        
-        if ((toCheck.Z() <= box->ZMin() - epsilon) || toCheck.Z() > box->ZMax() + epsilon)
-            continue;
-        
-        if (t <= 0)
-            continue;
-        
-        if (t < intersection->t) {
-            intersection->t = t;
-            intersection->hit = true;
-            intersection->position = ray->Start() + (ray->Vector() * t);
-            intersection->node = node;
-            intersection->normal = planes[i]->Normal();
-            intersection->normal.Normalize();
-            updatedIntersection = true;
-        }
-    }
-    
-    for (int i = 0; i < (int)planes.size(); i++)
-        delete planes[i];
-    
-    return updatedIntersection;
-}
-
-bool meshIntersection(R3Node *node, R3Ray *ray, R3Intersection *intersection) {
-    R3Mesh *mesh = node->shape->mesh;
-    bool updatedIntersection = false;
-    double epsilon = .000001;
-    
-    for (int i = 0; i < (int)mesh->faces.size(); i++) {
-        assert (mesh->faces[i]->vertices.size() == 3);
-        
-        
-        //slight acceleration
-        if (intersection->hit) {
-            double dist = R3Distance(ray->Start(), mesh->faces[i]->vertices[0]->position);
-            dist = min(dist, R3Distance(ray->Start(), mesh->faces[i]->vertices[1]->position));
-            dist = min(dist, R3Distance(ray->Start(), mesh->faces[i]->vertices[2]->position));
-            if (dist > intersection->t + epsilon)
-                continue;
-        }
-        
-        
-        
-        //check if ray intersects plane
-        R3Plane *plane = &mesh->faces[i]->plane;
-        double denominator = ray->Vector().Dot(plane->Normal());
-        if (denominator == 0)
-            continue;
-        
-        double numerator = plane->Normal().Dot(plane->Point() - ray->Start());
-        double t = numerator/denominator;
-        
-        if (t <= 0)
-            continue;
-        
-        //check if intersection is closer than previous found intersection
-        if (intersection->t < t)
-            continue;
-        
-        
-        //check if intersects the face
-        R3Vector v1 = mesh->faces[i]->vertices[0]->position - (ray->Start() + (ray->Vector() * t));
-        R3Vector v2 = mesh->faces[i]->vertices[1]->position - (ray->Start() + (ray->Vector() * t));
-        v1.Cross(v2);
-        v1.Normalize();
-        if (ray->Vector().Dot(v1) > 0)
-            continue;
-        
-        v1 = mesh->faces[i]->vertices[1]->position - (ray->Start() + (ray->Vector() * t));
-        v2 = mesh->faces[i]->vertices[2]->position - (ray->Start() + (ray->Vector() * t));
-        v1.Cross(v2);
-        v1.Normalize();
-        if (ray->Vector().Dot(v1) > 0)
-            continue;
-        
-        v1 = mesh->faces[i]->vertices[2]->position - (ray->Start() + (ray->Vector() * t));
-        v2 = mesh->faces[i]->vertices[0]->position - (ray->Start() + (ray->Vector() * t));
-        v1.Cross(v2);
-        v1.Normalize();
-        if (ray->Vector().Dot(v1) > 0)
-            continue;
-        
-        
-        //check if intersects the triangle
-        
-        
-        intersection->t = t;
-        intersection->face = mesh->faces[i];
-        intersection->hit = true;
-        intersection->position = ray->Start() + (ray->Vector() * t);
-        intersection->node = node;
-        intersection->normal = plane->Normal();
-        intersection->normal.Normalize();
-        updatedIntersection = true;
-    }
-    return updatedIntersection;
-}
-
-void faceIntersection(R3MeshFace *face, R3Ray *ray, R3Intersection *intersection, R3Node *lastNode) {
-    
-    if (!face)
-        return;
-    
-    assert (face->vertices.size() == 3);
-    
-    
-    //check if ray intersects plane
-    R3Plane *plane = &face->plane;
-    double denominator = ray->Vector().Dot(plane->Normal());
-    if (denominator == 0)
-        return;
-    
-    double numerator = plane->Normal().Dot(plane->Point() - ray->Start());
-    double t = numerator/denominator;
-    
-    if (t <= 0)
-        return;
-    
-    
-    //check if intersection is closer than previous found intersection
-    if (intersection->t < t)
-        return;
-    
-    
-    //check if intersects the face
-    R3Vector v1 = face->vertices[0]->position - (ray->Start() + (ray->Vector() * t));
-    R3Vector v2 = face->vertices[1]->position - (ray->Start() + (ray->Vector() * t));
-    v1.Cross(v2);
-    v1.Normalize();
-    if (ray->Vector().Dot(v1) > 0)
-        return;
-    
-    v1 = face->vertices[1]->position - (ray->Start() + (ray->Vector() * t));
-    v2 = face->vertices[2]->position - (ray->Start() + (ray->Vector() * t));
-    v1.Cross(v2);
-    v1.Normalize();
-    if (ray->Vector().Dot(v1) > 0)
-        return;
-    
-    v1 = face->vertices[2]->position - (ray->Start() + (ray->Vector() * t));
-    v2 = face->vertices[0]->position - (ray->Start() + (ray->Vector() * t));
-    v1.Cross(v2);
-    v1.Normalize();
-    if (ray->Vector().Dot(v1) > 0)
-        return;
-    
-    //check if intersects the triangle
-    
-    
-    intersection->t = t;
-    intersection->hit = true;
-    intersection->position = ray->Start() + (ray->Vector() * t);
-    intersection->node = lastNode;
-    intersection->normal = plane->Normal();
-    intersection->normal.Normalize();
-}
-
-bool cylinderIntersection(R3Node *node, R3Ray *ray, R3Intersection *intersection) {
-    
-    R3Cylinder *cylinder = node->shape->cylinder;
-    bool updatedIntersection = false;
-    
-    //check mid section
-    R3Point pA = cylinder->Axis().Start();
-    R3Vector vA = cylinder->Axis().Vector();
-    R3Point p = ray->Start();
-    R3Vector v = ray->Vector();
-    R3Vector deltaP = p - pA;
-    
-    
-    double A = (v - v.Dot(vA) * vA).Dot(v - v.Dot(vA) * vA);
-    double B = (v - v.Dot(vA) * vA).Dot(deltaP - deltaP.Dot(vA) * vA) * 2;
-    double C = (deltaP - deltaP.Dot(vA) * vA).Dot(deltaP - deltaP.Dot(vA) * vA) - (cylinder->Radius() * cylinder->Radius());
-    
-    if ((B*B) - 4 * A * C >= 0) {
-        double t1 = (-B + sqrt((B*B) - 4*A*C))/(2.*A);
-        double t2 = (-B - sqrt((B*B) - 4*A*C))/(2.*A);
-        
-        if (t1 < 0)
-            t1 = INFINITY;
-        if (t2 < 0)
-            t2 = INFINITY;
-        double t = min(t1, t2);
-        
-        R3Point position = ray->Start() + (ray->Vector() * t);
-        
-        if (vA.Dot(position - cylinder->Axis().Start()) <= 0)
-            t = INFINITY;
-        
-        if (vA.Dot(position - cylinder->Axis().End()) >= 0)
-            t = INFINITY;
-        
-        
-        //check top cap, start with plane intersection, see if within radius
-        double t3 = INFINITY;
-        bool intersectWithTopCap = false;
-        double denominator = ray->Vector().Dot(cylinder->Axis().Vector());
-        if (denominator != 0) {
-            
-            double numerator = cylinder->Axis().Vector().Dot(cylinder->Axis().Start() - ray->Start());
-            double t3 = numerator/denominator;
-            
-            position = ray->Start() + (ray->Vector() * t3);
-            
-            if (R3Distance(position, cylinder->Axis().Start()) <= cylinder->Radius())
-                if (t3 > 0) {
-                    if (t3 < t) {
-                        t = t3;
-                        intersectWithTopCap = true;
-                    }
-                }
-            
-        }
-        
-        //check bottom cap, start with plane intersection, see if within radius
-        bool intersectWithBottomCap = false;
-        denominator = ray->Vector().Dot(cylinder->Axis().Vector());
-        if (denominator != 0) {
-            
-            double numerator = cylinder->Axis().Vector().Dot(cylinder->Axis().End() - ray->Start());
-            t3 = numerator/denominator;
-            
-            if (R3Distance(position, cylinder->Axis().End()) <= cylinder->Radius())
-                if (t3 > 0) {
-                    if (t3 < t) {
-                        t = t3;
-                        intersectWithBottomCap = true;
-                    }
-                }
-        }
-        
-        
-        if (t < intersection->t) {
-            intersection->t = t;
-            intersection->hit = true;
-            intersection->position = ray->Start() + (ray->Vector() * t);
-            intersection->node = node;
-            updatedIntersection = true;
-            if (intersectWithBottomCap)
-                intersection->normal = cylinder->Axis().End() - cylinder->Center();
-            else if (intersectWithTopCap)
-                intersection->normal = cylinder->Axis().Start() - cylinder->Center();
-            else {
-                R3Point p1 = intersection->position;
-                p1.Project(cylinder->Axis().Line());
-                intersection->normal = intersection->position - p1;
-            }
-            intersection->normal.Normalize();
-            
-        }
-    }
-    return updatedIntersection;
-}
-
-bool boundingBoxIntersection(R3Node *node, R3Ray *ray, R3Intersection *intersection) {
-    R3Box *box = &node->bbox;
-    
-    
-    //define planes
-    vector<R3Plane *> planes;
-    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(0,0,1), box->Corner(0,1,0)));
-    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(0,1,0), box->Corner(1,0,0)));
-    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(1,0,0), box->Corner(0,0,1)));
-    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(0,1,1), box->Corner(0,0,1)));
-    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(0,1,0), box->Corner(0,1,1)));
-    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(1,1,0), box->Corner(1,0,0)));
-    
-    double epsilon = .000000001;
-    
-    for (int i = 0; i < (int)planes.size(); i++) {
-        double denominator = ray->Vector().Dot(planes[i]->Normal());
-        if (denominator == 0)
-            continue;
-        
-        double numerator = planes[i]->Normal().Dot(planes[i]->Point() - ray->Start());
-        double t = numerator/denominator;
-        
-        if (t >= intersection->t)
-            continue;
-        
-        R3Point toCheck = ray->Start() + (ray->Vector() * t);
-        
-        if ((toCheck.X() <= box->XMin() - epsilon) || toCheck.X() > box->XMax() + epsilon)
-            continue;
-        
-        if ((toCheck.Y() <= box->YMin() - epsilon) || toCheck.Y() > box->YMax() + epsilon)
-            continue;
-        
-        if ((toCheck.Z() <= box->ZMin() - epsilon) || toCheck.Z() > box->ZMax() + epsilon)
-            continue;
-        
-        if (t <= 0)
-            continue;
-        
-        if (t < intersection->t) {
-            for (int x = 0; x < (int)planes.size(); x++)
-                delete planes[x];
-            
-            return true;
-        }
-    }
-    for (int x = 0; x < (int)planes.size(); x++)
-        delete planes[x];
-    return false;
-}
-
-
-bool ComputeIntersection(R3Node *node, R3Ray *ray, R3Intersection *intersection) {
-    
-    //recursive call
-    if (node->children.size() > 0) {
-        bool toReturn = false;
-        for (int i = 0; i < (int)node->children.size(); i++) {
-            ray->Transform(node->transformation.Inverse());
-            bool recentReturn = false;
-            if (boundingBoxIntersection(node->children[i], ray, intersection))
-                recentReturn = ComputeIntersection(node->children[i], ray, intersection);
-            ray->Transform(node->transformation);
-            if (recentReturn) {
-                intersection->position.Transform(node->transformation);
-                intersection->normal.Transform(node->transformation.Inverse().Transpose());
-                intersection->normal.Normalize();
-                intersection->t = R3Distance(ray->Start(), intersection->position);
-            }
-            if (recentReturn)
-                toReturn = recentReturn;
-        }
-        return toReturn;
-    }
-    
-    
-    bool updatedIntersection = false;
-    if (node->shape != NULL) {
-        switch(node->shape->type) {
-            case R3_BOX_SHAPE:
-                updatedIntersection = boxIntersection(node, ray, intersection);
-                break;
-            case R3_SPHERE_SHAPE:
-                updatedIntersection = sphereIntersection(node, ray, intersection);
-                break;
-            case R3_CYLINDER_SHAPE:
-                updatedIntersection = cylinderIntersection(node, ray, intersection);
-                break;
-            case R3_CONE_SHAPE:
-                printf("Cone shape is not handled yet \n");
-                break;
-            case R3_MESH_SHAPE:
-                updatedIntersection = meshIntersection(node, ray, intersection);
-                break;
-            case R3_SEGMENT_SHAPE:
-                printf("Segment shape is not handled yet \n");
-                break;
-            default:
-                return false;
-                
-        }
-    }
-    
-    //transform intersection, normal, and parameter value t
-    if (updatedIntersection) {
-        intersection->position.Transform(node->transformation);
-        intersection->normal.Transform(node->transformation.Inverse().Transpose());
-        intersection->normal.Normalize();
-        intersection->t = R3Distance(ray->Start(), intersection->position);
-    }
-    return updatedIntersection;
-}
-
 
 
 ////////////////////////////////////////////////////////////
 // Generating Particles
 ////////////////////////////////////////////////////////////
-R3Particle* GenerateParticlesFromSphere(R3ParticleSource *pSource, double current_time, double delta_time) {
-    
-    assert (pSource->shape->type == R3_SPHERE_SHAPE);
-    //generate random point on surface of sphere
-    
-    double u = (double)rand() / RAND_MAX;
-    double v = (double)rand() / RAND_MAX;
-    
-    double theta = 2 * M_PI * u;
-    double phi = acos((2 * v) - 1);
-    double radius = pSource->shape->sphere->Radius();
-    
-    double x = pSource->shape->sphere->Center().X() + (radius * cos(theta) * sin(phi));
-    double y = pSource->shape->sphere->Center().Y() + (radius * sin(theta) * sin(phi));
-    double z = pSource->shape->sphere->Center().Z() + (radius * cos(phi));
-    
-    
-    R3Particle *particle = new R3Particle();
-    particle->position = R3Point(x, y, z);
-    particle->velocity = pSource->velocity* (particle->position - pSource->shape->sphere->Center());
-    particle->fixed = pSource->fixed;
-    particle->drag = pSource->drag;
-    particle->mass = pSource->mass;
-    particle->material = pSource->material;
-    particle->elasticity = pSource->elasticity;
-    particle->lifetime = pSource->lifetime;
-    pSource->numParticlesMade++; 
-    return particle;
-    
-}
 
 void GenerateParticles(R3Scene *scene, double current_time, double delta_time)
 {
-    
-    // Generate new particles for every source
     for (int i = 0; i < scene->NParticleSources(); i++) {
         
-        R3ParticleSource * pSource = scene->particle_sources[i];
+        R3ParticleSource *source = scene->ParticleSource(i);
         
-        switch(pSource->shape->type) {
-            case R3_BOX_SHAPE:
-                break;
-            case R3_SPHERE_SHAPE:
-                while (pSource->numParticlesMade < pSource->rate * current_time)
-                    scene->particles.push_back(GenerateParticlesFromSphere(pSource, current_time, delta_time));
-                break;
-            case R3_CYLINDER_SHAPE:
-                break;
-            case R3_CONE_SHAPE:
-                break;
-            case R3_MESH_SHAPE:
-                break;
-            case R3_SEGMENT_SHAPE:
-                break;
-            default:
-                return;
+        // spheres
+        if (source->shape->type == R3_SPHERE_SHAPE) {
+            
+            // remainder term for fraction of particle
+            double numberweshouldmake = delta_time * source->rate + source->remainder;
+            int nparts = floor(numberweshouldmake);
+            source->remainder = numberweshouldmake - nparts;
+            
+            for (int p = 0; p < nparts; p++) {
+                R3Particle *newpart = new R3Particle();
                 
+                // calculate position and velocity
+                double u = RandomNumber();
+                double theta = 2*PI*u;
+                double v = RandomNumber();
+                double phi = acos(2*v-1);
+                double r = source->shape->sphere->Radius();
+                R3Point center = source->shape->sphere->Center();
+                
+                double x = r*cos(theta)*sin(phi);
+                double y = r*sin(theta)*sin(phi);
+                double z = r*cos(phi);
+                
+                R3Vector n = R3Vector(x,y,z);
+                n.Normalize();
+                
+                // find tangent vector, use lecture notes to get velocity
+                R3Plane plane = R3Plane(R3Point(0,0,0),n);
+                R3Vector a;
+                do {
+                    a = R3Vector(RandomNumber(),RandomNumber(),RandomNumber());
+                    a.Project(plane);
+                } while (a.Length() == 0.0);
+                a.Normalize();
+                double t1 = 2*PI*RandomNumber();
+                double t2 = sin(source->angle_cutoff)*RandomNumber();
+                a.Rotate(n,t1);
+                R3Vector vec = R3Vector(a);
+                R3Vector cross = R3Vector(vec);
+                cross.Cross(n);
+                vec.Rotate(cross,acos(t2));
+                
+                newpart->position = center + n*r;
+                newpart->velocity = vec*source->velocity;
+                
+                //update
+                newpart->mass = source->mass;
+                newpart->fixed = source->fixed;
+                newpart->drag = source->drag;
+                newpart->elasticity = source->elasticity;
+                newpart->lifetime = source->lifetime;
+                newpart->lifetimeactive = source->lifetimeactive;
+                newpart->material = source->material;
+                
+                scene->particles.push_back(newpart);
+            }
         }
+        
+        
+        // CIRCLE
+        if (source->shape->type == R3_CIRCLE_SHAPE) {
+            
+            double numberweshouldmake = delta_time * source->rate + source->remainder;
+            int nparts = floor(numberweshouldmake);
+            source->remainder = numberweshouldmake - nparts;
+            
+            for (int p = 0; p < nparts; p++) {
+                R3Particle *newpart = new R3Particle();
+                
+                // calculate position and velocity
+                
+                double r = source->shape->circle->Radius();
+                R3Point center = source->shape->circle->Center();
+                R3Plane plane = source->shape->circle->Plane();
+                R3Vector n = plane.Normal();
+                n.Normalize();
+                
+                // get a random point on a circle
+                double xcirc, ycirc;
+                do {
+                    xcirc = 2*r*(RandomNumber() - 0.5);
+                    ycirc = 2*r*(RandomNumber() - 0.5);
+                } while (xcirc*xcirc + ycirc*ycirc > r*r);
+                
+                // get basis vectors of circle
+                R3Vector tang;
+                do {
+                    tang = R3Vector(RandomNumber(),RandomNumber(),RandomNumber());
+                    tang.Project(plane);
+                } while (tang.Length() == 0.0);
+                R3Vector othertang = R3Vector(tang);
+                othertang.Cross(n);
+                othertang.Normalize();
+                tang.Normalize();
+                
+                R3Point pos = center + tang*xcirc + othertang*ycirc;
+                
+                
+                R3Vector a = R3Vector(tang);
+                double t1 = 2*PI*RandomNumber();
+                double t2 = sin(source->angle_cutoff)*RandomNumber();
+                a.Rotate(n,t1);
+                R3Vector vec = R3Vector(a);
+                R3Vector cross = R3Vector(vec);
+                cross.Cross(n);
+                vec.Rotate(cross,acos(t2));
+                
+                newpart->position = pos;
+                newpart->velocity = vec*source->velocity;
+                
+                
+                newpart->mass = source->mass;
+                newpart->fixed = source->fixed;
+                newpart->drag = source->drag;
+                newpart->elasticity = source->elasticity;
+                newpart->lifetime = source->lifetime;
+                newpart->lifetimeactive = source->lifetimeactive;
+                newpart->material = source->material;
+                
+                scene->particles.push_back(newpart);
+            }
+        }
+        
     }
+    
 }
-
-
 
 ////////////////////////////////////////////////////////////
 // Updating Particles
 ////////////////////////////////////////////////////////////
-void deleteParticle(R3Scene *scene, R3Particle *particle) {
-    for (int i = 0; i < scene->NParticles(); i++) {
-        if (scene->particles[i] == particle) {
-            scene->particles[i] = scene->particles.back();
-            scene->particles.pop_back();
-            break;
-        }
-    }
-}
 
-R3Vector sphericalSink(R3Scene *scene, R3ParticleSink *sink, R3Particle *particle) {
-    assert (sink->shape->type == R3_SPHERE_SHAPE);
+R3Vector ForceVector(R3Scene *scene, double current_time, R3Particle *particle, R3Point partpos, R3Vector partvel) {
     
-    //fnd closest point
-    R3Vector towardsSphere = sink->shape->sphere->Center() - particle->position;
-    R3Ray *ray = new R3Ray(particle->position, towardsSphere);
-    R3Intersection *intersection = new R3Intersection();
-    intersection->t = INFINITY;
-    sphereIntersection(sink->shape->sphere, ray, intersection);
+    // set to 0
+    R3Vector f = R3Vector(0,0,0);
     
-    R3Vector towardsParticle = particle->position - sink->shape->sphere->Center();
-    towardsParticle.Normalize();
-    R3Point closestPoint = intersection->position;
+    // gravity
+    f += particle->mass*scene->gravity;
     
-    double d = R3Distance(closestPoint, particle->position);
+    // drag
+    f += -1*partvel*particle->drag;
     
-    //delete particles that have collided with sink
-    if (R3Distance(particle->position, sink->shape->sphere->Center()) < sink->shape->sphere->Radius())
-        deleteParticle(scene, particle);
-    
-    
-    //calculate force from sink
-    towardsParticle.Flip();
-    towardsParticle.Normalize();
-    R3Vector force = towardsParticle;
-    force *= sink->intensity/(sink->constant_attenuation + (sink->linear_attenuation * d) + (sink->quadratic_attenuation * d * d));
-    force /= particle->mass;
-    
-    delete ray;
-    delete intersection;
-    
-    return force;
-}
-
-R3Vector applyForces(R3Scene *scene, R3Particle *particle, double delta_time) {
-    
-    
-    //apply gravity
-    R3Vector force = scene->gravity * delta_time;
-    
-    //apply drag
-    force -= (particle->velocity * particle->drag * delta_time)/(particle->mass);
-    
-    
-    //apply force from sink
-    for (int i = 0; i < scene->NParticleSinks(); i++) {
+    // springs
+    for (unsigned int i = 0; i < scene->particle_springs.size(); i++) {
+        R3ParticleSpring *spring = scene->particle_springs[i];
         
-        R3ParticleSink *sink = scene->particle_sinks[i];
-        
-        switch(sink->shape->type) {
-            case R3_BOX_SHAPE:
-                break;
-            case R3_SPHERE_SHAPE:
-                force += sphericalSink(scene, sink, particle);
-                break;
-            case R3_CYLINDER_SHAPE:
-                break;
-            case R3_CONE_SHAPE:
-                break;
-            case R3_MESH_SHAPE:
-                break;
-            case R3_SEGMENT_SHAPE:
-                break;
-            default:
-                return R3zero_vector;
-                
-        }
-    }
-    
-    
-    for (int i = 0; i < scene->NParticles(); i++) {
-        if (particle == scene->particles[i])
-            continue;
-        R3Vector forceDirection = scene->particles[i]->position - particle->position;
-        forceDirection.Normalize();
-        double dist = R3Distance(scene->particles[i]->position, particle->position);
-        double massProduct = scene->particles[i]->mass * particle->mass;
-        double gravity = 6.67428e-11;
-        if (dist == 0)
-            continue;
-        forceDirection *= (delta_time/particle->mass) * (gravity * massProduct)/(dist * dist);
-        
-        force += forceDirection;
-        
-    }
-    
-    //apply spring forces
-    for (int i = 0; i < (int)particle->springs.size(); i++) {
-        R3ParticleSpring *spring = particle->springs[i];
-        R3Particle *p;
-        R3Particle *q;
-        
-        //assign particles p and q
-        if (spring->particles[0] == particle) {
-            p = spring->particles[0];
-            q = spring->particles[1];
-        }
-        else {
-            p = spring->particles[1];
-            q = spring->particles[0];
-        }
-        
-   //     assert(!p->tail);
-     //  assert(!q->tail);
-  
-
-        
-        double d = R3Distance(p->position, q->position);
-        if (d == 0)
-            continue;
-        R3Vector D = (q->position - p->position)/d;
-        R3Vector velocDiff = q->velocity - p->velocity;
-        
-//            force += (delta_time/particle->mass) * ((spring->ks * (d - spring->rest_length))* D);
-        force += (delta_time/particle->mass) * (((spring->ks * (d - spring->rest_length)) + (spring->kd * (velocDiff.Dot(D))))* D);
-    }
-    
-    
-    return force;
-}
-
-void UpdateParticle(R3Scene *scene, R3Particle *particle, double current_time, double delta_time, int integration_type) {
-    
-    double epsilon = .00000001;
-    
-    // Update position for every particle
-    if (integration_type == EULER_INTEGRATION) {
-        
-        
-        //check for intersection
-        R3Ray *ray = new R3Ray(particle->position, particle->velocity);
-        R3Intersection *intersection = new R3Intersection();
-        intersection->t = INFINITY;
-        ComputeIntersection(scene->root, ray, intersection);
-        R3Point newPosition = particle->position + delta_time * particle->velocity;
-        
-        
-        if (intersection->t < R3Distance(particle->position, newPosition)) {
-            double elasped_time = R3Distance(intersection->position, particle->position)/particle->velocity.Length();
-            assert (elasped_time < delta_time);
-            //calculate specular velocity
-            particle->position = intersection->position + (epsilon * intersection->normal);
-            particle->velocity.Flip();
-            particle->velocity.Rotate(intersection->normal, M_PI);
-            //correct for elasticity
-            R3Vector *temp = new R3Vector(particle->velocity);
-            R3Vector verticalComp = *temp;
-            R3Vector horizComp = *temp;
-            verticalComp.Project(intersection->normal);
-            horizComp -= verticalComp;
-            verticalComp *= particle->elasticity;
-            particle->velocity = horizComp + verticalComp;
-            //calculate movement based on remaining time
-            UpdateParticle(scene, particle, current_time + elasped_time, delta_time - elasped_time, integration_type);
+        if (spring->particles[0] == particle && spring->particles[1] == particle) {
             
         }
-        // if no collision
-        else {
-            particle->position = newPosition;
-            particle->velocity = particle->velocity + applyForces(scene, particle, delta_time);
+        else if (spring->particles[0] == particle) {
+            R3Point q = partpos;
+            R3Point p = spring->particles[1]->position;
+            R3Vector vq = partvel;
+            R3Vector vp = spring->particles[1]->velocity;
             
+            
+            
+            double d = R3Distance(p,q);
+            if (d > eps) {
+                R3Vector D = (q-p)/d;
+                double mult = spring->kd*(vq - vp).Dot(D);
+                f -= (spring->ks*(d - spring->rest_length) + mult)*D;
+            }
         }
-        delete ray;
-        delete intersection;
-    }
-}
-
-void UpdateParticles(R3Scene *scene, double current_time, double delta_time, int integration_type)
-{
-
-    // Update position for every particle
-    if (integration_type == EULER_INTEGRATION) {
-        for (int i = 0; i < scene->NParticles(); i++) {
-
-            //delete expired particles
-            if ((scene->particles[i]->lifetime != 0) && (scene->particles[i]->lifetime <= delta_time))
-                deleteParticle(scene, scene->particles[i]);
-            else if (scene->particles[i]->lifetime != 0)
-                scene->particles[i]->lifetime -= delta_time;
-            
-
-            if (!scene->particles[i]->fixed) {
-                UpdateParticle(scene, scene->particles[i], current_time, delta_time, integration_type);
-
-                
-                R3Particle *tail = new R3Particle();
-                tail->position = scene->particles[i]->position;
-                tail->fixed = true;
-                tail->tail = true;
-                tail->lifetime = .5;
-                tail->material = new R3Material();
-                tail->material->kd[0] = scene->particles[i]->material->kd[0];
-                tail->material->kd[1] = scene->particles[i]->material->kd[1];
-                tail->material->kd[2] = scene->particles[i]->material->kd[2];
-                tail->mass = 0;
-                scene->particles.push_back(tail);
+        
+        else if (spring->particles[1] == particle) {
+            R3Point q = partpos;
+            R3Point p = spring->particles[0]->position;
+            R3Vector vq = partvel;
+            R3Vector vp = spring->particles[0]->velocity;
+            double d = R3Distance(p,q);
+            if (d > eps) {
+                R3Vector D = (q-p)/d;
+                double mult = spring->kd*(vq - vp).Dot(D);
+                f -= (spring->ks*(d - spring->rest_length) + mult)*D;
             }
         }
     }
+    
+    // particle interactions
+    
+    for (int i = 0; i < scene->NParticles(); i++) {
+        R3Particle *otherparticle = scene->Particle(i);
+        if (otherparticle != particle) {
+            R3Vector to = otherparticle->position - partpos;
+            double d = to.Length();
+            to.Normalize();
+            if (d > eps) f += to*GRAV_CONSTANT*particle->mass*otherparticle->mass/d/d;
+        }
+    }
+    
+    // sink interaction
+    for (int i = 0; i < scene->NParticleSinks(); i++) {
+        R3ParticleSink *sink = scene->ParticleSink(i);
+        
+        //sphere sink
+        if (sink->shape->type == R3_SPHERE_SHAPE) {
+            // calculate closests point
+            R3Point center = sink->shape->sphere->Center();
+            double r = sink->shape->sphere->Radius();
+            R3Vector to = partpos - center;
+            to.Normalize();
+            to *= r;
+            R3Point closest = center + to;
+            
+            // calculate force
+            R3Vector toward = closest - partpos;
+            double d = toward.Length();
+            toward.Normalize();
+            if (d > eps) {
+                toward *= sink->intensity/(sink->constant_attenuation + sink->linear_attenuation*d + sink->quadratic_attenuation*d*d);
+                f += toward;
+            }
+        }
+    }
+    
+    return f;
 }
 
+
+
+void UpdateParticles(R3Scene *scene, double current_time, double delta_time, int integration_type)
+{
+    // array of ints to be deleted
+    std::vector<int> tobedeleted;
+    
+    // for each particle
+    for(int i = 0; i < scene->NParticles(); i++) {
+        R3Particle *particle = scene->Particle(i);
+        bool needstobedeleted = false;
+        
+        // check lifetime deletion
+        if (particle->lifetimeactive) {
+            if (particle->lifetime < 0) needstobedeleted = true;
+            particle->lifetime -= delta_time;
+        }
+        
+        R3Vector positionchange;
+        R3Vector velocitychange;
+        
+        // Euler
+        if (integration_type == EULER_INTEGRATION) {
+            R3Vector f = ForceVector(scene, current_time, particle, particle->position, particle->velocity);
+            positionchange = particle->velocity*delta_time;
+            velocitychange = delta_time*f/particle->mass;
+        }
+        
+        // midpoint
+        else if (integration_type == MIDPOINT_INTEGRATION) {
+            R3Vector f = ForceVector(scene, current_time, particle, particle->position, particle->velocity);
+            R3Point xmid = particle->position + delta_time*particle->velocity/2.0;
+            R3Vector vmid = particle->velocity + delta_time*f/particle->mass/2.0;
+            R3Vector midf = ForceVector(scene, current_time, particle, xmid, vmid);
+            positionchange = vmid*delta_time;
+            velocitychange = delta_time*midf/particle->mass;
+        }
+        
+        // rk4
+        else if (integration_type == RK4_INTEGRATION) {
+            R3Vector fk1 = ForceVector(scene, current_time, particle, particle->position, particle->velocity);
+            R3Vector v1 = particle->velocity;
+            R3Point x2 = particle->position + delta_time*particle->velocity/2.0;
+            R3Vector v2 = particle->velocity + delta_time*fk1/particle->mass/2.0;
+            R3Vector fk2 = ForceVector(scene, current_time, particle, x2, v2);
+            R3Vector v3 = particle->velocity + delta_time*fk2/particle->mass/2.0;
+            R3Vector fk3 = ForceVector(scene, current_time, particle, x2, v3);
+            R3Point x4 = particle->position + delta_time*particle->velocity;
+            R3Vector v4 = particle->velocity + delta_time*fk3/particle->mass;
+            R3Vector fk4 = ForceVector(scene, current_time,particle,x4, v4);
+            R3Vector finalf = (fk1+ 2*fk2 + 2*fk3 + fk4)/(6.0);
+            R3Vector finalv = (v1+ 2*v2 +2*v3 + v4)/(6.0);
+            
+            positionchange = finalv*delta_time;
+            velocitychange = delta_time*finalf/particle->mass;
+        }
+        
+        
+        // adaptive method
+        else if (integration_type == ADAPTIVE_STEP_SIZE_INTEGRATION) {
+            int numbersteps = 1;
+            
+            R3Vector poschange1;
+            R3Vector velchange1;
+            R3Vector poschange2;
+            R3Vector velchange2;
+            double error;
+            
+            // do first euler
+            for (int step = 0; step < numbersteps; step++) {
+                poschange2 = R3Vector(0,0,0);
+                velchange2 = R3Vector(0,0,0);
+                R3Vector f = ForceVector(scene, current_time, particle, particle->position + poschange2, particle->velocity + velchange2);
+                poschange2 += particle->velocity*delta_time/numbersteps;
+                velchange2 += delta_time*f/particle->mass/numbersteps;
+            }
+            // half below threshold
+            do {
+                poschange1 = poschange2;
+                velchange1 = velchange2;
+                numbersteps *= 2;
+                
+                // euler integrate with twice the number of steps
+                for (int step = 0; step < numbersteps; step++) {
+                    poschange2 = R3Vector(0,0,0);
+                    velchange2 = R3Vector(0,0,0);
+                    R3Vector f = ForceVector(scene, current_time, particle, particle->position + poschange2, particle->velocity + velchange2);
+                    poschange2 += particle->velocity*delta_time/numbersteps/2.0;
+                    velchange2 += delta_time*f/particle->mass/numbersteps/2.0;
+                }
+                
+                double d1 = (poschange1 - poschange2).Length();
+                double d2 = (velchange1 - velchange2).Length();
+                
+                // error for both velocity and position
+                error = d1 + d2;
+                
+                
+                
+            } while (error > ADAPTIVE_THRESHOLD);
+            
+            positionchange = poschange2;
+            velocitychange = velchange2;
+            
+            
+        }
+        
+        else {
+            fprintf(stderr, "invalid integration type\n");
+            return;
+        }
+        
+        
+        // new values
+        R3Point nextpos = particle->position + positionchange;
+        R3Vector nextvel = particle->velocity + velocitychange;
+        
+        // check if particle needs to deleted
+        for (int i = 0; i < scene->NParticleSinks(); i++) {
+            R3ParticleSink *sink = scene->ParticleSink(i);
+            
+            //sphere sink
+            if (sink->shape->type == R3_SPHERE_SHAPE) {
+                double r = sink->shape->sphere->Radius();
+                R3Point center = sink->shape->sphere->Center();
+                
+                // inside the sphere?
+                if (R3Distance(nextpos,center) < r) needstobedeleted = true;
+                
+                R3Vector toward1 = particle->position - center;
+                R3Vector toward2 = nextpos - center;
+                
+                // goes flying through the sphere?
+                if (toward1.Dot(toward2) < 0) needstobedeleted = true;
+                
+            }
+        }
+        
+        if (!needstobedeleted) {
+            // check for bouncing in scene
+            R3Vector to = nextpos - particle->position;
+            to.Normalize();
+            R3Ray *r = new R3Ray(particle->position, to);
+            R3Intersect intersect = ComputeIntersect(scene,scene->Root(),r);
+            
+            if (intersect.intersected && intersect.t < R3Distance(nextpos,particle->position)) {
+                
+                R3Plane plane = R3Plane(intersect.pos,intersect.norm);
+                
+                R3Point first = particle->position;
+                R3Point second = intersect.pos;
+                R3Point third = nextpos;
+                
+                // calculate new position
+                R3Vector posreflect = third-second;
+                R3Vector posreflectplanar = R3Vector(posreflect);
+                posreflectplanar.Project(plane);
+                R3Vector posreflectnorm = posreflect - posreflectplanar;
+                R3Vector purenorm = R3Vector(posreflectnorm);
+                posreflectnorm *= -1*(particle->elasticity);
+                purenorm.Normalize();
+                purenorm *= -1;
+                nextpos = second + posreflectplanar + posreflectnorm + eps*purenorm;
+                
+                // calculate new velocity
+                
+                R3Vector velreflect = R3Vector(nextvel);
+                R3Vector velreflectplanar = R3Vector(velreflect);
+                velreflectplanar.Project(plane);
+                R3Vector velreflectnorm = velreflect - velreflectplanar;
+                purenorm = R3Vector(velreflectnorm);
+                velreflectnorm *= -1*(particle->elasticity);
+                purenorm *= -1;
+                purenorm.Normalize();
+                nextvel = velreflectnorm + velreflectplanar + eps*purenorm;
+                
+            }
+            
+            
+            // update position
+            if (!particle->fixed) particle->position = nextpos;
+            if (!particle->fixed) particle->velocity = nextvel;
+            
+            
+        }
+        
+        // push on deletion vector
+        else {
+            int del = i;
+            tobedeleted.push_back(del);
+        }
+        
+    }
+    
+    // deleting particles
+    for (unsigned int i = 0; i < tobedeleted.size(); i++) {
+        //swap contents of partcile vector with last element
+        R3Particle *temp = scene->particles.back();
+        scene->particles[scene->particles.size() - 1] = scene->particles[tobedeleted[i]];
+        scene->particles[tobedeleted[i]] = temp;
+        
+        // delete last element
+        scene->particles.pop_back();
+    }
+}
 
 
 
@@ -810,35 +509,10 @@ void RenderParticles(R3Scene *scene, double current_time, double delta_time)
     glBegin(GL_POINTS);
     for (int i = 0; i < scene->NParticles(); i++) {
         R3Particle *particle = scene->Particle(i);
-        if (particle->tail)
-            continue;
         glColor3d(particle->material->kd[0], particle->material->kd[1], particle->material->kd[2]);
         const R3Point& position = particle->position;
         glVertex3d(position[0], position[1], position[2]);
-    }
-    glEnd();
-}
-
-
-void RenderTails(R3Scene *scene, double current_time, double delta_time)
-{
-    // Draw every particle
-    
-    // REPLACE CODE HERE
-    glDisable(GL_LIGHTING);
-    glPointSize(5);
-    glBegin(GL_POINTS);
-    for (int i = 0; i < (int)scene->NParticles(); i++) {
-        R3Particle *particle = scene->particles[i];
-        if (!particle->tail)
-            continue;
-        double color0 = particle->material->kd[0] * particle->lifetime;
-        double color1 = particle->material->kd[1] * particle->lifetime;
-        double color2 = particle->material->kd[2] * particle->lifetime;
-        glColor3d(color0, color1, color2);
-        const R3Point& position = particle->position;
-        glVertex3d(position[0], position[1], position[2]);
-    }
+    }   
     glEnd();
 }
 
