@@ -966,7 +966,7 @@ void GLUTRedraw(void)
 
 void GLUTMotion(int x, int y)
 {
-  /*
+  
     // Invert y coordinate
     y = GLUTwindow_height - y;
     
@@ -1019,7 +1019,7 @@ void GLUTMotion(int x, int y)
     // Remember mouse position
     GLUTmouse[0] = x;
     GLUTmouse[1] = y;
-  */
+  
 }
 
 
