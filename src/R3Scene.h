@@ -3,7 +3,6 @@
 #define R3Rgb R2Pixel
 
 
-
 // Constant definitions
 
 typedef enum {
@@ -133,12 +132,12 @@ struct R3ParticleSpring {
 struct R3Player {
     R3Shape *shape;
     R3Point pos;
-    double velocity; 
+    double velocity;
+    double defaultVelocity;
+    double boost; //boost has values between 0 and 100
     R3Vector nose;
     R3Vector wing;
 };
-
-
 
 // Scene graph definition
 

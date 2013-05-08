@@ -581,7 +581,7 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->players.size(); i++) {
         R3Player *player = scene->players[i];
-        player->shape->mesh->Draw(/*player->pos - R3Point(0,0,0), player->nose,player->wing*/);
+        player->shape->mesh->Draw();
     }
     
     // Clean up
@@ -643,7 +643,7 @@ void DrawPlayers(R3Scene *scene)
     
     // Remember previous time
     previous_time = current_time;
- 
+    
 }
 
 
@@ -891,9 +891,8 @@ void GLUTResize(int w, int h)
 
 void GLUTRedraw(void)
 {
-  keyboard();
-
-
+    keyboard();
+    
     // Initialize OpenGL drawing modes
     glEnable(GL_LIGHTING);
     glDisable(GL_BLEND);
@@ -1000,7 +999,7 @@ void GLUTRedraw(void)
 
 void GLUTMotion(int x, int y)
 {
-  
+    
     // Invert y coordinate
     y = GLUTwindow_height - y;
     
@@ -1054,7 +1053,7 @@ void GLUTMotion(int x, int y)
     // Remember mouse position
     GLUTmouse[0] = x;
     GLUTmouse[1] = y;
-  
+    
 }
 
 
@@ -1120,32 +1119,53 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-  double rotateAmount = 0.02;
-         
-  if (keyStates['W'] || keyStates['w']){
-      scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-      scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
-      
+    double rotateAmount = 0.02;
+    
+    if (keyStates['W'] || keyStates['w']){
+        scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+        scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
+        
     }
-
-  if (keyStates['S'] || keyStates['s']){
-    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-    scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
-  }
-            
-  if (keyStates['D'] || keyStates['d']){
-    scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-  scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
-  }            
-  if (keyStates['A'] || keyStates['a']){
-    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-    scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
-  }
+    
+    if (keyStates['S'] || keyStates['s']){
+        scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+        scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
+    }
+    
+    if (keyStates['D'] || keyStates['d']){
+        scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+        scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
+    }
+    if (keyStates['A'] || keyStates['a']){
+        scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+        scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
+    }
+    
+    
+    //boooooooooost
+    if (keyStates['h'] || keyStates['h']) {
+        //ran out of boost but still pressing h
+        if (scene->players[0]->boost <= 0) {
+            scene->players[0]->boost = 0;
+            scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+        }
+        //boosting
+        else {
+            scene->players[0]->boost -= .01;
+            scene->players[0]->velocity = min(50*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 20);
+        }
+    }
+    else {
+        scene->players[0]->boost = min(scene->players[0]->boost + 1, (double)100);
+        scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+    }
+     
+    
 }
 
-void keyUp (unsigned char key, int x, int y) {  
-  keyStates[key] = false; // Set the state of the current key to not pressed  
-}  
+void keyUp (unsigned char key, int x, int y) {
+    keyStates[key] = false; // Set the state of the current key to not pressed
+}
 
 void GLUTKeyboard(unsigned char key, int x, int y)
 {
@@ -1154,30 +1174,35 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     
     // Process keyboard button event
     switch (key) {
-        
+            
         case 'W':
-    case 'w':
-      keyStates['w'] = true;
+        case 'w':
+            keyStates['w'] = true;
             break;
-
+            
         case 'S':
         case 's':
-	  keyStates['s'] = true;
-
+            keyStates['s'] = true;
+            
             break;
             
         case 'D':
         case 'd':
-	  keyStates['d'] = true;
-
+            keyStates['d'] = true;
+            
             break;
             
         case 'A':
         case 'a':
-	  keyStates['a'] = true;
-
+            keyStates['a'] = true;
+            
+        case 'H':
+        case 'h':
+            keyStates['h'] = true;
+            
+            
             break;
-
+            
         case 'B':
         case 'b':
             show_bboxes = !show_bboxes;
@@ -1224,10 +1249,10 @@ void GLUTKeyboard(unsigned char key, int x, int y)
       break;
 
             /*
-        case 'S':
-        case 's':
-            show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
-            break; */
+             case 'S':
+             case 's':
+             show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
+             break; */
             
         case 'Q':
         case 'q':
@@ -1325,7 +1350,7 @@ void GLUTInit(int *argc, char **argv)
     glutMouseFunc(GLUTMouse);
     glutMotionFunc(GLUTMotion);
     
-    // Initialize graphics modes 
+    // Initialize graphics modes
     glEnable(GL_NORMALIZE);
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
@@ -1372,7 +1397,7 @@ ReadScene(const char *filename)
 // PROGRAM ARGUMENT PARSING
 ////////////////////////////////////////////////////////////
 
-int 
+int
 ParseArgs(int argc, char **argv)
 {
     // Innocent until proven guilty
@@ -1386,12 +1411,12 @@ ParseArgs(int argc, char **argv)
             else if (!strcmp(*argv, "-exit_immediately")) { quit = 1; }
             else if (!strcmp(*argv, "-output_image")) { argc--; argv++; output_image_name = *argv; }
             else if (!strcmp(*argv, "-video_prefix")) { argc--; argv++; video_prefix = *argv; }
-            else if (!strcmp(*argv, "-euler")) integration_type = EULER_INTEGRATION; 
-            else if (!strcmp(*argv, "-midpoint")) integration_type = MIDPOINT_INTEGRATION; 
-            else if (!strcmp(*argv, "-rk4")) integration_type = RK4_INTEGRATION; 
-            else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION; 
-            else if (!strcmp(*argv, "-recordandquit")) { 
-                argc--; argv++; num_frames_to_record = atoi(*argv); 
+            else if (!strcmp(*argv, "-euler")) integration_type = EULER_INTEGRATION;
+            else if (!strcmp(*argv, "-midpoint")) integration_type = MIDPOINT_INTEGRATION;
+            else if (!strcmp(*argv, "-rk4")) integration_type = RK4_INTEGRATION;
+            else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION;
+            else if (!strcmp(*argv, "-recordandquit")) {
+                argc--; argv++; num_frames_to_record = atoi(*argv);
                 GLUTwindow_width = 256;
                 GLUTwindow_height = 256;
                 save_video = 1;
@@ -1412,7 +1437,7 @@ ParseArgs(int argc, char **argv)
         return 0;
     }
     
-    // Return OK status 
+    // Return OK status
     return 1;
 }
 
@@ -1422,13 +1447,13 @@ ParseArgs(int argc, char **argv)
 // MAIN
 ////////////////////////////////////////////////////////////
 
-int 
+int
 main(int argc, char **argv)
 {
-  for (int i = 0; i < 256; i++) {
-    keyStates[i] = false;
-  }
-
+    for (int i = 0; i < 256; i++) {
+        keyStates[i] = false;
+    }
+    
     
     // Parse program arguments
     if (!ParseArgs(argc, argv)) exit(1);
