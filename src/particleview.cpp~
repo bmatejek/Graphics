@@ -1093,7 +1093,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     switch (key) {
 
     case 'q':
-      scene->players[0]->shape->mesh->Rotate(.12, R3Line(*scene->players[0]->pos, scene->players[0]->nose));
+      scene->players[0]->shape->mesh->Rotate(.12, *scene->players[0]->nose);
           
         case 'W':
         case 'w':
