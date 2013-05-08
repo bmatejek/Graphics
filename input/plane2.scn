@@ -2,9 +2,16 @@
 # with default camera, materials, and lighting.
 # It is useful for testing ray-mesh intersection.
 
+<<<<<<< HEAD
 # A mesh with default material (-1) 
 # pos, nose, wing, velocity
 player   -1    77.off 0 0 0 1 0 0 0 1 0 0.01
+=======
+#camera 0 0 -2 1 0 0 0 1 0 80 0.2 30.0
+
+# A mesh with default material (-1) read from ico.off
+player   -1    77.off 0 0 0 1 0 0 0 0 1
+>>>>>>> 094dd67db55e56a8b43239dc80c8beae3833ed86
 
 sphere 
- -1 0 0 0 100
+ -1 0 0 0 0.1
