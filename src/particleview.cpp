@@ -1086,6 +1086,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void GLUTKeyboard(unsigned char key, int x, int y)
 {
+	double rotateAmount = 0.12;
     // Invert y coordinate
     y = GLUTwindow_height - y;
     
@@ -1095,27 +1096,26 @@ void GLUTKeyboard(unsigned char key, int x, int y)
           
         case 'W':
         case 'w':
-	  //scene->players[0]->pos +=  R3Vector(0,0,1);
-	  //camera.eye += R3Vector(0,0,1);
-	  scene->players[0]->shape->mesh->Rotate(.12, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+			scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
             break;
 
         case 'S':
         case 's':
-	  scene->players[0]->pos +=  R3Vector(0,0,-1);
-	  camera.eye += R3Vector(0,0,-1);
+			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+			scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
             break;
             
         case 'D':
         case 'd':
-	  scene->players[0]->pos +=  R3Vector(0,1,0);
-	  camera.eye += R3Vector(0,1,0);
+			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
             break;
             
         case 'A':
         case 'a':
-	  scene->players[0]->pos +=  R3Vector(0,-1,0);
-	  camera.eye += R3Vector(0,-1,0);
+			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
             break;
 
         case 'B':
