@@ -52,6 +52,8 @@ static int show_particle_sources_and_sinks = 1;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
+static bool follow = false;
+static bool view2 = false;
 static int quit = 0;
 
 
@@ -285,6 +287,7 @@ void LoadCamera(R3Camera *camera)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glMultMatrixd(camera_matrix);
+
     glTranslated(-(camera->eye[0]), -(camera->eye[1]), -(camera->eye[2]));
 }
 
@@ -578,7 +581,7 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->players.size(); i++) {
         R3Player *player = scene->players[i];
-        player->shape->mesh->Draw(player->pos - R3Point(0,0,0), player->nose,player->wing);
+        player->shape->mesh->Draw(/*player->pos - R3Point(0,0,0), player->nose,player->wing*/);
     }
     
     // Clean up
@@ -618,6 +621,22 @@ void DrawPlayers(R3Scene *scene)
     
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+
+    /*    fprintf(stdout, "plane:");
+    scene->players[0]->pos.Print();
+    fprintf(stdout, "\ncam");
+    camera.eye.Print();
+    */
+    if (follow || view2) {
+      //      camera.eye = scene->players[0]->shape->mesh->Center();
+      camera.eye = scene->players[0]->pos + 1.5 *scene->players[0]->nose;
+      if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
+      camera.towards = scene->players[0]->nose;
+      camera.right = scene->players[0]->wing;
+      camera.up = camera.right;
+      camera.up.Cross(camera.towards);
+      if (view2) camera.eye += .7*camera.up;
+    }
     
     // Render players
     RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
@@ -843,6 +862,8 @@ void GLUTIdle(void)
     // Set current window
     if ( glutGetWindow() != GLUTwindow )
         glutSetWindow(GLUTwindow);
+
+
     
     // Redraw
     glutPostRedisplay();
@@ -871,6 +892,7 @@ void GLUTResize(int w, int h)
 void GLUTRedraw(void)
 {
   keyboard();
+
 
     // Initialize OpenGL drawing modes
     glEnable(GL_LIGHTING);
@@ -959,6 +981,10 @@ void GLUTRedraw(void)
             quit = 1;
         }
     }
+
+
+  
+
     
     // Quit here so that can save image before exit
     if (quit) {
@@ -986,7 +1012,7 @@ void GLUTMotion(int x, int y)
     if ((dx != 0) || (dy != 0)) {
         R3Point scene_center = scene->bbox.Centroid();
         if ((GLUTbutton[0] && (GLUTmodifiers & GLUT_ACTIVE_SHIFT)) || GLUTbutton[1]) {
-            // Scale world
+            // Scale world?
             double factor = (double) dx / (double) GLUTwindow_width;
             factor += (double) dy / (double) GLUTwindow_height;
             factor = exp(2.0 * factor);
@@ -1023,6 +1049,7 @@ void GLUTMotion(int x, int y)
             glutPostRedisplay();
         }
     }
+
     
     // Remember mouse position
     GLUTmouse[0] = x;
@@ -1185,6 +1212,17 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'r':
             show_particle_springs = !show_particle_springs;
             break;
+
+    case 'X':
+    case 'x':
+      follow = !follow;
+      break;
+
+    case 'Z':
+    case 'z':
+      view2 = !view2;
+      break;
+
             /*
         case 'S':
         case 's':
