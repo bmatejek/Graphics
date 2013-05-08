@@ -629,7 +629,7 @@ void DrawPlayers(R3Scene *scene)
     */
     if (follow || view2) {
       //      camera.eye = scene->players[0]->shape->mesh->Center();
-      camera.eye = scene->players[0]->pos + 1.5 *scene->players[0]->nose;
+      camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
       if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
       camera.towards = scene->players[0]->nose;
       camera.right = scene->players[0]->wing;
