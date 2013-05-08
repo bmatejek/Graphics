@@ -22,6 +22,8 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 // GLOBAL VARIABLES
 ////////////////////////////////////////////////////////////
 
+void keyboard();
+
 // Program arguments
 
 static char *input_scene_name = NULL;
@@ -29,6 +31,8 @@ static char *output_image_name = NULL;
 static const char *video_prefix = "./video-frames/";
 static int integration_type = EULER_INTEGRATION;
 
+// track keypresses
+bool* keyStates = new bool[256];
 
 
 // Display variables
@@ -864,6 +868,8 @@ void GLUTResize(int w, int h)
 
 void GLUTRedraw(void)
 {
+  keyboard();
+
     // Initialize OpenGL drawing modes
     glEnable(GL_LIGHTING);
     glDisable(GL_BLEND);
@@ -1083,39 +1089,64 @@ void GLUTSpecial(int key, int x, int y)
 }
 
 
+void keyboard()
+{
+  double rotateAmount = 0.12;
+         
+  if (keyStates['W'] || keyStates['w']){
+      scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+      scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
+      
+    }
+
+  if (keyStates['S'] || keyStates['s']){
+    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+    scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
+  }
+            
+  if (keyStates['D'] || keyStates['d']){
+    scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+  scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
+  }            
+  if (keyStates['A'] || keyStates['a']){
+    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+    scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
+  }
+}
+
+void keyUp (unsigned char key, int x, int y) {  
+  keyStates[key] = false; // Set the state of the current key to not pressed  
+}  
 
 void GLUTKeyboard(unsigned char key, int x, int y)
 {
-	double rotateAmount = 0.12;
     // Invert y coordinate
     y = GLUTwindow_height - y;
     
     // Process keyboard button event
     switch (key) {
-
-          
+        
         case 'W':
-        case 'w':
-			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-			scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
+    case 'w':
+      keyStates['w'] = true;
             break;
 
         case 'S':
         case 's':
-			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-			scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
+	  keyStates['s'] = true;
+
             break;
             
         case 'D':
         case 'd':
-			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-			scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
+	  keyStates['d'] = true;
+
             break;
             
         case 'A':
         case 'a':
-			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-			scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
+	  keyStates['a'] = true;
+
             break;
 
         case 'B':
@@ -1249,6 +1280,7 @@ void GLUTInit(int *argc, char **argv)
     glutReshapeFunc(GLUTResize);
     glutDisplayFunc(GLUTRedraw);
     glutKeyboardFunc(GLUTKeyboard);
+    glutKeyboardUpFunc(keyUp);
     glutSpecialFunc(GLUTSpecial);
     glutMouseFunc(GLUTMouse);
     glutMotionFunc(GLUTMotion);
@@ -1353,6 +1385,11 @@ ParseArgs(int argc, char **argv)
 int 
 main(int argc, char **argv)
 {
+  for (int i = 0; i < 256; i++) {
+    keyStates[i] = false;
+  }
+
+    
     // Parse program arguments
     if (!ParseArgs(argc, argv)) exit(1);
     
