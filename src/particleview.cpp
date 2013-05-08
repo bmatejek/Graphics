@@ -1092,13 +1092,12 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     // Process keyboard button event
     switch (key) {
 
-    case 'q':
-      scene->players[0]->shape->mesh->Rotate(.12, R3Line(*scene->players[0]->pos, scene->players[0]->nose));
           
         case 'W':
         case 'w':
-	  scene->players[0]->pos +=  R3Vector(0,0,1);
-	  camera.eye += R3Vector(0,0,1);
+	  //scene->players[0]->pos +=  R3Vector(0,0,1);
+	  //camera.eye += R3Vector(0,0,1);
+	  scene->players[0]->shape->mesh->Rotate(.12, R3Line(scene->players[0]->pos, scene->players[0]->wing));
             break;
 
         case 'S':
