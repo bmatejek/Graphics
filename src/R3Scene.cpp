@@ -361,8 +361,9 @@ Read(const char *filename, R3Node *node)
             // Read position and velocity
             R3Point p;
             R3Vector n,w;
-            if (fscanf(fp, "%lf%lf%lf%lf%lf%lf%lf%lf%lf",
-                       &p[0],&p[1],&p[2],&n[0],&n[1],&n[2],&w[0],&w[1],&w[2]) != 9) {
+            double vel; 
+            if (fscanf(fp, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
+                       &p[0],&p[1],&p[2],&n[0],&n[1],&n[2],&w[0],&w[1],&w[2], &vel) != 10) {
                 fprintf(stderr, "Unable to read particle at command %d in file %s\n", command_number, filename);
                 return 0;
             }
@@ -372,9 +373,10 @@ Read(const char *filename, R3Node *node)
             player->pos = p;
             player->nose = n;
             player->wing = w;
+            player->velocity = vel;
             
             player->nose.Normalize();
-            player->nose.Normalize();
+            player->wing.Normalize();
             
             // Add particle to scene
             players.push_back(player);

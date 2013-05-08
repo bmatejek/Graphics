@@ -981,6 +981,12 @@
             location = "group:particleview.cpp">
          </FileRef>
          <FileRef
+            location = "group:player.h">
+         </FileRef>
+         <FileRef
+            location = "group:player.cpp">
+         </FileRef>
+         <FileRef
             location = "group:particleview.o">
          </FileRef>
          <FileRef

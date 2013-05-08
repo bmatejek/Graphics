@@ -10,6 +10,7 @@
 #include "R3Scene.h"
 #include "particle.h"
 #include "cos426_opengl.h"
+#include "player.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -571,7 +572,7 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     // Draw all particle sources
     glEnable(GL_LIGHTING);
     LoadMaterial(&source_material);
-    for (int i = 0; i < scene->players.size(); i++) {
+    for (int i = 0; i < (int)scene->players.size(); i++) {
         R3Player *player = scene->players[i];
         player->shape->mesh->Draw(player->pos - R3Point(0,0,0), player->nose,player->wing);
     }
@@ -608,7 +609,8 @@ void DrawPlayers(R3Scene *scene)
     }
     
     // Update players
-    //UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    
     
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
