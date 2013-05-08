@@ -1096,23 +1096,23 @@ void keyboard()
   double rotateAmount = 0.12;
          
   if (keyStates['W'] || keyStates['w']){
-      scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-      scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
+      scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+      scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
       
     }
 
   if (keyStates['S'] || keyStates['s']){
-    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-    scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
+    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+    scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
   }
             
   if (keyStates['D'] || keyStates['d']){
-    scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-  scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
+    scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+  scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
   }            
   if (keyStates['A'] || keyStates['a']){
-    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-    scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
+    scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+    scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
   }
 }
 
