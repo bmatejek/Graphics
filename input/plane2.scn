@@ -5,7 +5,7 @@
 #camera 0 0 -2 1 0 0 0 1 0 80 0.2 30.0
 
 # A mesh with default material (-1) read from ico.off
-player   -1    77.off 0 0 0 1 0 0 0 0 1 0.01
+player   -1    77.off 0 0 0 0 0 -1 1 0 0 0.01
 
 sphere 
  -1 0 0 0 0.1
