@@ -1093,7 +1093,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-  double rotateAmount = 0.12;
+  double rotateAmount = 0.02;
          
   if (keyStates['W'] || keyStates['w']){
       scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));

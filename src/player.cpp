@@ -29,4 +29,9 @@ void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int i
     
     scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
     
+    double dx = delta_time* scene->players[0]->velocity * scene->players[0]->nose.X();
+    double dy = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Y();
+    double dz = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Z();
+    scene->players[0]->shape->mesh->Translate(dx, dy, dz);
+    scene->players[0]->shape->mesh->Center() += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
 }
