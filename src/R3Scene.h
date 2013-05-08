@@ -133,6 +133,7 @@ struct R3ParticleSpring {
 struct R3Player {
     R3Shape *shape;
     R3Point pos;
+    double velocity; 
     R3Vector nose;
     R3Vector wing;
 };
