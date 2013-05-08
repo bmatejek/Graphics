@@ -11,6 +11,7 @@
 #include "particle.h"
 #include "cos426_opengl.h"
 #include "player.h"
+#include "bullet.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -45,6 +46,7 @@ static int show_edges = 0;
 static int show_bboxes = 0;
 static int show_lights = 0;
 static int show_camera = 0;
+static int show_bullets = 1;
 static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
@@ -52,6 +54,8 @@ static int show_particle_sources_and_sinks = 1;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
+static bool follow = false;
+static bool view2 = false;
 static int quit = 0;
 
 
@@ -285,6 +289,7 @@ void LoadCamera(R3Camera *camera)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glMultMatrixd(camera_matrix);
+
     glTranslated(-(camera->eye[0]), -(camera->eye[1]), -(camera->eye[2]));
 }
 
@@ -578,7 +583,7 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->players.size(); i++) {
         R3Player *player = scene->players[i];
-//        player->shape->mesh->Draw(player->pos - R3Point(0,0,0), player->nose,player->wing);
+
         player->shape->mesh->Draw();
     }
     
@@ -605,23 +610,34 @@ void DrawPlayers(R3Scene *scene)
     double delta_time = current_time - previous_time;
     
     
-    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
-        delta_time = VIDEO_FRAME_DELAY;
-        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
-        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
-    } else { // real time simulation
-        delta_time = current_time - previous_time;
-    }
     
     // Update players
     UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
     
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+
+    /*    fprintf(stdout, "plane:");
+    scene->players[0]->pos.Print();
+    fprintf(stdout, "\ncam");
+    camera.eye.Print();
+    */
+    if (follow || view2) {
+      //      camera.eye = scene->players[0]->shape->mesh->Center();
+      camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
+      if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
+      camera.towards = scene->players[0]->nose;
+      camera.right = scene->players[0]->wing;
+      camera.up = camera.right;
+      camera.up.Cross(camera.towards);
+      if (view2) camera.eye += .7*camera.up;
+    }
     
     // Render players
     RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
+    RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
     
     // Remember previous time
     previous_time = current_time;
@@ -649,14 +665,6 @@ void DrawParticles(R3Scene *scene)
     double delta_time = current_time - previous_time;
     
     
-    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
-        delta_time = VIDEO_FRAME_DELAY;
-        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
-        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
-    } else { // real time simulation
-        delta_time = current_time - previous_time;
-    }
-    
     // Update particles
     UpdateParticles(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
@@ -665,6 +673,38 @@ void DrawParticles(R3Scene *scene)
     
     // Render particles
     if (show_particles) RenderParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Remember previous time
+    previous_time = current_time;
+}
+
+void DrawBullets(R3Scene *scene)
+{
+    // Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+    
+    
+    static double time_lost_taking_videos = 0; // for switching back and forth
+    // between recording and not
+    // recording smoothly
+    
+    // program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+    
+    
+    
+    // Update particles
+    UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    
+    // Generate new particles
+    //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Render particles
+    if (show_bullets) RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
     
     // Remember previous time
     previous_time = current_time;
@@ -844,6 +884,8 @@ void GLUTIdle(void)
     // Set current window
     if ( glutGetWindow() != GLUTwindow )
         glutSetWindow(GLUTwindow);
+
+
     
     // Redraw
     glutPostRedisplay();
@@ -960,6 +1002,10 @@ void GLUTRedraw(void)
             quit = 1;
         }
     }
+
+
+  
+
     
     // Quit here so that can save image before exit
     if (quit) {
@@ -987,7 +1033,7 @@ void GLUTMotion(int x, int y)
     if ((dx != 0) || (dy != 0)) {
         R3Point scene_center = scene->bbox.Centroid();
         if ((GLUTbutton[0] && (GLUTmodifiers & GLUT_ACTIVE_SHIFT)) || GLUTbutton[1]) {
-            // Scale world
+            // Scale world?
             double factor = (double) dx / (double) GLUTwindow_width;
             factor += (double) dy / (double) GLUTwindow_height;
             factor = exp(2.0 * factor);
@@ -1024,6 +1070,7 @@ void GLUTMotion(int x, int y)
             glutPostRedisplay();
         }
     }
+
     
     // Remember mouse position
     GLUTmouse[0] = x;
@@ -1101,6 +1148,36 @@ void keyboard()
         scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
         
     }
+
+    
+    //shoot
+    if (keyStates['G'] || keyStates['g']){
+        //fprintf(stderr,"%d\n",scene->bullets.size());
+        // generate a bullet from the plane
+        R3Bullet *bullet = new R3Bullet();
+        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
+        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
+        bullet->lifetimeactive = true;
+        bullet->lifetime = 1.0;
+        static R3Material sink_material;
+        if (sink_material.id != 33) {
+            sink_material.ka.Reset(0.2,0.2,0.2,1);
+            sink_material.kd.Reset(1,0,0,1);
+            sink_material.ks.Reset(1,0,0,1);
+            sink_material.kt.Reset(0,0,0,1);
+            sink_material.emission.Reset(0,0,0,1);
+            sink_material.shininess = 1;
+            sink_material.indexofrefraction = 1;
+            sink_material.texture = NULL;
+            sink_material.texture_index = -1;
+            sink_material.id = 33;
+        }
+        bullet->material = &sink_material;
+        
+        scene->bullets.push_back(bullet);
+        
+    }
+
     
     if (keyStates['S'] || keyStates['s']){
         scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
@@ -1134,7 +1211,7 @@ void keyboard()
         scene->players[0]->boost = min(scene->players[0]->boost + 1, (double)100);
         scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
     }
-     
+
     
 }
 
@@ -1170,12 +1247,17 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'A':
         case 'a':
             keyStates['a'] = true;
+            break;
+            
+        case 'G':
+        case 'g':
+            keyStates['g'] = true;
+            break;
+
             
         case 'H':
         case 'h':
             keyStates['h'] = true;
-            
-            
             break;
             
         case 'B':
@@ -1212,6 +1294,17 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'r':
             show_particle_springs = !show_particle_springs;
             break;
+
+    case 'X':
+    case 'x':
+      follow = !follow;
+      break;
+
+    case 'Z':
+    case 'z':
+      view2 = !view2;
+      break;
+
             /*
              case 'S':
              case 's':
