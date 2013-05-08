@@ -374,6 +374,8 @@ Read(const char *filename, R3Node *node)
             player->nose = n;
             player->wing = w;
             player->velocity = vel;
+            player->defaultVelocity = vel;
+            player->boost = -5;
             
             player->nose.Normalize();
             player->wing.Normalize();
