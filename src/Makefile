@@ -6,7 +6,7 @@
 # List of source files
 #
 
-SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp
+SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp
 OBJS=$(SRCS:.cpp=.o)
 
 #

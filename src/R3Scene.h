@@ -138,6 +138,14 @@ struct R3Player {
     R3Vector wing;
 };
 
+struct R3Bullet {
+    R3Point position;
+    R3Vector velocity;
+    bool lifetimeactive;
+    double lifetime;
+    R3Material *material;
+};
+
 
 
 // Scene graph definition
@@ -173,6 +181,7 @@ public:
     vector<R3ParticleSpring *> particle_springs;
     vector<R3Light *> lights;
     vector<R3Player *> players;
+    vector<R3Bullet *> bullets;
     R3Vector gravity;
     R3Camera camera;
     R3Box bbox;
