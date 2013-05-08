@@ -578,9 +578,10 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->players.size(); i++) {
         R3Player *player = scene->players[i];
-//        player->shape->mesh->Draw(player->pos - R3Point(0,0,0), player->nose,player->wing);
         player->shape->mesh->Draw();
     }
+    
+    
     
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
@@ -772,6 +773,51 @@ void DrawParticleSprings(R3Scene *scene)
     if (lighting) glEnable(GL_LIGHTING);
 }
 
+void DrawBoostBar(R3Scene *scene) {
+    
+    /*
+    //these points are used for creating rays through each pixel
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height/10.;
+    double x = GLUTwindow_width/10.;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    
+    glPointSize(7);
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_POINTS);
+    R3Point p4 = p + 10 * vector;
+    glVertex3f(p4.X(), p4.Y(), p4.Z());
+    glEnd();
+    
+
+    double x1 = GLUTwindow_width/60.;
+    //create ray through each pixel
+    acrossVector = (p3 - p1) * ((x1 + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    glPointSize(7);
+    glColor3f(1.0, 1.0, 1.0);
+    glBegin(GL_POINTS);
+    p4 = p + 10 * vector;
+    glVertex3f(p4.X(), p4.Y(), p4.Z());
+    glEnd();
+
+  */
+
+
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -868,7 +914,6 @@ void GLUTResize(int w, int h)
 }
 
 
-
 void GLUTRedraw(void)
 {
     keyboard();
@@ -908,6 +953,9 @@ void GLUTRedraw(void)
     
     // Draw particle springs
     DrawParticleSprings(scene);
+    
+    //draw boost bar
+    DrawBoostBar(scene); 
     
     // Draw scene surfaces
     if (show_faces) {
