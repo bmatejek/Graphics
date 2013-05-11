@@ -29,7 +29,7 @@ void UpdateBullets(R3Scene *scene, double current_time, double delta_time, int i
     
     std::vector<int> tobedeleted;
     int i;
-    for (i = 0; i < scene->bullets.size(); i++) {
+    for (i = 0; i < (int)scene->bullets.size(); i++) {
         R3Bullet *bullet = scene->bullets[i];
     
         bullet->position += delta_time * bullet->velocity;
@@ -68,7 +68,7 @@ void RenderBullets(R3Scene *scene, double current_time, double delta_time)
     glBegin(GL_POINTS);
 
     
-    for (int i = 0; i < scene->bullets.size(); i += 10) {
+    for (int i = 0; i < (int)scene->bullets.size(); i += 10) {
         R3Bullet *bullet = scene->bullets[i];
         glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
         const R3Point& position = bullet->position;

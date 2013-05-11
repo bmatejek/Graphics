@@ -207,6 +207,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 }
 
 void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int integration_type) {
+    
     if (scene->players.size() != 0) {
 		scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
 		
@@ -226,6 +227,5 @@ void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int i
 				Explode(scene, scene->players[0]);
 			}
 		}
-		
 	}
 }
