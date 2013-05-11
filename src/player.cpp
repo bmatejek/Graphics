@@ -12,6 +12,7 @@
 #include "particle.h"
 #include "raytrace.h"
 #include "player.h"
+#include "bullet.h"
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -231,5 +232,10 @@ void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int i
 				Explode(scene, scene->players[0]);
 			}
 		}
+        
+        if (scene->players[0]->missiletime > -1) {
+            scene->players[0]->missiletime -= delta_time;
+        }
+        //fprintf(stdout,"%f %f %f %f %d\n",scene->players[0]->nose.X(),scene->players[0]->nose.Y(),scene->players[0]->nose.Z(),scene->players[0]->missiletime, scene->bullets.size());
 	}
 }

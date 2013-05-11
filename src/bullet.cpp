@@ -23,18 +23,22 @@ using namespace std;
 #define GRAV_CONSTANT 6.67428e-11
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
+#define MISSILE_SCALE_FACTOR 0.1
 
 void ShootBullet(R3Scene *scene) {
     //fprintf(stderr,"%d\n",scene->bullets.size());
     // generate a bullet from the plane
-    R3Bullet *bullet = new R3Bullet();
-    bullet->type = scene->players[0]->currentbullet;
     
-    if (bullet->type == R3_REGULAR_BULLET) {
+    
+    R3Bullet *bullet;
+    
+    if (scene->players[0]->currentbullet == R3_REGULAR_BULLET) {
+        bullet = new R3Bullet();
+        bullet->type = scene->players[0]->currentbullet;
         bullet->position = scene->players[0]->pos + scene->players[0]->nose;
         bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
         bullet->lifetimeactive = true;
-        bullet->lifetime = 1.0;
+        bullet->lifetime = 5.0;
         static R3Material sink_material;
         if (sink_material.id != 33) {
             sink_material.ka.Reset(0.2,0.2,0.2,1);
@@ -51,7 +55,14 @@ void ShootBullet(R3Scene *scene) {
         bullet->material = &sink_material;
     }
     
-    if (bullet->type == R3_MISSILE_BULLET) {
+    if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
+        if (scene->players[0]->missiletime > 0) return;
+        scene->players[0]->missiletime = 5.0;
+        
+        
+        
+        bullet = new R3Bullet();
+        bullet->type = scene->players[0]->currentbullet;
         //create mesh
         R3Mesh *mesh = new R3Mesh();
         if (!mesh) {
@@ -78,7 +89,7 @@ void ShootBullet(R3Scene *scene) {
         bullet->position = scene->players[0]->pos + scene->players[0]->nose;
         bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
         bullet->lifetimeactive = true;
-        bullet->lifetime = 1.0;
+        bullet->lifetime = 10.0;
         static R3Material sink_material;
         if (sink_material.id != 33) {
             sink_material.ka.Reset(0.2,0.2,0.2,1);
@@ -93,6 +104,26 @@ void ShootBullet(R3Scene *scene) {
             sink_material.id = 33;
         }
         bullet->material = &sink_material;
+        bullet->shape->mesh->Scale(.3*MISSILE_SCALE_FACTOR,0.5*MISSILE_SCALE_FACTOR,MISSILE_SCALE_FACTOR);
+        bullet->shape->mesh->Rotate(-PI/2,R3Line(R3Point(0,0,0), R3Point(0,0,1)));
+        bullet->shape->mesh->Rotate(-PI/2,R3Line(R3Point(0,0,0), R3Point(1,0,0)));
+        
+        R3Vector begin = R3Vector(0,0,-1);
+        R3Vector cross = scene->players[0]->nose;
+        cross.Cross(begin);
+        if (cross.Length() > 0) {
+        R3Line line = R3Line(R3Point(0,0,0), cross);
+        bullet->shape->mesh->Rotate(-acos(scene->players[0]->nose.Dot(begin)),line);
+        }
+        
+        bullet->shape->mesh->Center() = bullet->position;
+        double dx = bullet->position.X();
+        double dy = bullet->position.Y();
+        double dz = bullet->position.Z();
+        bullet->shape->mesh->Translate(dx,dy,dz);
+        
+        
+        
     }
     
     scene->bullets.push_back(bullet);
@@ -106,6 +137,13 @@ void UpdateBullets(R3Scene *scene, double current_time, double delta_time, int i
         R3Bullet *bullet = scene->bullets[i];
     
         bullet->position += delta_time * bullet->velocity;
+        if (bullet->type == R3_MISSILE_BULLET) {
+            R3Vector change = delta_time * bullet->velocity;
+            double dx = change.X();
+            double dy = change.Y();
+            double dz = change.Z();
+            bullet->shape->mesh->Translate(dx,dy,dz);
+        }
         
         if (bullet->lifetimeactive) {
             

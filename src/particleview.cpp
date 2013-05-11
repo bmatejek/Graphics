@@ -605,50 +605,29 @@ void RenderBullets(R3Scene *scene, double current_time, double delta_time)
     glEnable(GL_LIGHTING);
     
     // Define source material
-    /*
+    
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
         source_material.kd.Reset(0,1,0,1);
         source_material.ks.Reset(0,1,0,1);
         source_material.kt.Reset(0,0,0,1);
-        source_material.emission.Reset(0,0,0,1);
+        source_material.emission.Reset(1,1,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
         source_material.texture = NULL;
         source_material.texture_index = -1;
         source_material.id = 33;
     }
-    */
+    
     // Draw all particle sources
     glEnable(GL_LIGHTING);
     
-    static R3Material sink_material;
-    if (sink_material.id != 33) {
-        sink_material.ka.Reset(0.2,0.2,0.2,1);
-        sink_material.kd.Reset(1,0,0,1);
-        sink_material.ks.Reset(1,0,0,1);
-        sink_material.kt.Reset(0,0,0,1);
-        sink_material.emission.Reset(0,0,0,1);
-        sink_material.shininess = 1;
-        sink_material.indexofrefraction = 1;
-        sink_material.texture = NULL;
-        sink_material.texture_index = -1;
-        sink_material.id = 33;
-    }
-    
-    LoadMaterial(&sink_material);
-    
-    glPointSize(5);
-    glBegin(GL_POINTS);
+    LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->bullets.size(); i++) {
         R3Bullet *bullet = scene->bullets[i];
         if (bullet->type == R3_MISSILE_BULLET) {
-            glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
-            const R3Point& position = bullet->position;
-            glVertex3d(position[0], position[1], position[2]);
-            //bullet->shape->mesh->Draw();
-            //fprintf(stderr, "therearemissiles\n");
+            bullet->shape->mesh->Draw();
         }
     }
     
@@ -657,7 +636,7 @@ void RenderBullets(R3Scene *scene, double current_time, double delta_time)
     
     
     
-    // REPLACE CODE HERE
+    // REGULAR BULLETS
     glDisable(GL_LIGHTING);
     glPointSize(5);
     glBegin(GL_POINTS);

@@ -2,7 +2,6 @@
 
 #define R3Rgb R2Pixel
 
-
 // Constant definitions
 
 typedef enum {
@@ -163,6 +162,7 @@ struct R3Player {
     double health; //health has values between 0 and 100
     double bulletheat; // heat has values between 0 and 100
     R3BulletType currentbullet; // bullets or missiles?
+    double missiletime; // time remaining until another missile is availble
     bool accel; 
     R3Vector nose;
     R3Vector wing;

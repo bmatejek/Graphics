@@ -380,6 +380,7 @@ Read(const char *filename, R3Node *node)
             player->health = 100;
             player->bulletheat = 0.0;
             player->currentbullet = R3_REGULAR_BULLET;
+            player->missiletime = -1;
             
             player->nose.Normalize();
             player->wing.Normalize();
