@@ -890,9 +890,7 @@ void DrawEnemies(R3Scene *scene)
 		//	enemy->shape->sphere->Translate(direction * enemy->speed);
 		//}
 		DrawShape(enemy->shape);
-
     }
-
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
 }
@@ -981,10 +979,38 @@ void GLUTDrawText(const R3Point& p, const char *s)
 {
     // Draw text string s and position p
 
-    glColor3f(0.0, 1.0, 0.0);
+//    glColor3f(0.0, 1.0, 0.0);
+    
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    
+    static R3Material source_material;
+    // Define source material
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,1,0,1);
+        source_material.ks.Reset(0,1,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,1,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+    
+    
     glRasterPos3d(p[0], p[1], p[2]);
     while (*s)
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *(s++));
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
 
 }
 
@@ -1121,15 +1147,24 @@ void DisplayVelocity(R3Scene *scene) {
 }
 
 void DrawBoostAndHealthBar(R3Scene *scene) {
-    
+
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     
     //these points are used for creating rays through each pixel
     R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
-    double y = .045* GLUTwindow_height;
-    double x = .05 *GLUTwindow_width;
+    double depth = .000000001;
+    double height = .02;
+    double bottom = .025;
+    double left = .05;
+    double right = .95;
+    
+    double y = bottom* GLUTwindow_height;
+    double x = left *GLUTwindow_width;
     
     //corner one
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
@@ -1140,45 +1175,80 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector.Normalize();
     
     
-    R3Point bl = p + 10 * vector;
+    R3Point bl = p + depth * vector;
     
     //corner 2
-    x = max(0.05, scene->players[0]->boost/100. *.95) * GLUTwindow_width;
+    x = max(left, scene->players[0]->boost/100. *right) * GLUTwindow_width;
     acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
     
     p = p1 + upVector + acrossVector;
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point br = p + 10 * vector;
+    R3Point br = p + depth * vector;
     
     //corner 3
-    y = .08 * GLUTwindow_width;
+    y = (height + bottom) * GLUTwindow_width;
     upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     
     p = p1 + upVector + acrossVector;
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point tr = p + 10 * vector;
+    R3Point tr = p + depth * vector;
     
     
     //corner 4
-    x = .05 * GLUTwindow_width;
+    x = left * GLUTwindow_width;
     acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
     
     p = p1 + upVector + acrossVector;
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point tl = p + 10 * vector;
+    R3Point tl = p + depth * vector;
     
     
+
+    if (scene->players[0]->accel) {
+        static R3Material source_material;
+        // Define source material
+        if (source_material.id != 33) {
+            source_material.ka.Reset(0.2,0.2,0.2,1);
+            source_material.kd.Reset(0,1,0,1);
+            source_material.ks.Reset(0,1,0,1);
+            source_material.kt.Reset(0,0,0,1);
+            source_material.emission.Reset(0,1,0,1);
+            source_material.shininess = 1;
+            source_material.indexofrefraction = 1;
+            source_material.texture = NULL;
+            source_material.texture_index = -1;
+            source_material.id = 33;
+        }
+        glEnable(GL_LIGHTING);
+        LoadMaterial(&source_material);
+    }
+    else {
+        static R3Material source_material2;
+        // Define source material
+        if (source_material2.id != 33) {
+            source_material2.ka.Reset(0.2,0.2,0.2,1);
+            source_material2.kd.Reset(1,0,0,1);
+            source_material2.ks.Reset(0,1,0,1);
+            source_material2.kt.Reset(0,0,0,1);
+            source_material2.emission.Reset(1,0,0,1);
+            source_material2.shininess = 1;
+            source_material2.indexofrefraction = 1;
+            source_material2.texture = NULL;
+            source_material2.texture_index = -1;
+            source_material2.id = 33;
+        }
+        glEnable(GL_LIGHTING);
+        LoadMaterial(&source_material2);
+    }
     
-    if (scene->players[0]->accel)
-        glColor3f(0.0, 1.0, 0.0);
-    else
-        glColor3f(1.0, 0.0, 0.0);
+    // Draw all particle sources
+
     
     glBegin(GL_QUADS);                      // Draw A Quad
     glVertex3f(tl.X(), tl.Y(), tl.Z());           // Top Left
@@ -1187,15 +1257,17 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     glVertex3f(bl.X(), bl.Y(), bl.Z());           // Bottom Left
     glEnd();
     
-    
+    /*
     char buffer [50];
     sprintf (buffer, "Boost = %4.0f %%", scene->players[0]->boost);
-    bl.SetY(bl.Y() + .03);
+//    bl.SetY(bl.Y() + .03);
     GLUTDrawText(bl, buffer);
+    */
     
+    bottom = bottom + 1.4 * height;
     //draw health bar
-    y = .1* GLUTwindow_height;
-    x = .05 *GLUTwindow_width;
+    y = bottom* GLUTwindow_height;
+    x = left *GLUTwindow_width;
     
     //corner one
     upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
@@ -1206,42 +1278,59 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector.Normalize();
     
     
-    R3Point hbl = p + 10 * vector;
+    R3Point hbl = p + depth * vector;
     
     //corner 2
-    x = max(0.05, scene->players[0]->health/100. *.95) * GLUTwindow_width;
+    x = max(left, scene->players[0]->health/100. *right) * GLUTwindow_width;
     acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
     
     p = p1 + upVector + acrossVector;
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point hbr = p + 10 * vector;
+    R3Point hbr = p + depth * vector;
     
     //corner 3
-    y = .13 * GLUTwindow_width;
+    y = (bottom + height) * GLUTwindow_width;
     upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     
     p = p1 + upVector + acrossVector;
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point htr = p + 10 * vector;
+    R3Point htr = p + depth * vector;
     
     
     //corner 4
-    x = .05 * GLUTwindow_width;
+    x = left * GLUTwindow_width;
     acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
     
     p = p1 + upVector + acrossVector;
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point htl = p + 10 * vector;
+    R3Point htl = p + depth * vector;
     
     
     
-    glColor3f(0.0, 0.0, .8);
+    // Define source material
+    static R3Material source_material1;
+    if (source_material1.id != 33) {
+        source_material1.ka.Reset(0.2,0.2,0.2,1);
+        source_material1.kd.Reset(0,0,1,1);
+        source_material1.ks.Reset(0,1,0,1);
+        source_material1.kt.Reset(0,0,0,1);
+        source_material1.emission.Reset(0,0,1,1);
+        source_material1.shininess = 1;
+        source_material1.indexofrefraction = 1;
+        source_material1.texture = NULL;
+        source_material1.texture_index = -1;
+        source_material1.id = 33;
+    }
+    
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material1);
     
     glBegin(GL_QUADS);                      // Draw A Quad
     glVertex3f(htl.X(), htl.Y(), htl.Z());           // Top Left
@@ -1250,10 +1339,15 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     glVertex3f(hbl.X(), hbl.Y(), hbl.Z());           // Bottom Left
     glEnd();
     
-    
+    /*
     sprintf (buffer, "Health = %4.0f %%", scene->players[0]->health);
-    hbl.SetY(hbl.Y() + .03);
+ //   hbl.SetY(hbl.Y() + .03);
     GLUTDrawText(hbl, buffer);
+     */
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
 }
 
 
@@ -1279,16 +1373,35 @@ void GLUTRedraw(void)
     // Load scene lights
     LoadLights(scene);
     
+    //  DisplayBoundaryWarning(scene);
+    
+    //Display velocity
+    DisplayVelocity(scene);
+    
+    //draw boost bar
+    DrawBoostAndHealthBar(scene);
+    
+
+    
     // Draw scene camera
     DrawCamera(scene);
     
     // Draw scene lights
     DrawLights(scene);
     
+
+
+    
     // Draw particles
     DrawParticles(scene);
     DrawPlayers(scene);
     DrawBoids(scene);
+    
+    //Display velocity
+//    DisplayVelocity(scene);
+    
+    //draw boost bar
+  //  DrawBoostAndHealthBar(scene);
 
    
     // Draw particle sources
@@ -1300,14 +1413,8 @@ void GLUTRedraw(void)
     // Draw particle springs
     DrawParticleSprings(scene);
     
-    //draw boost bar
-    DrawBoostAndHealthBar(scene);
 
-  //  DisplayBoundaryWarning(scene);
 
-    
-    //Display velocity
-    DisplayVelocity(scene); 
 
 	// Draw enemies
 	DrawEnemies(scene);
@@ -1897,7 +2004,6 @@ GLuint setShaders() {
 
   if (!v || !f) fprintf(stderr, "well, shit");
 
-  fprintf(stderr, "here1");
 
   vs = textFileRead("src/toon.vert");
   fs = textFileRead("src/toon.frag");
@@ -1914,28 +2020,24 @@ GLuint setShaders() {
       const char * vv = vs;
       const char * ff = fs;
 
-      fprintf(stderr, "here4");
       glShaderSource(v, 1, &vv,NULL);
       glShaderSource(f, 1, &ff,NULL);
-  fprintf(stderr, "here5");
       free(vs);free(fs);
 
       glCompileShader(v);
       printShaderInfoLog(v);
       glCompileShader(f);
       printShaderInfoLog(f);
-  fprintf(stderr, "here6");
       GLuint p = glCreateProgram();
 
       glAttachShader(p,v);
       glAttachShader(p,f);
-  fprintf(stderr, "here7");
       glLinkProgram(p);
       printProgramInfoLog(p);
       //glUseProgram(p); --> let's not rush with using the shader right away                                                                                             
       //see processNormalKeys for turning shader on and off                                                                                                              
 
-  fprintf(stderr, "here8");
+
 
       return p;
     }
