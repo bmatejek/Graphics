@@ -36,7 +36,7 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
     double z = scene->players[0]->pos.Z() + (distAway * cos(phi));
     
     R3Boid *boid = new R3Boid();
-    boid->position = R3Point(x, y, z);
+    boid->pos = R3Point(x, y, z);
     
     //create mesh
     R3Mesh *mesh = new R3Mesh();
@@ -61,9 +61,10 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
     shape->cone = NULL;
     shape->mesh = mesh;
     shape->segment = NULL;
+    boid->shape = shape; 
     
     //create boid
-    R3Vector towardsPlayer = scene->players[0]->pos - boid->position;
+    R3Vector towardsPlayer = scene->players[0]->pos - boid->pos;
     towardsPlayer.Normalize();
     boid->velocity = .5 * scene->players[0]->velocity * towardsPlayer;
     boid->health = 100;
@@ -73,15 +74,19 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
     material->kd[2] = 1;
     boid->material = material;
     
-    scene->boids.push_back(boid); 
+    scene->boids.push_back(boid);
+    printf("num boids = %d \n", (int)scene->boids.size()); 
 }
 
 void UpdateBoids(R3Scene *scene, double delta_time) {
-    scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
     
-    double dx = delta_time* scene->players[0]->velocity * scene->players[0]->nose.X();
-    double dy = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Y();
-    double dz = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Z();
-    scene->players[0]->shape->mesh->Translate(dx, dy, dz);
-    scene->players[0]->shape->mesh->Center() += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
+    for (int i = 0; i < (int)scene->boids.size(); i++) { 
+        scene->boids[i]->pos += delta_time * (scene->boids[i]->velocity);
+        
+        double dx = delta_time* scene->boids[i]->velocity.X();
+        double dy = delta_time* scene->boids[i]->velocity.Y();
+        double dz = delta_time* scene->boids[i]->velocity.Z();
+        scene->boids[i]->shape->mesh->Translate(dx, dy, dz);
+        scene->boids[i]->shape->mesh->Center() += delta_time * (scene->boids[i]->velocity);
+    }
 }

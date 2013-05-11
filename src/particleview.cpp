@@ -561,6 +561,74 @@ void DrawScene(R3Scene *scene)
     // Draw nodes recursively
     DrawNode(scene, scene->root);
 }
+
+void RenderBoids(R3Scene *scene, double current_time, double delta_time)
+{
+
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    // Define source material
+
+    static R3Material source_material;
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,1,0,1);
+        source_material.ks.Reset(0,1,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,0,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+
+    LoadMaterial(&source_material);
+    for (int i = 0; i < (int)scene->boids.size(); i++) {
+        R3Boid *boid = scene->boids[i];
+        boid->shape->mesh->Draw();
+    }
+    
+    // Clean up
+    if (!lighting) glDisable(GL_LIGHTING);
+
+}
+
+void DrawBoids(R3Scene *scene)
+{
+
+    // Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+    
+    
+    static double time_lost_taking_videos = 0; // for switching back and forth
+    // between recording and not
+    // recording smoothly
+    
+    // program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+    
+    // Update boids
+    UpdateBoids(scene, delta_time);
+    
+    // Render Boids
+    RenderBoids(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Remember previous time
+    previous_time = current_time;
+
+}
+
+
 void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
 {
     if (!show_players) return;
@@ -571,8 +639,6 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     //glPointSize(5);
     //glBegin(GL_POINTS);
     
-    // Check if should draw particle sources
-    if (!show_particle_sources_and_sinks) return;
     
     // Setup
     GLboolean lighting = glIsEnabled(GL_LIGHTING);
@@ -627,7 +693,6 @@ void DrawPlayers(R3Scene *scene)
     
     // Update players
     UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
- //   UpdateBoids(scene, delta_time);
     UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
     // Generate new particles
@@ -654,7 +719,6 @@ void DrawPlayers(R3Scene *scene)
     // Render players
     RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
     RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
-//    RenderBoids(scene, )
     
     // Remember previous time
     previous_time = current_time;
@@ -817,11 +881,10 @@ void DrawEnemies(R3Scene *scene)
 		//	direction.Normalize();
 		//	enemy->shape->sphere->Translate(direction * enemy->speed);
 		//}
-		printf("There\n");
 		DrawShape(enemy->shape);
-		printf("Return");
+
     }
-    printf("There\n");
+
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
 }
@@ -1217,7 +1280,8 @@ void GLUTRedraw(void)
     // Draw particles
     DrawParticles(scene);
     DrawPlayers(scene);
-   
+    DrawBoids(scene);
+
    
     // Draw particle sources
     DrawParticleSources(scene);
@@ -1559,9 +1623,8 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         //boid test code
         case 'B':
         case 'b':
-            show_bboxes = !show_bboxes;
-
-//            GenerateBoids(scene, 2, 15.);
+//            show_bboxes = !show_bboxes;
+            GenerateBoids(scene, 2, 15.);
             break;
             
         case 'C':
