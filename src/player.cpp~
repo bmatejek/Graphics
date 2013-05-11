@@ -66,10 +66,18 @@ bool CheckBoundingBoxWithSphere(R3Sphere *sphere, R3Player *player) {
 
 bool ComputeSphereIntersection(R3Sphere *sphere, R3Player *player) {
 	//if (CheckBoundingBoxWithSphere(sphere, player)) {
+  
+  bool in = true;
+  bool out = true;
 		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
-			if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) < sphere->Radius())
-				return true;
+			
+		  if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) > sphere->Radius())
+		    in = false;
+		  if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) < sphere->Radius())
+		    out = false;
 		}
+
+		if (!in && !out) return true;
 	//}
 	return false;
 }
@@ -130,7 +138,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink.kd.Reset(1,0,0,1);
 					sink.ks.Reset(1,0,0,1);
 					sink.kt.Reset(0,0,0,1);
-					sink.emission.Reset(1, 1, 1,1);
+					sink.emission.Reset(1, 0, 0,1);
 					sink.shininess = 1;
 					sink.indexofrefraction = 1;
 					sink.texture = NULL;
@@ -142,7 +150,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink_material.kd.Reset(1,0,0,1);
 					sink_material.ks.Reset(1,0,0,1);
 					sink_material.kt.Reset(0,0,0,1);
-					sink_material.emission.Reset(1, 1, 1,1);
+					sink_material.emission.Reset(1, 0, 0,1);
 					sink_material.shininess = 1;
 					sink_material.indexofrefraction = 1;
 					sink_material.texture = NULL;
@@ -154,7 +162,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink_material2.kd.Reset(0.96,0.44,0.11,1);
 					sink_material2.ks.Reset(0.96,0.44,0.11,1);
 					sink_material2.kt.Reset(0,0,0,1);
-					sink_material2.emission.Reset(1, 1, 1,1);
+					sink_material2.emission.Reset(.96, .44, .11,1);
 					sink_material2.shininess = 1;
 					sink_material2.indexofrefraction = 1;
 					sink_material2.texture = NULL;
@@ -166,7 +174,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink_material.kd.Reset(1,0.83,0,1);
 					sink_material.ks.Reset(1,0.83,0,1);
 					sink_material3.kt.Reset(0,0,0,1);
-					sink_material3.emission.Reset(1, 1, 1,1);
+					sink_material3.emission.Reset(1, .83, 0,1);
 					sink_material3.shininess = 1;
 					sink_material3.indexofrefraction = 1;
 					sink_material3.texture = NULL;
@@ -199,6 +207,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 }
 
 void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int integration_type) {
+    
     if (scene->players.size() != 0) {
 		scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
 		
@@ -218,6 +227,5 @@ void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int i
 				Explode(scene, scene->players[0]);
 			}
 		}
-		
 	}
 }

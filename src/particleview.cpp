@@ -718,8 +718,12 @@ void DrawPlayers(R3Scene *scene)
     
     // Render players
     RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
+
+    glUseProgram(0);
     RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
-    
+    if (useShader)
+      glUseProgram(shader);
+
     // Remember previous time
     previous_time = current_time;
 }
@@ -751,8 +755,12 @@ void DrawParticles(R3Scene *scene)
     // Generate new particles
     GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
     
+    glUseProgram(0);
     // Render particles
     if (show_particles) RenderParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    if (useShader)
+      glUseProgram(shader);
+
     
     // Remember previous time
     previous_time = current_time;
@@ -1648,7 +1656,7 @@ void keyboard()
 				sink_material.kd.Reset(1,0,0,1);
 				sink_material.ks.Reset(1,0,0,1);
 				sink_material.kt.Reset(0,0,0,1);
-				sink_material.emission.Reset(0,0,0,1);
+				sink_material.emission.Reset(1,0,0,1);
 				sink_material.shininess = 1;
 				sink_material.indexofrefraction = 1;
 				sink_material.texture = NULL;
@@ -2001,10 +2009,9 @@ GLuint setShaders() {
   fs = textFileRead("src/toon.frag");
 
   if (!vs || !fs) {
-
+    fprintf(stderr, "weird");
     vs = textFileRead("./toon.vert");
     fs = textFileRead("./toon.frag");
-
   }
 
   if(vs && fs)
