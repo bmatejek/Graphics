@@ -42,6 +42,9 @@ void main()
 //vec3 viewDirection = normalize(_WorldSpaceCameraPos - vec3(position));
 
 
+
+       
+
 	  // Calculatethe ambient term
 	  vec4 ambient_color = gl_FrontMaterial.ambient * gl_LightSource[0].ambient + gl_LightModel.ambient * gl_FrontMaterial.ambient;
 
@@ -54,6 +57,8 @@ void main()
     // Set the diffuse value (darkness). This is done with a dot product between the normal and the light
     // and the maths behind it is explained in the maths section of the site.
     float diffuse_value = max(dot(normal, vertex_light_position1), 0.0);
+
+
 
 	  ambient_color += gl_FrontMaterial.ambient * gl_LightSource[1].ambient;
 
@@ -84,6 +89,7 @@ void main()
 //	intensity = dot(vec3(gl_LightSource[0].position),n);
 //	intensity -= dot(vec3(gl_LightSource[1].position),n);	
 
+//	color = vec4(1.0, 1.0, 1.0, 1.0);
 	color = vec4(0.0, 0.0, 0.0, 1.0);
 	
 	for (int i = 0; i < 3; i++){ 
@@ -105,12 +111,14 @@ void main()
 //	gl_FragColor = color*gl_Color;
 //	gl_FragColor = total*color;
 	gl_FragColor = vec4(intensity[0]*color[0], intensity[1]*color[1], intensity[2]*color[2], 1.0);
-/*
 
+
+/*
 float _UnlitOutlineThickness = 100000.0;
 float _LitOutlineThickness =   50000.0;
 
 gl_FragColor = vec4(1.0,1.0,1.0,1.0);
+
 // higher priority: outline
     if (dot(viewDirection, normal)> 0.0 || dot(viewDirection, normal)<= 0.0)
       gl_FragColor = vec4(0.0,1.0,0.0,1.0);

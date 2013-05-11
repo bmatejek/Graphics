@@ -138,7 +138,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink.kd.Reset(1,0,0,1);
 					sink.ks.Reset(1,0,0,1);
 					sink.kt.Reset(0,0,0,1);
-					sink.emission.Reset(1, 1, 1,1);
+					sink.emission.Reset(1, 0, 0,1);
 					sink.shininess = 1;
 					sink.indexofrefraction = 1;
 					sink.texture = NULL;
@@ -150,7 +150,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink_material.kd.Reset(1,0,0,1);
 					sink_material.ks.Reset(1,0,0,1);
 					sink_material.kt.Reset(0,0,0,1);
-					sink_material.emission.Reset(1, 1, 1,1);
+					sink_material.emission.Reset(1, 0, 0,1);
 					sink_material.shininess = 1;
 					sink_material.indexofrefraction = 1;
 					sink_material.texture = NULL;
@@ -162,7 +162,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink_material2.kd.Reset(0.96,0.44,0.11,1);
 					sink_material2.ks.Reset(0.96,0.44,0.11,1);
 					sink_material2.kt.Reset(0,0,0,1);
-					sink_material2.emission.Reset(1, 1, 1,1);
+					sink_material2.emission.Reset(.96, .44, .11,1);
 					sink_material2.shininess = 1;
 					sink_material2.indexofrefraction = 1;
 					sink_material2.texture = NULL;
@@ -174,7 +174,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 					sink_material.kd.Reset(1,0.83,0,1);
 					sink_material.ks.Reset(1,0.83,0,1);
 					sink_material3.kt.Reset(0,0,0,1);
-					sink_material3.emission.Reset(1, 1, 1,1);
+					sink_material3.emission.Reset(1, 0.83, 0,1);
 					sink_material3.shininess = 1;
 					sink_material3.indexofrefraction = 1;
 					sink_material3.texture = NULL;
