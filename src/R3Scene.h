@@ -154,8 +154,9 @@ struct R3Player {
     R3Point pos;
     double velocity;
     double defaultVelocity;
-    double boost; //boost has values between 0 and 100
-    double health; //health has values between 0 and 100
+    double boost;   //boost has values between 0 and 100
+    double health;  //health has values between 0 and 100
+    int boidsKilled;
     bool accel; 
     R3Vector nose;
     R3Vector wing;
@@ -216,6 +217,8 @@ public:
     vector<R3Bullet *> bullets;
     vector<R3Boid *> boids;
 	vector<R3Enemy *> enemies;
+    double radius;
+    R3Point center;
     R3Vector gravity;
     R3Camera camera;
     R3Box bbox;

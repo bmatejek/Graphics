@@ -249,6 +249,8 @@ Read(const char *filename, R3Node *node)
     group_materials[0] = default_material;
     int depth = 0;
     
+    radius = 0; 
+    
     // Read body
     char cmd[128];
     int command_number = 1;
@@ -377,7 +379,8 @@ Read(const char *filename, R3Node *node)
             player->defaultVelocity = vel;
             player->boost = 0;
             player->accel = false;
-            player->health = 100; 
+            player->health = 100;
+            player->boidsKilled = 0;
             
             player->nose.Normalize();
             player->wing.Normalize();
@@ -724,6 +727,10 @@ Read(const char *filename, R3Node *node)
             
             // Create sphere
             R3Sphere *sphere = new R3Sphere(c, r);
+            if (r > radius) {
+                radius = r;
+                center = c; 
+            }
             
             // Create shape
             R3Shape *shape = new R3Shape();

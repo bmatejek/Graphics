@@ -68,7 +68,7 @@ static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
 static bool follow = false;
-static bool view2 = false;
+static bool view2 = true;
 static int quit = 0;
 
 
@@ -1016,12 +1016,35 @@ void GLUTDrawText(const R3Point& p, const char *s)
 
 void GLUTDrawLargeText(const R3Point& p, const char *s)
 {
-    // Draw text string s and position p
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     
-    glColor3f(0.0, 1.0, 0.0);
+    
+    static R3Material source_material;
+    // Define source material
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,1,0,1);
+        source_material.ks.Reset(0,1,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,1,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+    
     glRasterPos3d(p[0], p[1], p[2]);
     while (*s)
         glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *(s++));
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
     
 }
 
@@ -1125,6 +1148,8 @@ void DisplayBoundaryWarning(R3Scene *scene) {
 
 void DisplayVelocity(R3Scene *scene) {
     
+    double depth = .000000001;
+    
     R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
@@ -1138,10 +1163,35 @@ void DisplayVelocity(R3Scene *scene) {
     R3Point p = p1 + upVector + acrossVector;
     R3Vector vector = p - camera.eye;
     vector.Normalize();
-    R3Point p4 = p + 10 * vector;
+    R3Point p4 = p + depth * vector;
     
     char buffer [50];
     sprintf (buffer, "Velocity = %4.2f", scene->players[0]->velocity);
+    GLUTDrawText(p4, buffer);
+    
+}
+
+void DisplayBoidsKilled(R3Scene *scene) {
+    
+    double depth = .000000001;
+    
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height * .91;
+    double x = GLUTwindow_width * .78;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    R3Point p4 = p + depth* vector;
+    
+    char buffer [50];
+    sprintf (buffer, "Boids Killed = %d", scene->players[0]->boidsKilled);
     GLUTDrawText(p4, buffer);
     
 }
@@ -1214,9 +1264,9 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
         static R3Material source_material;
         // Define source material
         if (source_material.id != 33) {
-            source_material.ka.Reset(0.2,0.2,0.2,1);
-            source_material.kd.Reset(0,1,0,1);
-            source_material.ks.Reset(0,1,0,1);
+            source_material.ka.Reset(0,0,0,1);
+            source_material.kd.Reset(0,0,0,1);
+            source_material.ks.Reset(0,0,0,1);
             source_material.kt.Reset(0,0,0,1);
             source_material.emission.Reset(0,1,0,1);
             source_material.shininess = 1;
@@ -1232,9 +1282,9 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
         static R3Material source_material2;
         // Define source material
         if (source_material2.id != 33) {
-            source_material2.ka.Reset(0.2,0.2,0.2,1);
-            source_material2.kd.Reset(1,0,0,1);
-            source_material2.ks.Reset(0,1,0,1);
+            source_material2.ka.Reset(0,0,0,1);
+            source_material2.kd.Reset(0,0,0,1);
+            source_material2.ks.Reset(0,0,0,1);
             source_material2.kt.Reset(0,0,0,1);
             source_material2.emission.Reset(1,0,0,1);
             source_material2.shininess = 1;
@@ -1373,10 +1423,15 @@ void GLUTRedraw(void)
     // Load scene lights
     LoadLights(scene);
     
-    //  DisplayBoundaryWarning(scene);
+    //warn if player is leaving the scene
+    if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
+        DisplayBoundaryWarning(scene);
     
     //Display velocity
     DisplayVelocity(scene);
+    
+    //Display number of boids killed
+    DisplayBoidsKilled(scene);
     
     //draw boost bar
     DrawBoostAndHealthBar(scene);
@@ -1396,12 +1451,6 @@ void GLUTRedraw(void)
     DrawParticles(scene);
     DrawPlayers(scene);
     DrawBoids(scene);
-    
-    //Display velocity
-//    DisplayVelocity(scene);
-    
-    //draw boost bar
-  //  DrawBoostAndHealthBar(scene);
 
    
     // Draw particle sources
@@ -1738,8 +1787,8 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         //boid test code
         case 'B':
         case 'b':
-//            show_bboxes = !show_bboxes;
-            GenerateBoids(scene, 2, 50.);
+            show_bboxes = !show_bboxes;
+   //         GenerateBoids(scene, 2, 40.);
             break;
             
         case 'C':
@@ -1938,6 +1987,9 @@ ReadScene(const char *filename)
     
     // Remember initial camera
     camera = scene->camera;
+    
+    //generate first set of opponent boids
+    GenerateBoids(scene, 5, 40.);
     
     // Return scene
     return scene;
