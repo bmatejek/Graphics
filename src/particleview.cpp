@@ -12,7 +12,7 @@
 #include "cos426_opengl.h"
 #include "player.h"
 #include "bullet.h"
-
+#include "raytrace.h"
 
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
@@ -609,12 +609,9 @@ void DrawPlayers(R3Scene *scene)
     // time passed since starting
     double delta_time = current_time - previous_time;
     
-    
-    
     // Update players
     UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
-    
     
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
@@ -626,13 +623,15 @@ void DrawPlayers(R3Scene *scene)
     */
     if (follow || view2) {
       //      camera.eye = scene->players[0]->shape->mesh->Center();
-      camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
-      if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
-      camera.towards = scene->players[0]->nose;
-      camera.right = scene->players[0]->wing;
-      camera.up = camera.right;
-      camera.up.Cross(camera.towards);
-      if (view2) camera.eye += .7*camera.up;
+	  if (scene->players.size() != 0) {
+		  camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
+		  if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
+		  camera.towards = scene->players[0]->nose;
+		  camera.right = scene->players[0]->wing;
+		  camera.up = camera.right;
+		  camera.up.Cross(camera.towards);
+		  if (view2) camera.eye += .7*camera.up;
+		}
     }
     
     // Render players
@@ -641,7 +640,6 @@ void DrawPlayers(R3Scene *scene)
     
     // Remember previous time
     previous_time = current_time;
-    
 }
 
 
@@ -720,6 +718,8 @@ void DrawParticleSources(R3Scene *scene)
     GLboolean lighting = glIsEnabled(GL_LIGHTING);
     glEnable(GL_LIGHTING);
     
+
+	
     // Define source material
     static R3Material source_material;
     if (source_material.id != 33) {
@@ -734,7 +734,7 @@ void DrawParticleSources(R3Scene *scene)
         source_material.texture_index = -1;
         source_material.id = 33;
     }
-    
+	
     // Draw all particle sources
     glEnable(GL_LIGHTING);
     LoadMaterial(&source_material);
@@ -743,6 +743,67 @@ void DrawParticleSources(R3Scene *scene)
         DrawShape(source->shape);
     }
     
+    // Clean up
+    if (!lighting) glDisable(GL_LIGHTING);
+}
+
+
+void DrawEnemies(R3Scene *scene)
+{
+    
+	// Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+	
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+
+    // Define source material
+    static R3Material enemy_material;
+    if (enemy_material.id != 33) {
+        enemy_material.ka.Reset(0.2,0.2,0.2,1);
+        enemy_material.kd.Reset(0.69,0.8,0.05,1);
+        enemy_material.ks.Reset(0.69,0.8,0.05,1);
+        enemy_material.kt.Reset(0,0,0,1);
+        enemy_material.emission.Reset(0,0,0,1);
+        enemy_material.shininess = 1;
+        enemy_material.indexofrefraction = 1;
+        enemy_material.texture = NULL;
+        enemy_material.texture_index = -1;
+        enemy_material.id = 33;
+    }
+	// program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+	
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&enemy_material);
+    for (unsigned int i = 0; i < scene->enemies.size(); i++) {
+        R3Enemy *enemy = scene->enemies[i];
+		// update the center position
+		if (scene->players.size() != 0) {
+			R3Vector direction = scene->players[i]->shape->mesh->Center() - enemy->shape->sphere->Center();
+			R3Ray *ray = new R3Ray(enemy->shape->sphere->Center(), direction);
+			R3Intersect intersection = ComputeIntersect(scene, scene->root, ray);
+			if (!intersection.intersected) {
+				direction.Normalize();
+				enemy->shape->sphere->Translate(direction * enemy->speed);
+			}
+		}
+		//else {
+		//	R3Vector direction = scene->root->children[0]->shape->sphere->Center() - scene->players[i]->shape->mesh->Center();
+		//	direction.Normalize();
+		//	enemy->shape->sphere->Translate(direction * enemy->speed);
+		//}
+		printf("There\n");
+		DrawShape(enemy->shape);
+		printf("Return");
+    }
+    printf("There\n");
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
 }
@@ -941,7 +1002,8 @@ void GLUTRedraw(void)
     // Draw particles
     DrawParticles(scene);
     DrawPlayers(scene);
-    
+   
+   
     // Draw particle sources
     DrawParticleSources(scene);
     
@@ -950,7 +1012,9 @@ void GLUTRedraw(void)
     
     // Draw particle springs
     DrawParticleSprings(scene);
-    
+	// Draw enemies
+	DrawEnemies(scene);
+	
     // Draw scene surfaces
     if (show_faces) {
         glEnable(GL_LIGHTING);
@@ -1143,74 +1207,74 @@ void keyboard()
 {
     double rotateAmount = 0.02;
     
-    if (keyStates['W'] || keyStates['w']){
-        scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-        scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
-        
-    }
+	if (scene->players.size() != 0) {
+		if (keyStates['W'] || keyStates['w']){
+			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
+		}
 
-    
-    //shoot
-    if (keyStates['G'] || keyStates['g']){
-        //fprintf(stderr,"%d\n",scene->bullets.size());
-        // generate a bullet from the plane
-        R3Bullet *bullet = new R3Bullet();
-        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
-        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
-        bullet->lifetimeactive = true;
-        bullet->lifetime = 1.0;
-        static R3Material sink_material;
-        if (sink_material.id != 33) {
-            sink_material.ka.Reset(0.2,0.2,0.2,1);
-            sink_material.kd.Reset(1,0,0,1);
-            sink_material.ks.Reset(1,0,0,1);
-            sink_material.kt.Reset(0,0,0,1);
-            sink_material.emission.Reset(0,0,0,1);
-            sink_material.shininess = 1;
-            sink_material.indexofrefraction = 1;
-            sink_material.texture = NULL;
-            sink_material.texture_index = -1;
-            sink_material.id = 33;
-        }
-        bullet->material = &sink_material;
-        
-        scene->bullets.push_back(bullet);
-        
-    }
+		//shoot
+		if (keyStates['G'] || keyStates['g']){
+			//fprintf(stderr,"%d\n",scene->bullets.size());
+			// generate a bullet from the plane
+			R3Bullet *bullet = new R3Bullet();
+			bullet->position = scene->players[0]->pos + scene->players[0]->nose;
+			bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
+			bullet->lifetimeactive = true;
+			bullet->lifetime = 1.0;
+			static R3Material sink_material;
+			if (sink_material.id != 33) {
+				sink_material.ka.Reset(0.2,0.2,0.2,1);
+				sink_material.kd.Reset(1,0,0,1);
+				sink_material.ks.Reset(1,0,0,1);
+				sink_material.kt.Reset(0,0,0,1);
+				sink_material.emission.Reset(0,0,0,1);
+				sink_material.shininess = 1;
+				sink_material.indexofrefraction = 1;
+				sink_material.texture = NULL;
+				sink_material.texture_index = -1;
+				sink_material.id = 33;
+			}
+			bullet->material = &sink_material;
+			
+			scene->bullets.push_back(bullet);
+			
+		}
 
-    
-    if (keyStates['S'] || keyStates['s']){
-        scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
-        scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
-    }
-    
-    if (keyStates['D'] || keyStates['d']){
-        scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-        scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
-    }
-    if (keyStates['A'] || keyStates['a']){
-        scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
-        scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
-    }
-    
-    
-    //boooooooooost
-    if (keyStates['h'] || keyStates['h']) {
-        //ran out of boost but still pressing h
-        if (scene->players[0]->boost <= 0) {
-            scene->players[0]->boost = 0;
-            scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
-        }
-        //boosting
-        else {
-            scene->players[0]->boost -= .01;
-            scene->players[0]->velocity = min(50*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 20);
-        }
-    }
-    else {
-        scene->players[0]->boost = min(scene->players[0]->boost + 1, (double)100);
-        scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
-    }
+		
+		if (keyStates['S'] || keyStates['s']){
+			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
+		}
+		
+		if (keyStates['D'] || keyStates['d']){
+			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+			scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
+		}
+		if (keyStates['A'] || keyStates['a']){
+			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+			scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
+		}
+		
+		
+		//boooooooooost
+		if (keyStates['h'] || keyStates['h']) {
+			//ran out of boost but still pressing h
+			if (scene->players[0]->boost <= 0) {
+				scene->players[0]->boost = 0;
+				scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+			}
+			//boosting
+			else {
+				scene->players[0]->boost -= .01;
+				scene->players[0]->velocity = min(50*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 20);
+			}
+		}
+		else {
+			scene->players[0]->boost = min(scene->players[0]->boost + 1, (double)100);
+			scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+		}
+	}
 
     
 }
@@ -1521,7 +1585,7 @@ main(int argc, char **argv)
     // Read scene
     scene = ReadScene(input_scene_name);
     if (!scene) exit(-1);
-    
+
     // Run GLUT interface
     GLUTMainLoop();
     
