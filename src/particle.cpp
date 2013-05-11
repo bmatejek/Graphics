@@ -74,7 +74,7 @@ void GenerateParticles(R3Scene *scene, double current_time, double delta_time)
             
             // remainder term for fraction of particle
             double numberweshouldmake = delta_time * source->rate + source->remainder;
-            int nparts = floor(numberweshouldmake);
+            int nparts = (int) floor(numberweshouldmake);
             source->remainder = numberweshouldmake - nparts;
             
             for (int p = 0; p < nparts; p++) {
@@ -131,7 +131,7 @@ void GenerateParticles(R3Scene *scene, double current_time, double delta_time)
         // CIRCLE
         if (source->shape->type == R3_CIRCLE_SHAPE) {
             double numberweshouldmake = delta_time * source->rate + source->remainder;
-            int nparts = floor(numberweshouldmake);
+            int nparts = (int) floor(numberweshouldmake);
             source->remainder = numberweshouldmake - nparts;
             
             for (int p = 0; p < nparts; p++) {
@@ -192,6 +192,137 @@ void GenerateParticles(R3Scene *scene, double current_time, double delta_time)
         }
         
     }
+	
+	
+	 for (int i = 0; i < (int)scene->enemies.size(); i++) {
+        
+        R3Enemy *enemy = scene->enemies[i];
+        
+        // spheres
+        if (enemy->shape->type == R3_SPHERE_SHAPE) {
+            
+            // remainder term for fraction of particle
+            double numberweshouldmake = delta_time * enemy->rate + enemy->remainder;
+            int nparts = (int) floor(numberweshouldmake);
+            enemy->remainder = numberweshouldmake - nparts;
+            
+            for (int p = 0; p < nparts; p++) {
+                R3Particle *newpart = new R3Particle();
+                
+                // calculate position and velocity
+                double u = RandomNumber();
+                double theta = 2*PI*u;
+                double v = RandomNumber();
+                double phi = acos(2*v-1);
+                double r = enemy->shape->sphere->Radius();
+                R3Point center = enemy->shape->sphere->Center();
+                
+                double x = r*cos(theta)*sin(phi);
+                double y = r*sin(theta)*sin(phi);
+                double z = r*cos(phi);
+                
+                R3Vector n = R3Vector(x,y,z);
+                n.Normalize();
+                
+                // find tangent vector, use lecture notes to get velocity
+                R3Plane plane = R3Plane(R3Point(0,0,0),n);
+                R3Vector a;
+                do {
+                    a = R3Vector(RandomNumber(),RandomNumber(),RandomNumber());
+                    a.Project(plane);
+                } while (a.Length() == 0.0);
+                a.Normalize();
+                double t1 = 2*PI*RandomNumber();
+                double t2 = sin(enemy->angle_cutoff)*RandomNumber();
+                a.Rotate(n,t1);
+                R3Vector vec = R3Vector(a);
+                R3Vector cross = R3Vector(vec);
+                cross.Cross(n);
+                vec.Rotate(cross,acos(t2));
+                
+                newpart->position = center + n*r;
+                newpart->velocity = vec*enemy->velocity;
+                
+                //update
+                newpart->mass = enemy->mass;
+                newpart->fixed = enemy->fixed;
+                newpart->drag = enemy->drag;
+                newpart->elasticity = enemy->elasticity;
+                newpart->lifetime = enemy->lifetime;
+                newpart->lifetimeactive = enemy->lifetimeactive;
+                newpart->material = enemy->material;
+                
+                scene->particles.push_back(newpart);
+            }
+        }
+        
+        
+        // CIRCLE
+        if (enemy->shape->type == R3_CIRCLE_SHAPE) {
+            
+            double numberweshouldmake = delta_time * enemy->rate + enemy->remainder;
+            int nparts = (int) floor(numberweshouldmake);
+            enemy->remainder = numberweshouldmake - nparts;
+            
+            for (int p = 0; p < nparts; p++) {
+                R3Particle *newpart = new R3Particle();
+                
+                // calculate position and velocity
+                
+                double r = enemy->shape->circle->Radius();
+                R3Point center = enemy->shape->circle->Center();
+                R3Plane plane = enemy->shape->circle->Plane();
+                R3Vector n = plane.Normal();
+                n.Normalize();
+                
+                // get a random point on a circle
+                double xcirc, ycirc;
+                do {
+                    xcirc = 2*r*(RandomNumber() - 0.5);
+                    ycirc = 2*r*(RandomNumber() - 0.5);
+                } while (xcirc*xcirc + ycirc*ycirc > r*r);
+                
+                // get basis vectors of circle
+                R3Vector tang;
+                do {
+                    tang = R3Vector(RandomNumber(),RandomNumber(),RandomNumber());
+                    tang.Project(plane);
+                } while (tang.Length() == 0.0);
+                R3Vector othertang = R3Vector(tang);
+                othertang.Cross(n);
+                othertang.Normalize();
+                tang.Normalize();
+                
+                R3Point pos = center + tang*xcirc + othertang*ycirc;
+                
+                
+                R3Vector a = R3Vector(tang);
+                double t1 = 2*PI*RandomNumber();
+                double t2 = sin(enemy->angle_cutoff)*RandomNumber();
+                a.Rotate(n,t1);
+                R3Vector vec = R3Vector(a);
+                R3Vector cross = R3Vector(vec);
+                cross.Cross(n);
+                vec.Rotate(cross,acos(t2));
+                
+                newpart->position = pos;
+                newpart->velocity = vec * 1.0;
+                
+                
+                newpart->mass = enemy->mass;
+                newpart->fixed = enemy->fixed;
+                newpart->drag = enemy->drag;
+                newpart->elasticity = enemy->elasticity;
+                newpart->lifetime = enemy->lifetime;
+                newpart->lifetimeactive = enemy->lifetimeactive;
+                newpart->material = enemy->material;
+                
+                scene->particles.push_back(newpart);
+            }
+        }
+        
+    }
+	
     
 }
 

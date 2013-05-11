@@ -23,6 +23,13 @@ using namespace std;
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
 
+////////////////////////////////////////////////////////////
+// Random Number Generator
+////////////////////////////////////////////////////////////
+
+double RandomNumber(void);
+
+
 bool CheckBoundingBoxWithSphere(R3Sphere *sphere, R3Player *player) {
 	R3Box bbox = player->shape->mesh->bbox;
 	
@@ -43,15 +50,16 @@ bool CheckBoundingBoxWithSphere(R3Sphere *sphere, R3Player *player) {
 	
 	if (R3Distance(player->pos, sphere->Center()) < sphere->Radius())
 		return true;
+	return false;
 }
 
 bool ComputeSphereIntersection(R3Sphere *sphere, R3Player *player) {
-	if (CheckBoundingBoxWithSphere(sphere, player)) {
+	//if (CheckBoundingBoxWithSphere(sphere, player)) {
 		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
 			if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) < sphere->Radius())
 				return true;
 		}
-	}
+	//}
 	return false;
 }
 
@@ -65,6 +73,9 @@ bool ComputeShapeIntersection(R3Scene *scene, R3Shape *shape, R3Player *player) 
 	}
 	else if (shape->type == R3_MESH_SHAPE) {
 		return ComputeMeshIntersection(shape->mesh, player);
+	}
+	else {
+		return false;
 	}
 }
 
@@ -83,18 +94,119 @@ bool ComputeIntersection(R3Scene *scene, R3Node *node, R3Player *player) {
 	return false;
 }
 
+void Explode(R3Scene *scene, R3Player *player) {
+	if (player->shape->type == R3_MESH_SHAPE) {
+		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
+			if (i % 25 == 0) {
+				R3Particle *particle = new R3Particle();
+				double speed = 1 * RandomNumber();
+				double x1 = 10 * RandomNumber();
+				double x2 = 10 * RandomNumber();
+				double x3 = 10 * RandomNumber();
+				double mass = 0.00000001;
+				double drag = 0.0;
+				double elasticity = 0.0;
+				R3Vector velocity = R3Vector(x1, x2, x3);
+				velocity.Normalize();
+				
+				static R3Material sink;
+				static R3Material sink_material;
+				static R3Material sink_material2;
+				static R3Material sink_material3;
+				
+				if (sink.id != 33) {
+					sink.ka.Reset(0.2,0.2,0.2,1);
+					sink.kd.Reset(1,0,0,1);
+					sink.ks.Reset(1,0,0,1);
+					sink.kt.Reset(0,0,0,1);
+					sink.emission.Reset(1, 1, 1,1);
+					sink.shininess = 1;
+					sink.indexofrefraction = 1;
+					sink.texture = NULL;
+					sink.texture_index = -1;
+					sink.id = 33;
+				} 
+				if (sink_material.id != 33) {
+					sink_material.ka.Reset(0.2,0.2,0.2,1);
+					sink_material.kd.Reset(1,0,0,1);
+					sink_material.ks.Reset(1,0,0,1);
+					sink_material.kt.Reset(0,0,0,1);
+					sink_material.emission.Reset(1, 1, 1,1);
+					sink_material.shininess = 1;
+					sink_material.indexofrefraction = 1;
+					sink_material.texture = NULL;
+					sink_material.texture_index = -1;
+					sink_material.id = 33;
+				} 
+				if (sink_material2.id != 33) {
+					sink_material2.ka.Reset(0.2,0.2,0.2,1);
+					sink_material2.kd.Reset(0.96,0.44,0.11,1);
+					sink_material2.ks.Reset(0.96,0.44,0.11,1);
+					sink_material2.kt.Reset(0,0,0,1);
+					sink_material2.emission.Reset(1, 1, 1,1);
+					sink_material2.shininess = 1;
+					sink_material2.indexofrefraction = 1;
+					sink_material2.texture = NULL;
+					sink_material2.texture_index = -1;
+					sink_material2.id = 33;
+				}
+				if (sink_material3.id != 33) {
+					sink_material3.ka.Reset(0.2,0.2,0.2,1);
+					sink_material.kd.Reset(1,0.83,0,1);
+					sink_material.ks.Reset(1,0.83,0,1);
+					sink_material3.kt.Reset(0,0,0,1);
+					sink_material3.emission.Reset(1, 1, 1,1);
+					sink_material3.shininess = 1;
+					sink_material3.indexofrefraction = 1;
+					sink_material3.texture = NULL;
+					sink_material3.texture_index = -1;
+					sink_material3.id = 33;
+				}
+				
+				particle->position = R3Point(player->shape->mesh->vertices[i]->position);
+				particle->velocity = speed * velocity;
+				particle->mass = mass;
+				particle->fixed = false;
+				particle->drag = drag;
+				particle->elasticity = elasticity;
+				particle->lifetimeactive = true;
+				particle->lifetime = 1.0;
+				if (x1 < 0.5)
+					particle->material = &sink_material;
+				else if (x1 < 3.33)
+					particle->material = &sink;
+				else if (x1 < 6.67) 
+					particle->material = &sink_material2;
+				else
+					particle->material = &sink_material3;
+				scene->particles.push_back(particle);
+				//delete particle;
+			}
+		}
+	}
+	scene->players.erase(scene->players.begin());
+}
 
 void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int integration_type) {
     
-    scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
-    
-    double dx = delta_time* scene->players[0]->velocity * scene->players[0]->nose.X();
-    double dy = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Y();
-    double dz = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Z();
-    scene->players[0]->shape->mesh->Translate(dx, dy, dz);
-    scene->players[0]->shape->mesh->Center() += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
-	
-	if (ComputeIntersection(scene, scene->root, scene->players[0])) {
-//		printf("Here\n");
+    if (scene->players.size() != 0) {
+		scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
+		
+		double dx = delta_time* scene->players[0]->velocity * scene->players[0]->nose.X();
+		double dy = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Y();
+		double dz = delta_time* scene->players[0]->velocity * scene->players[0]->nose.Z();
+		scene->players[0]->shape->mesh->Translate(dx, dy, dz);
+		scene->players[0]->shape->mesh->Center() += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
+		
+		if (ComputeIntersection(scene, scene->root, scene->players[0])) {
+			Explode(scene, scene->players[0]);
+		}
+		
+		for (unsigned int i = 0; i < scene->enemies.size(); i++) {
+			// check collision with enemy fighters
+			if (ComputeSphereIntersection(scene->enemies[i]->shape->sphere, scene->players[0])) {
+				Explode(scene, scene->players[0]);
+			}
+		}
 	}
 }

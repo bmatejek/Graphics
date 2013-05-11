@@ -112,6 +112,26 @@ struct R3ParticleSource {
     bool lifetimeactive;
     double lifetime;
     R3Material *material;
+	R3Vector direction;
+	double speed;
+};
+
+
+struct R3Enemy {
+    R3Shape *shape;
+    double rate;
+    double velocity;
+    double angle_cutoff;
+    double mass;
+    bool fixed;
+    double remainder;
+    double drag;
+    double elasticity;
+    bool lifetimeactive;
+    double lifetime;
+    R3Material *material;
+	R3Vector direction;
+	double speed;
 };
 
 struct R3ParticleSink {
@@ -193,7 +213,8 @@ public:
     vector<R3Light *> lights;
     vector<R3Player *> players;
     vector<R3Bullet *> bullets;
-    vector<R3Boid *> boids; 
+    vector<R3Boid *> boids;
+	vector<R3Enemy *> enemies;
     R3Vector gravity;
     R3Camera camera;
     R3Box bbox;

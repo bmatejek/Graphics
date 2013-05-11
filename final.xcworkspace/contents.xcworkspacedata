@@ -366,6 +366,24 @@
          location = "group:src"
          name = "src">
          <FileRef
+            location = "group:bullet.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:bullet.h">
+         </FileRef>
+         <FileRef
+            location = "group:bullet.o">
+         </FileRef>
+         <FileRef
+            location = "group:raytrace.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:raytrace.h">
+         </FileRef>
+         <FileRef
+            location = "group:raytrace.o">
+         </FileRef>
+         <FileRef
             location = "group:cos426_opengl.h">
          </FileRef>
          <Group
@@ -979,6 +997,12 @@
          </FileRef>
          <FileRef
             location = "group:particleview.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:boid.cpp">
+         </FileRef>
+         <FileRef
+            location = "group:boid.h">
          </FileRef>
          <FileRef
             location = "group:player.h">
