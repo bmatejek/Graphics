@@ -799,11 +799,10 @@ void DrawEnemies(R3Scene *scene)
 		//	direction.Normalize();
 		//	enemy->shape->sphere->Translate(direction * enemy->speed);
 		//}
-		printf("There\n");
 		DrawShape(enemy->shape);
-		printf("Return");
+		//printf("Return");
     }
-    printf("There\n");
+    //printf("There\n");
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
 }

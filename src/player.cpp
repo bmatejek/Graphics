@@ -97,7 +97,12 @@ bool ComputeIntersection(R3Scene *scene, R3Node *node, R3Player *player) {
 void Explode(R3Scene *scene, R3Player *player) {
 	if (player->shape->type == R3_MESH_SHAPE) {
 		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
-			if (i % 25 == 0) {
+			int percent = 25;
+			//int percent = player->shape->mesh->vertices.size() / 150;
+			if (player->shape->mesh->vertices.size() < 300) {
+				percent = 10;
+			}
+			if (i % percent == 0) {
 				R3Particle *particle = new R3Particle();
 				double speed = 1 * RandomNumber();
 				double x1 = 10 * RandomNumber();
@@ -180,7 +185,6 @@ void Explode(R3Scene *scene, R3Player *player) {
 				else
 					particle->material = &sink_material3;
 				scene->particles.push_back(particle);
-				//delete particle;
 			}
 		}
 	}

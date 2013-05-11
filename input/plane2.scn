@@ -4,23 +4,41 @@
 
 #camera 0 0 -2 1 0 0 0 1 0 80 0.2 30.0
 
-# A mesh with default material (-1) read from ico.off
-player   -1    77.off 0 0 0 0 0 -1 1 0 0 1
+material  0 0 0  0.5 0.5 0.5  0.5 0.5 0.5  0 0 0  0 0 0  10 1 jupiter.jpg
+material  0 0 0  0.5 0.5 0.5  0.5 0.5 0.5  0 0 0  0 0 0  10 1 earth.jpg
 
-material  0 0 0  0.5 0.5 0.5  0.5 0.5 0.5  0 0 0  0 0 0  10 1 checker.bmp
+# A mesh with default material (-1) read from ico.off
+player   -1    77.off 0 0 0 0 0 -1 1 0 0 3.5
+#player -1 77.off -10 0 0 0 0 -1 1 0 0 1
 
 ### this sphere has to be first
 sphere 
-	0 0 -12 -15 10
+	-1 0 -12 -15 10
+
+sphere 
+	-1 35 -15 45 12
+
+sphere
+ -1 45 0 -10 8
  
-enemy
-	0.1 0 0.0 0.0 1.0 -1
-	35 1 0
-	0.05 0 0 1
-	sphere -10 0 0 0.4
+sphere
+ -1 -30 -40 -10 14
+
+sphere
+ 0 0 0 -120 35
+
+sphere
+ -1 -60 60 -150 20
+
+	
+#enemy
+#	0.1 0 0.0 0.0 1.0 -1
+#	35 1 0
+#	0.0 0 0 1
+#	sphere -10 0 0 0.4
 	
 #enemy
 #	0.1 0 0.0 0.0 1.0 -1
 #	35 1 0
 #	0.05 0 0 1
-#	sphere 10 0 0 0.4
+#	sphere -20 0 0 0.4
