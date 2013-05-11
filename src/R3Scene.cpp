@@ -383,7 +383,7 @@ Read(const char *filename, R3Node *node)
             
             player->nose.Normalize();
             player->wing.Normalize();
-            
+            //player->shape->mesh->Scale(0.1, 0.1, 0.1);
             // Add particle to scene
             players.push_back(player);
 
