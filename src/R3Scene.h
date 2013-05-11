@@ -155,6 +155,8 @@ struct R3Player {
     double velocity;
     double defaultVelocity;
     double boost; //boost has values between 0 and 100
+    double health; //health has values between 0 and 100
+    bool accel; 
     R3Vector nose;
     R3Vector wing;
 };
@@ -164,6 +166,14 @@ struct R3Bullet {
     R3Vector velocity;
     bool lifetimeactive;
     double lifetime;
+    R3Material *material;
+};
+
+struct R3Boid {
+    R3Shape *shape; 
+    R3Point pos;
+    R3Vector velocity;
+    double health;
     R3Material *material;
 };
 
@@ -203,6 +213,7 @@ public:
     vector<R3Light *> lights;
     vector<R3Player *> players;
     vector<R3Bullet *> bullets;
+    vector<R3Boid *> boids;
 	vector<R3Enemy *> enemies;
     R3Vector gravity;
     R3Camera camera;
