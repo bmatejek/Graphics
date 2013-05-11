@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // INCLUDE FILES
 ////////////////////////////////////////////////////////////
-
+#include "Utilities.h"
 #include "R3/R3.h"
 #include "R3Scene.h"
 #include "particle.h"
@@ -25,6 +25,16 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 ////////////////////////////////////////////////////////////
 
 void keyboard();
+
+bool useShader=false;
+//vertex shader handle                                                                                                                                                             
+static GLuint v;
+//fragment shader handle                                                                                                                                                           
+static GLuint f;
+//shader program handle                                                                                                                                                            
+//using zero value sets OpenGL back to using fixed pipeline                                                                                                                        
+static GLuint shader=0;
+
 
 // Program arguments
 
@@ -1316,6 +1326,17 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 27: // ESCAPE
             quit = 1;
             break;
+
+    case 'k':
+      useShader=!useShader;
+      cout<<"\rShader is "<<(useShader?"on ":"off")<<flush;
+      if(useShader)
+	glUseProgram(shader);
+      else
+	glUseProgram(0);
+      break;
+    
+
             
         case ' ': {
             printf("camera %g %g %g  %g %g %g  %g %g %g  %g  %g %g \n",
@@ -1499,6 +1520,49 @@ ParseArgs(int argc, char **argv)
 }
 
 
+// set the toon shader stuff
+GLuint setShaders() {
+
+  char *vs,*fs;
+
+  v = glCreateShader(GL_VERTEX_SHADER);
+  f = glCreateShader(GL_FRAGMENT_SHADER);
+
+  vs = textFileRead("./toon.vert");
+  fs = textFileRead("./toon.frag");
+
+  if(vs && fs)
+    {
+
+      const char * vv = vs;
+      const char * ff = fs;
+
+      glShaderSource(v, 1, &vv,NULL);
+      glShaderSource(f, 1, &ff,NULL);
+
+      free(vs);free(fs);
+
+      glCompileShader(v);
+      //      printShaderInfoLog(v);
+      glCompileShader(f);
+      //      printShaderInfoLog(f);
+
+      GLuint p = glCreateProgram();
+
+      glAttachShader(p,v);
+      glAttachShader(p,f);
+
+      glLinkProgram(p);
+      //      printProgramInfoLog(p);
+      //glUseProgram(p); --> let's not rush with using the shader right away                                                                                             
+      //see processNormalKeys for turning shader on and off                                                                                                              
+
+      return p;
+    }
+  cerr<<"Could not read the shader source"<<endl;
+  return 0;
+}
+
 
 ////////////////////////////////////////////////////////////
 // MAIN
@@ -1521,6 +1585,20 @@ main(int argc, char **argv)
     // Read scene
     scene = ReadScene(input_scene_name);
     if (!scene) exit(-1);
+
+    float versionGL = initGlew(true);
+    if(versionGL!=0.)
+      cout<<"Glew ready to go with OpenGL "<<versionGL<<"\n==================="<<endl;
+    else
+      {
+	cout<<"Glew failed to initialize \n==================="<<endl;
+	exit(-1);
+      }
+
+    shader=setShaders();
+    cout<<"Shader program "<<shader<<endl;
+
+
     
     // Run GLUT interface
     GLUTMainLoop();
