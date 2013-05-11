@@ -18,11 +18,16 @@ varying vec3 vertex_light_half_vector2;
 
 varying vec4 lightDir;
 
+varying vec3 vVertex;
+
+varying vec3 ec_pos;
+
 uniform vec3 _WorldSpaceCameraPos; // camera position in world space
 uniform mat4 _Object2World; // model matrix	
 
 void main()
 {
+	ec_pos = vec3(gl_ModelViewMatrix * gl_Vertex);
 //	ec_Pos = vec4(gl_ModelViewMatrix * gl_Vertex);
 //	lightDir = normalize(vec3(gl_LightSource[0].position) - ecPos.xyz);
 
@@ -48,4 +53,6 @@ void main()
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;	
 	//	texture_coordinate = vec2(gl_MultiTexCoord0);
 	gl_TexCoord[0] = gl_MultiTexCoord0;  
+
+	vVertex = gl_Vertex.xyz;
 } 
