@@ -24,6 +24,11 @@ typedef enum {
     R3_NUM_LIGHT_TYPES
 } R3LightType;
 
+typedef enum {
+    R3_REGULAR_BULLET,
+    R3_MISSILE_BULLET
+} R3BulletType;
+
 
 
 // Scene element definitions
@@ -156,18 +161,24 @@ struct R3Player {
     double defaultVelocity;
     double boost; //boost has values between 0 and 100
     double health; //health has values between 0 and 100
+    double bulletheat; // heat has values between 0 and 100
+    R3BulletType currentbullet; // bullets or missiles?
     bool accel; 
     R3Vector nose;
     R3Vector wing;
 };
 
 struct R3Bullet {
+    R3BulletType type;
+    R3Shape *shape;
     R3Point position;
     R3Vector velocity;
     bool lifetimeactive;
     double lifetime;
     R3Material *material;
 };
+
+
 
 struct R3Boid {
     R3Shape *shape; 

@@ -64,7 +64,7 @@ void RenderBullets(R3Scene *scene, double current_time, double delta_time)
     
     // REPLACE CODE HERE
     glDisable(GL_LIGHTING);
-    glPointSize(1);
+    glPointSize(5);
     glBegin(GL_POINTS);
 
     

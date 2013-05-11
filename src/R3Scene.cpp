@@ -377,7 +377,9 @@ Read(const char *filename, R3Node *node)
             player->defaultVelocity = vel;
             player->boost = 0;
             player->accel = false;
-            player->health = 100; 
+            player->health = 100;
+            player->bulletheat = 0.0;
+            player->currentbullet = R3_REGULAR_BULLET;
             
             player->nose.Normalize();
             player->wing.Normalize();

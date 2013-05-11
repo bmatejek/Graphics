@@ -1495,14 +1495,63 @@ void GLUTSpecial(int key, int x, int y)
     glutPostRedisplay();
 }
 
-
+void ShootBullet() {
+    //fprintf(stderr,"%d\n",scene->bullets.size());
+    // generate a bullet from the plane
+    R3Bullet *bullet = new R3Bullet();
+    bullet->type = scene->players[0]->currentbullet;
+    
+    if (bullet->type == R3_REGULAR_BULLET) {
+        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
+        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
+        bullet->lifetimeactive = true;
+        bullet->lifetime = 1.0;
+        static R3Material sink_material;
+        if (sink_material.id != 33) {
+            sink_material.ka.Reset(0.2,0.2,0.2,1);
+            sink_material.kd.Reset(1,0,0,1);
+            sink_material.ks.Reset(1,0,0,1);
+            sink_material.kt.Reset(0,0,0,1);
+            sink_material.emission.Reset(0,0,0,1);
+            sink_material.shininess = 1;
+            sink_material.indexofrefraction = 1;
+            sink_material.texture = NULL;
+            sink_material.texture_index = -1;
+            sink_material.id = 33;
+        }
+        bullet->material = &sink_material;
+    }
+    
+    if (bullet->type == R3_MISSILE_BULLET) {
+        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
+        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
+        bullet->lifetimeactive = true;
+        bullet->lifetime = 1.0;
+        static R3Material sink_material;
+        if (sink_material.id != 33) {
+            sink_material.ka.Reset(0.2,0.2,0.2,1);
+            sink_material.kd.Reset(0,1,1,1);
+            sink_material.ks.Reset(0,1,1,1);
+            sink_material.kt.Reset(0,0,0,1);
+            sink_material.emission.Reset(0,0,0,1);
+            sink_material.shininess = 1;
+            sink_material.indexofrefraction = 1;
+            sink_material.texture = NULL;
+            sink_material.texture_index = -1;
+            sink_material.id = 33;
+        }
+        bullet->material = &sink_material;
+    }
+    
+    scene->bullets.push_back(bullet);
+} 
 void keyboard()
 {
     double rotateAmount = 0.02;
     
     
     //boooooooooost
-    if (keyStates['h'] || keyStates['h']) {
+    if (keyStates['H'] || keyStates['h']) {
         //ran out of boost but still pressing h
         if (scene->players[0]->boost <= 0) {
             scene->players[0]->boost = 0;
@@ -1532,33 +1581,26 @@ void keyboard()
 
 		//shoot
 		if (keyStates['G'] || keyStates['g']){
-			//fprintf(stderr,"%d\n",scene->bullets.size());
-			// generate a bullet from the plane
-			R3Bullet *bullet = new R3Bullet();
-			bullet->position = scene->players[0]->pos + scene->players[0]->nose;
-			bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
-			bullet->lifetimeactive = true;
-			bullet->lifetime = 1.0;
-			static R3Material sink_material;
-			if (sink_material.id != 33) {
-				sink_material.ka.Reset(0.2,0.2,0.2,1);
-				sink_material.kd.Reset(1,0,0,1);
-				sink_material.ks.Reset(1,0,0,1);
-				sink_material.kt.Reset(0,0,0,1);
-				sink_material.emission.Reset(0,0,0,1);
-				sink_material.shininess = 1;
-				sink_material.indexofrefraction = 1;
-				sink_material.texture = NULL;
-				sink_material.texture_index = -1;
-				sink_material.id = 33;
-			}
-			bullet->material = &sink_material;
-			
-			scene->bullets.push_back(bullet);
+            
+            ShootBullet();
 			
 		}
+        
+        if (keyStates['Y'] || keyStates['y']) {
 
-		
+            if (scene->players[0]->currentbullet == R3_REGULAR_BULLET) {
+                scene->players[0]->currentbullet = R3_MISSILE_BULLET;
+            }
+            else if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
+                scene->players[0]->currentbullet = R3_REGULAR_BULLET;
+            }
+            else {
+                fprintf(stderr,"Why do you not have a bullettype?");
+            }
+            
+            
+        }
+        
 		if (keyStates['S'] || keyStates['s']){
 			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
 			scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
