@@ -5,12 +5,14 @@
 ////////////////////////////////////////////////////////////
 // INCLUDE FILES
 ////////////////////////////////////////////////////////////
-
+#include "Utilities.h"
 #include "R3/R3.h"
 #include "R3Scene.h"
 #include "particle.h"
 #include "cos426_opengl.h"
-
+#include "player.h"
+#include "bullet.h"
+#include "raytrace.h"
 
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
@@ -22,6 +24,19 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 // GLOBAL VARIABLES
 ////////////////////////////////////////////////////////////
 
+void keyboard();
+
+
+bool useShader=false;
+//vertex shader handle                                                                                                                                                             
+static GLuint v;
+//fragment shader handle                                                                                                                                                           
+static GLuint f;
+//shader program handle                                                                                                                                                            
+//using zero value sets OpenGL back to using fixed pipeline                                                                                                                        
+static GLuint shader=0;
+
+
 // Program arguments
 
 static char *input_scene_name = NULL;
@@ -29,6 +44,8 @@ static char *output_image_name = NULL;
 static const char *video_prefix = "./video-frames/";
 static int integration_type = EULER_INTEGRATION;
 
+// track keypresses
+bool* keyStates = new bool[256];
 
 
 // Display variables
@@ -40,6 +57,7 @@ static int show_edges = 0;
 static int show_bboxes = 0;
 static int show_lights = 0;
 static int show_camera = 0;
+static int show_bullets = 1;
 static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
@@ -47,6 +65,8 @@ static int show_particle_sources_and_sinks = 1;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
+static bool follow = false;
+static bool view2 = false;
 static int quit = 0;
 
 
@@ -245,9 +265,11 @@ void LoadMaterial(R3Material *material)
         // Select texture
         glBindTexture(GL_TEXTURE_2D, material->texture_index);
         glEnable(GL_TEXTURE_2D);
+	glUniform1i("texton", 1);
     }
     else {
         glDisable(GL_TEXTURE_2D);
+	glUniform1i("texton", 0);
     }
     
     // Enable blending for transparent surfaces
@@ -280,6 +302,7 @@ void LoadCamera(R3Camera *camera)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glMultMatrixd(camera_matrix);
+
     glTranslated(-(camera->eye[0]), -(camera->eye[1]), -(camera->eye[2]));
 }
 
@@ -571,9 +594,10 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     // Draw all particle sources
     glEnable(GL_LIGHTING);
     LoadMaterial(&source_material);
-    for (int i = 0; i < scene->players.size(); i++) {
+    for (int i = 0; i < (int)scene->players.size(); i++) {
         R3Player *player = scene->players[i];
-        player->shape->mesh->Draw(player->pos - R3Point(0,0,0), player->nose,player->wing);
+
+        player->shape->mesh->Draw();
     }
     
     // Clean up
@@ -598,27 +622,37 @@ void DrawPlayers(R3Scene *scene)
     // time passed since starting
     double delta_time = current_time - previous_time;
     
-    
-    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
-        delta_time = VIDEO_FRAME_DELAY;
-        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
-        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
-    } else { // real time simulation
-        delta_time = current_time - previous_time;
-    }
-    
     // Update players
-    //UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+
+    /*    fprintf(stdout, "plane:");
+    scene->players[0]->pos.Print();
+    fprintf(stdout, "\ncam");
+    camera.eye.Print();
+    */
+    if (follow || view2) {
+      //      camera.eye = scene->players[0]->shape->mesh->Center();
+	  if (scene->players.size() != 0) {
+		  camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
+		  if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
+		  camera.towards = scene->players[0]->nose;
+		  camera.right = scene->players[0]->wing;
+		  camera.up = camera.right;
+		  camera.up.Cross(camera.towards);
+		  if (view2) camera.eye += .7*camera.up;
+		}
+    }
     
     // Render players
     RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
+    RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
     
     // Remember previous time
     previous_time = current_time;
- 
 }
 
 
@@ -642,14 +676,6 @@ void DrawParticles(R3Scene *scene)
     double delta_time = current_time - previous_time;
     
     
-    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
-        delta_time = VIDEO_FRAME_DELAY;
-        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
-        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
-    } else { // real time simulation
-        delta_time = current_time - previous_time;
-    }
-    
     // Update particles
     UpdateParticles(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
@@ -658,6 +684,38 @@ void DrawParticles(R3Scene *scene)
     
     // Render particles
     if (show_particles) RenderParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Remember previous time
+    previous_time = current_time;
+}
+
+void DrawBullets(R3Scene *scene)
+{
+    // Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+    
+    
+    static double time_lost_taking_videos = 0; // for switching back and forth
+    // between recording and not
+    // recording smoothly
+    
+    // program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+    
+    
+    
+    // Update particles
+    UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    
+    // Generate new particles
+    //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Render particles
+    if (show_bullets) RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
     
     // Remember previous time
     previous_time = current_time;
@@ -673,6 +731,8 @@ void DrawParticleSources(R3Scene *scene)
     GLboolean lighting = glIsEnabled(GL_LIGHTING);
     glEnable(GL_LIGHTING);
     
+
+	
     // Define source material
     static R3Material source_material;
     if (source_material.id != 33) {
@@ -687,7 +747,7 @@ void DrawParticleSources(R3Scene *scene)
         source_material.texture_index = -1;
         source_material.id = 33;
     }
-    
+	
     // Draw all particle sources
     glEnable(GL_LIGHTING);
     LoadMaterial(&source_material);
@@ -696,6 +756,67 @@ void DrawParticleSources(R3Scene *scene)
         DrawShape(source->shape);
     }
     
+    // Clean up
+    if (!lighting) glDisable(GL_LIGHTING);
+}
+
+
+void DrawEnemies(R3Scene *scene)
+{
+    
+	// Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+	
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+
+    // Define source material
+    static R3Material enemy_material;
+    if (enemy_material.id != 33) {
+        enemy_material.ka.Reset(0.2,0.2,0.2,1);
+        enemy_material.kd.Reset(0.69,0.8,0.05,1);
+        enemy_material.ks.Reset(0.69,0.8,0.05,1);
+        enemy_material.kt.Reset(0,0,0,1);
+        enemy_material.emission.Reset(0,0,0,1);
+        enemy_material.shininess = 1;
+        enemy_material.indexofrefraction = 1;
+        enemy_material.texture = NULL;
+        enemy_material.texture_index = -1;
+        enemy_material.id = 33;
+    }
+	// program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+	
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&enemy_material);
+    for (unsigned int i = 0; i < scene->enemies.size(); i++) {
+        R3Enemy *enemy = scene->enemies[i];
+		// update the center position
+		if (scene->players.size() != 0) {
+			R3Vector direction = scene->players[i]->shape->mesh->Center() - enemy->shape->sphere->Center();
+			R3Ray *ray = new R3Ray(enemy->shape->sphere->Center(), direction);
+			R3Intersect intersection = ComputeIntersect(scene, scene->root, ray);
+			if (!intersection.intersected) {
+				direction.Normalize();
+				enemy->shape->sphere->Translate(direction * enemy->speed);
+			}
+		}
+		//else {
+		//	R3Vector direction = scene->root->children[0]->shape->sphere->Center() - scene->players[i]->shape->mesh->Center();
+		//	direction.Normalize();
+		//	enemy->shape->sphere->Translate(direction * enemy->speed);
+		//}
+		printf("There\n");
+		DrawShape(enemy->shape);
+		printf("Return");
+    }
+    printf("There\n");
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
 }
@@ -837,6 +958,8 @@ void GLUTIdle(void)
     // Set current window
     if ( glutGetWindow() != GLUTwindow )
         glutSetWindow(GLUTwindow);
+
+
     
     // Redraw
     glutPostRedisplay();
@@ -864,6 +987,8 @@ void GLUTResize(int w, int h)
 
 void GLUTRedraw(void)
 {
+    keyboard();
+    
     // Initialize OpenGL drawing modes
     glEnable(GL_LIGHTING);
     glDisable(GL_BLEND);
@@ -890,7 +1015,8 @@ void GLUTRedraw(void)
     // Draw particles
     DrawParticles(scene);
     DrawPlayers(scene);
-    
+   
+   
     // Draw particle sources
     DrawParticleSources(scene);
     
@@ -899,7 +1025,9 @@ void GLUTRedraw(void)
     
     // Draw particle springs
     DrawParticleSprings(scene);
-    
+	// Draw enemies
+	DrawEnemies(scene);
+	
     // Draw scene surfaces
     if (show_faces) {
         glEnable(GL_LIGHTING);
@@ -951,6 +1079,10 @@ void GLUTRedraw(void)
             quit = 1;
         }
     }
+
+
+  
+
     
     // Quit here so that can save image before exit
     if (quit) {
@@ -966,7 +1098,7 @@ void GLUTRedraw(void)
 
 void GLUTMotion(int x, int y)
 {
-  /*
+    
     // Invert y coordinate
     y = GLUTwindow_height - y;
     
@@ -978,7 +1110,7 @@ void GLUTMotion(int x, int y)
     if ((dx != 0) || (dy != 0)) {
         R3Point scene_center = scene->bbox.Centroid();
         if ((GLUTbutton[0] && (GLUTmodifiers & GLUT_ACTIVE_SHIFT)) || GLUTbutton[1]) {
-            // Scale world
+            // Scale world?
             double factor = (double) dx / (double) GLUTwindow_width;
             factor += (double) dy / (double) GLUTwindow_height;
             factor = exp(2.0 * factor);
@@ -1015,11 +1147,12 @@ void GLUTMotion(int x, int y)
             glutPostRedisplay();
         }
     }
+
     
     // Remember mouse position
     GLUTmouse[0] = x;
     GLUTmouse[1] = y;
-  */
+    
 }
 
 
@@ -1083,6 +1216,85 @@ void GLUTSpecial(int key, int x, int y)
 }
 
 
+void keyboard()
+{
+    double rotateAmount = 0.02;
+    
+	if (scene->players.size() != 0) {
+		if (keyStates['W'] || keyStates['w']){
+			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
+		}
+
+		//shoot
+		if (keyStates['G'] || keyStates['g']){
+			//fprintf(stderr,"%d\n",scene->bullets.size());
+			// generate a bullet from the plane
+			R3Bullet *bullet = new R3Bullet();
+			bullet->position = scene->players[0]->pos + scene->players[0]->nose;
+			bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
+			bullet->lifetimeactive = true;
+			bullet->lifetime = 1.0;
+			static R3Material sink_material;
+			if (sink_material.id != 33) {
+				sink_material.ka.Reset(0.2,0.2,0.2,1);
+				sink_material.kd.Reset(1,0,0,1);
+				sink_material.ks.Reset(1,0,0,1);
+				sink_material.kt.Reset(0,0,0,1);
+				sink_material.emission.Reset(0,0,0,1);
+				sink_material.shininess = 1;
+				sink_material.indexofrefraction = 1;
+				sink_material.texture = NULL;
+				sink_material.texture_index = -1;
+				sink_material.id = 33;
+			}
+			bullet->material = &sink_material;
+			
+			scene->bullets.push_back(bullet);
+			
+		}
+
+		
+		if (keyStates['S'] || keyStates['s']){
+			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
+			scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
+		}
+		
+		if (keyStates['D'] || keyStates['d']){
+			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+			scene->players[0]->wing.Rotate(scene->players[0]->nose, 1.0 * rotateAmount);
+		}
+		if (keyStates['A'] || keyStates['a']){
+			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->nose));
+			scene->players[0]->wing.Rotate(scene->players[0]->nose, -1.0 * rotateAmount);
+		}
+		
+		
+		//boooooooooost
+		if (keyStates['h'] || keyStates['h']) {
+			//ran out of boost but still pressing h
+			if (scene->players[0]->boost <= 0) {
+				scene->players[0]->boost = 0;
+				scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+			}
+			//boosting
+			else {
+				scene->players[0]->boost -= .01;
+				scene->players[0]->velocity = min(50*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 20);
+			}
+		}
+		else {
+			scene->players[0]->boost = min(scene->players[0]->boost + 1, (double)100);
+			scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+		}
+	}
+
+    
+}
+
+void keyUp (unsigned char key, int x, int y) {
+    keyStates[key] = false; // Set the state of the current key to not pressed
+}
 
 void GLUTKeyboard(unsigned char key, int x, int y)
 {
@@ -1091,34 +1303,40 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     
     // Process keyboard button event
     switch (key) {
-
-    case 'q':
-      scene->players[0]->shape->mesh->Rotate(.12, *scene->players[0]->nose);
-          
+            
         case 'W':
         case 'w':
-	  scene->players[0]->pos +=  R3Vector(0,0,1);
-	  camera.eye += R3Vector(0,0,1);
+            keyStates['w'] = true;
             break;
-
+            
         case 'S':
         case 's':
-	  scene->players[0]->pos +=  R3Vector(0,0,-1);
-	  camera.eye += R3Vector(0,0,-1);
+            keyStates['s'] = true;
+            
             break;
             
         case 'D':
         case 'd':
-	  scene->players[0]->pos +=  R3Vector(0,1,0);
-	  camera.eye += R3Vector(0,1,0);
+            keyStates['d'] = true;
+            
             break;
             
         case 'A':
         case 'a':
-	  scene->players[0]->pos +=  R3Vector(0,-1,0);
-	  camera.eye += R3Vector(0,-1,0);
+            keyStates['a'] = true;
+            break;
+            
+        case 'G':
+        case 'g':
+            keyStates['g'] = true;
             break;
 
+            
+        case 'H':
+        case 'h':
+            keyStates['h'] = true;
+            break;
+            
         case 'B':
         case 'b':
             show_bboxes = !show_bboxes;
@@ -1153,17 +1371,39 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'r':
             show_particle_springs = !show_particle_springs;
             break;
+
+    case 'X':
+    case 'x':
+      follow = !follow;
+      break;
+
+    case 'Z':
+    case 'z':
+      view2 = !view2;
+      break;
+
             /*
-        case 'S':
-        case 's':
-            show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
-            break; */
+             case 'S':
+             case 's':
+             show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
+             break; */
             
         case 'Q':
         case 'q':
         case 27: // ESCAPE
             quit = 1;
             break;
+
+    case 'k':
+      useShader=!useShader;
+      cout<<"\rShader is "<<(useShader?"on ":"off")<<flush;
+      if(useShader)
+	glUseProgram(shader);
+      else
+	glUseProgram(0);
+      break;
+    
+
             
         case ' ': {
             printf("camera %g %g %g  %g %g %g  %g %g %g  %g  %g %g \n",
@@ -1250,11 +1490,12 @@ void GLUTInit(int *argc, char **argv)
     glutReshapeFunc(GLUTResize);
     glutDisplayFunc(GLUTRedraw);
     glutKeyboardFunc(GLUTKeyboard);
+    glutKeyboardUpFunc(keyUp);
     glutSpecialFunc(GLUTSpecial);
     glutMouseFunc(GLUTMouse);
     glutMotionFunc(GLUTMotion);
     
-    // Initialize graphics modes 
+    // Initialize graphics modes
     glEnable(GL_NORMALIZE);
     glEnable(GL_LIGHTING);
     glEnable(GL_DEPTH_TEST);
@@ -1301,7 +1542,7 @@ ReadScene(const char *filename)
 // PROGRAM ARGUMENT PARSING
 ////////////////////////////////////////////////////////////
 
-int 
+int
 ParseArgs(int argc, char **argv)
 {
     // Innocent until proven guilty
@@ -1315,12 +1556,12 @@ ParseArgs(int argc, char **argv)
             else if (!strcmp(*argv, "-exit_immediately")) { quit = 1; }
             else if (!strcmp(*argv, "-output_image")) { argc--; argv++; output_image_name = *argv; }
             else if (!strcmp(*argv, "-video_prefix")) { argc--; argv++; video_prefix = *argv; }
-            else if (!strcmp(*argv, "-euler")) integration_type = EULER_INTEGRATION; 
-            else if (!strcmp(*argv, "-midpoint")) integration_type = MIDPOINT_INTEGRATION; 
-            else if (!strcmp(*argv, "-rk4")) integration_type = RK4_INTEGRATION; 
-            else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION; 
-            else if (!strcmp(*argv, "-recordandquit")) { 
-                argc--; argv++; num_frames_to_record = atoi(*argv); 
+            else if (!strcmp(*argv, "-euler")) integration_type = EULER_INTEGRATION;
+            else if (!strcmp(*argv, "-midpoint")) integration_type = MIDPOINT_INTEGRATION;
+            else if (!strcmp(*argv, "-rk4")) integration_type = RK4_INTEGRATION;
+            else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION;
+            else if (!strcmp(*argv, "-recordandquit")) {
+                argc--; argv++; num_frames_to_record = atoi(*argv);
                 GLUTwindow_width = 256;
                 GLUTwindow_height = 256;
                 save_video = 1;
@@ -1341,19 +1582,79 @@ ParseArgs(int argc, char **argv)
         return 0;
     }
     
-    // Return OK status 
+    // Return OK status
     return 1;
 }
 
+
+// set the toon shader stuff
+GLuint setShaders() {
+
+  char *vs,*fs;
+
+  v = glCreateShader(GL_VERTEX_SHADER);
+  f = glCreateShader(GL_FRAGMENT_SHADER);
+
+  if (!v || !f) fprintf(stderr, "well, shit");
+
+  fprintf(stderr, "here1");
+
+  vs = textFileRead("src/toon.vert");
+  fprintf(stderr, "here2");
+  fs = textFileRead("src/toon.frag");
+  fprintf(stderr, "here3");
+
+  if (!vs) fprintf(stderr, "not v");
+  if (!fs) fprintf(stderr, "not f");
+
+  if(vs && fs)
+    {
+
+      const char * vv = vs;
+      const char * ff = fs;
+
+      fprintf(stderr, "here4");
+      glShaderSource(v, 1, &vv,NULL);
+      glShaderSource(f, 1, &ff,NULL);
+  fprintf(stderr, "here5");
+      free(vs);free(fs);
+
+      glCompileShader(v);
+      printShaderInfoLog(v);
+      glCompileShader(f);
+      printShaderInfoLog(f);
+  fprintf(stderr, "here6");
+      GLuint p = glCreateProgram();
+
+      glAttachShader(p,v);
+      glAttachShader(p,f);
+  fprintf(stderr, "here7");
+      glLinkProgram(p);
+      printProgramInfoLog(p);
+      //glUseProgram(p); --> let's not rush with using the shader right away                                                                                             
+      //see processNormalKeys for turning shader on and off                                                                                                              
+
+  fprintf(stderr, "here8");
+
+      return p;
+    }
+  cerr<<"Could not read the shader source"<<endl;
+  return 0;
+}
 
 
 ////////////////////////////////////////////////////////////
 // MAIN
 ////////////////////////////////////////////////////////////
 
-int 
+int
 main(int argc, char **argv)
 {
+    for (int i = 0; i < 256; i++) {
+        keyStates[i] = false;
+    }
+    
+    
     // Parse program arguments
     if (!ParseArgs(argc, argv)) exit(1);
     
@@ -1363,7 +1664,23 @@ main(int argc, char **argv)
     // Read scene
     scene = ReadScene(input_scene_name);
     if (!scene) exit(-1);
-    
+
+
+    float versionGL = initGlew(true);
+    if(versionGL!=0.)
+      cout<<"Glew ready to go with OpenGL "<<versionGL<<"\n==================="<<endl;
+    else
+      {
+	cout<<"Glew failed to initialize \n==================="<<endl;
+	exit(-1);
+      }
+
+    shader=setShaders();
+    cout<<"Shader program "<<shader<<endl;
+
+    glShadeModel (GL_SMOOTH);
+
+
     // Run GLUT interface
     GLUTMainLoop();
     

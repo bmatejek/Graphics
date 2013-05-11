@@ -394,6 +394,15 @@ Read(const char *filename, R3Node *node)
                 fprintf(stderr, "Unable to read particle source at command %d in file %s\n", command_number, filename);
                 return 0;
             }
+			
+			// get velocity
+			double speed;
+			double x1, x2, x3;
+			if (fscanf(fp, "%lf%lf%lf%lf", &speed, &x1, &x2, &x3) != 4) {
+			    fprintf(stderr, "Unable to read particle source at command %d in file %s\n", command_number, filename);
+                return 0;
+			}
+            
             
             // Read shape
             R3Shape *shape = ReadShape(fp, command_number, filename);
@@ -401,7 +410,7 @@ Read(const char *filename, R3Node *node)
                 fprintf(stderr, "Unable to read particle source at command %d in file %s\n", command_number, filename);
                 return 0;
             }
-            
+
             // Get material
             R3Material *material = group_materials[depth];
             if (m >= 0) {
@@ -429,6 +438,8 @@ Read(const char *filename, R3Node *node)
             source->angle_cutoff = angle_cutoff;
             source->shape = shape;
             source->remainder = 0;
+			source->direction = R3Vector(x1, x2, x3);
+			source->speed = speed;
             
             // Add particle source to scene
             particle_sources.push_back(source);
@@ -442,6 +453,80 @@ Read(const char *filename, R3Node *node)
             else if (shape->type == R3_CONE_SHAPE) bbox.Union(shape->cone->BBox());
             else if (shape->type == R3_MESH_SHAPE) bbox.Union(shape->mesh->bbox);
         }
+		
+		else if (!strcmp(cmd, "enemy")) {
+            // Read enemy parameters
+            double mass, drag, elasticity, lifetime;
+            double rate, velocity, angle_cutoff;
+            int fixed, m;
+            if (fscanf(fp, "%lf%d%lf%lf%lf%d%lf%lf%lf", &mass, &fixed, &drag, &elasticity, &lifetime, &m, &rate, &velocity, &angle_cutoff) != 9) {
+                fprintf(stderr, "Unable to read enemy at command %d in file %s\n", command_number, filename);
+                return 0;
+            }
+			
+			// get velocity
+			double speed;
+			double x1, x2, x3;
+			if (fscanf(fp, "%lf%lf%lf%lf", &speed, &x1, &x2, &x3) != 4) {
+			    fprintf(stderr, "Unable to read enemy at command %d in file %s\n", command_number, filename);
+                return 0;
+			}
+            
+            
+            // Read shape
+            R3Shape *shape = ReadShape(fp, command_number, filename);
+            if (!shape) {
+                fprintf(stderr, "Unable to read enemy at command %d in file %s\n", command_number, filename);
+                return 0;
+            }
+            
+			static R3Material sink;
+				
+			if (sink.id != 33) {
+				sink.ka.Reset(0.2,0.2,0.2,1);
+				sink.kd.Reset(0.8,0.2,0,1);
+				sink.ks.Reset(0.8,0.2,0,1);
+				sink.kt.Reset(0,0,0,1);
+				sink.emission.Reset(1, 1, 1,1);
+				sink.shininess = 1;
+				sink.indexofrefraction = 1;
+				sink.texture = NULL;
+				sink.texture_index = -1;
+				sink.id = 33;
+			} 
+
+            // Create enemy
+            R3Enemy *enemy = new R3Enemy();
+            enemy->mass = mass;
+            enemy->fixed = (fixed) ? true : false;
+            enemy->drag = drag;
+            enemy->elasticity = elasticity;
+            enemy->lifetime = lifetime;
+            if (lifetime > eps) enemy->lifetimeactive = true;
+            else enemy->lifetimeactive = false;
+            enemy->material = &sink;
+            enemy->rate = rate;
+            enemy->velocity = velocity;
+            enemy->angle_cutoff = angle_cutoff;
+            enemy->shape = shape;
+            enemy->remainder = 0;
+			enemy->direction = R3Vector(x1, x2, x3);
+			enemy->speed = speed;
+            
+            // Add particle source to scene
+            enemies.push_back(enemy);
+
+            // Update scene bounding box
+            if (shape->type == R3_SEGMENT_SHAPE) bbox.Union(shape->segment->BBox());
+            else if (shape->type == R3_BOX_SHAPE) bbox.Union(*(shape->box));
+            else if (shape->type == R3_CIRCLE_SHAPE) bbox.Union(shape->circle->BBox());
+            else if (shape->type == R3_SPHERE_SHAPE) bbox.Union(shape->sphere->BBox());
+            else if (shape->type == R3_CYLINDER_SHAPE) bbox.Union(shape->cylinder->BBox());
+            else if (shape->type == R3_CONE_SHAPE) bbox.Union(shape->cone->BBox());
+            else if (shape->type == R3_MESH_SHAPE) bbox.Union(shape->mesh->bbox);
+        }
+		
+		
         else if (!strcmp(cmd, "particle_sink")) {
             // Read sink parameters
             double intensity, ca, la, qa;
