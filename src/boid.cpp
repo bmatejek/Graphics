@@ -61,6 +61,7 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
     shape->cone = NULL;
     shape->mesh = mesh;
     shape->segment = NULL;
+    boid->shape = shape; 
     
     //create boid
     R3Vector towardsPlayer = scene->players[0]->pos - boid->position;
