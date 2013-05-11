@@ -96,21 +96,21 @@ void main()
 
 	if (intensity[i] > 0.65)  
 		//color = vec4(1.0,1.0,1.0,1.0);
-		color[i] = 1.25;
+		color[i] = 1.0;
 	else if (intensity[i] > 0.3)
 		//color = vec4(0.6,0.6,0.6,1.0);
-		color[i] = 1.0;
+		color[i] = .75;
 	else if (intensity[i] > 0.15)
 		//color = vec4(0.4,0.4,0.4,1.0);
-		color[i] = .75;
+		color[i] = .5;
 	else 
 		//color = vec4(0.2,0.2,0.2,1.0);
-		color[i] = 0.0;
+		color[i] = .25;
 	}
 	
 //	gl_FragColor = color*gl_Color;
 //	gl_FragColor = total*color;
-	gl_FragColor = vec4(intensity[0]*color[0], intensity[1]*color[1], intensity[2]*color[2], 1.0);
+	gl_FragColor = vec4(color[0], color[1], color[2], 1.0);
 
 
 /*
