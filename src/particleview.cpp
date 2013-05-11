@@ -1120,6 +1120,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
+    double depth = .000000001;
     double y = .045* GLUTwindow_height;
     double x = .05 *GLUTwindow_width;
     
@@ -1132,7 +1133,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector.Normalize();
     
     
-    R3Point bl = p + 10 * vector;
+    R3Point bl = p + depth * vector;
     
     //corner 2
     x = max(0.05, scene->players[0]->boost/100. *.95) * GLUTwindow_width;
@@ -1142,7 +1143,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point br = p + 10 * vector;
+    R3Point br = p + depth * vector;
     
     //corner 3
     y = .08 * GLUTwindow_width;
@@ -1152,7 +1153,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point tr = p + 10 * vector;
+    R3Point tr = p + depth * vector;
     
     
     //corner 4
@@ -1163,7 +1164,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point tl = p + 10 * vector;
+    R3Point tl = p + depth * vector;
     
     
     
@@ -1183,7 +1184,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     char buffer [50];
     sprintf (buffer, "Boost = %4.0f %%", scene->players[0]->boost);
     bl.SetY(bl.Y() + .03);
-    GLUTDrawText(bl, buffer);
+  //  GLUTDrawText(bl, buffer);
     
     //draw health bar
     y = .1* GLUTwindow_height;
@@ -1198,7 +1199,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector.Normalize();
     
     
-    R3Point hbl = p + 10 * vector;
+    R3Point hbl = p + depth * vector;
     
     //corner 2
     x = max(0.05, scene->players[0]->health/100. *.95) * GLUTwindow_width;
@@ -1208,7 +1209,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point hbr = p + 10 * vector;
+    R3Point hbr = p + depth * vector;
     
     //corner 3
     y = .13 * GLUTwindow_width;
@@ -1218,7 +1219,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point htr = p + 10 * vector;
+    R3Point htr = p + depth * vector;
     
     
     //corner 4
@@ -1229,7 +1230,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     vector = p - camera.eye;
     vector.Normalize();
     
-    R3Point htl = p + 10 * vector;
+    R3Point htl = p + depth * vector;
     
     
     
@@ -1245,7 +1246,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     
     sprintf (buffer, "Health = %4.0f %%", scene->players[0]->health);
     hbl.SetY(hbl.Y() + .03);
-    GLUTDrawText(hbl, buffer);
+ //   GLUTDrawText(hbl, buffer);
 }
 
 
@@ -1271,6 +1272,14 @@ void GLUTRedraw(void)
     // Load scene lights
     LoadLights(scene);
     
+    //  DisplayBoundaryWarning(scene);
+    
+    //Display velocity
+    DisplayVelocity(scene);
+    
+    //draw boost bar
+    DrawBoostAndHealthBar(scene);
+    
     // Draw scene camera
     DrawCamera(scene);
     
@@ -1292,14 +1301,9 @@ void GLUTRedraw(void)
     // Draw particle springs
     DrawParticleSprings(scene);
     
-    //draw boost bar
-    DrawBoostAndHealthBar(scene);
 
-  //  DisplayBoundaryWarning(scene);
 
-    
-    //Display velocity
-    DisplayVelocity(scene); 
+
 
 	// Draw enemies
 	DrawEnemies(scene);
