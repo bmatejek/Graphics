@@ -16,8 +16,15 @@ varying vec3 vertex_light_half_vector1;
 varying vec3 vertex_light_position2;
 varying vec3 vertex_light_half_vector2;
 
+varying vec4 lightDir;
+
+uniform vec3 _WorldSpaceCameraPos; // camera position in world space
+uniform mat4 _Object2World; // model matrix	
+
 void main()
 {
+//	ec_Pos = vec4(gl_ModelViewMatrix * gl_Vertex);
+//	lightDir = normalize(vec3(gl_LightSource[0].position) - ecPos.xyz);
 
 	normal = normalize(gl_NormalMatrix * gl_Normal);
 

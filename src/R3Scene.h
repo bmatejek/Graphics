@@ -184,6 +184,7 @@ struct R3Boid {
     R3Shape *shape; 
     R3Point pos;
     R3Vector velocity;
+    double speed; 
     double health;
     R3Material *material;
 };

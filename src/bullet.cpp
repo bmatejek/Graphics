@@ -12,6 +12,7 @@
 #include "particle.h"
 #include "raytrace.h"
 #include "bullet.h"
+#include "particleview.h"
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -130,3 +131,24 @@ void UpdateBullets(R3Scene *scene, double current_time, double delta_time, int i
     }
 }
 
+/* Now in particleview
+void RenderBullets(R3Scene *scene, double current_time, double delta_time)
+{
+    // Draw every particle
+    
+    // REPLACE CODE HERE
+  //    glDisable(GL_LIGHTING);
+    glPointSize(5);
+    glBegin(GL_POINTS);
+
+    
+    for (int i = 0; i < (int)scene->bullets.size(); i += 10) {
+        R3Bullet *bullet = scene->bullets[i];
+	//    glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
+	LoadMaterial(bullet->material);
+        const R3Point& position = bullet->position;
+        glVertex3d(position[0], position[1], position[2]);
+    }
+    glEnd();
+}
+*/
