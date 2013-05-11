@@ -1895,13 +1895,15 @@ GLuint setShaders() {
 
   fprintf(stderr, "here1");
 
-  vs = textFileRead("./toon.vert");
-  fprintf(stderr, "here2");
-  fs = textFileRead("./toon.frag");
-  fprintf(stderr, "here3");
+  vs = textFileRead("src/toon.vert");
+  fs = textFileRead("src/toon.frag");
 
-  if (!vs) fprintf(stderr, "not v");
-  if (!fs) fprintf(stderr, "not f");
+  if (!vs || !fs) {
+
+    vs = textFileRead("./toon.vert");
+    fs = textFileRead("./toon.frag");
+
+  }
 
   if(vs && fs)
     {
