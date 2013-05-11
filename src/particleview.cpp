@@ -1506,7 +1506,9 @@ void GLUTRedraw(void)
     
     // Draw particles
     DrawParticles(scene);
-    DrawPlayers(scene);
+    
+    if (scene->players[0]->health > 0)
+        DrawPlayers(scene);
     DrawBoids(scene);
 
    

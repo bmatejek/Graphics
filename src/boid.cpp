@@ -295,14 +295,49 @@ bool ComputeMeshIntersection(R3Mesh *mesh, R3Player *player) {
  */
 
 
+/*
+ //damage plane and delete boid when plane and boid intersect
+ bool ComputeMeshIntersection(R3Mesh *mesh, R3Player *player) {
+ R3Box bbox = mesh->bbox;
+ 
+ for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
+ if (R3Distance(player->shape->mesh->vertices[i]->position, bbox.Centroid()) < bbox.DiagonalLength() / 2) {
+ return true;
+ }
+ }
+ return false;
+ }*/
+
+bool ComputeBoidIntersection(R3Mesh *mesh, R3Player *player) {
+    R3Box bbox = mesh->bbox;
+    
+    for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
+        if (R3Distance(player->shape->mesh->vertices[i]->position, bbox.Centroid()) < bbox.DiagonalLength() / 2) {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+
 
 void UpdateBoids(R3Scene *scene, double delta_time) {
+    double distAway = 20;
     
     //check if any boids have been shot
     killShotBoids(scene, delta_time);
     
     //check if boid crashed into plane
-   // checkBoidPlaneCollisions(scene);
+    for (int i = 0; i < (int)scene->boids.size(); i++) {
+        if (ComputeBoidIntersection(scene->boids[i]->shape->mesh, scene->players[0])) {
+            scene->players[0]->health -= 5;
+            Explode(scene, scene->boids[i]);
+            deleteBoid(scene, scene->boids[i]);
+            GenerateBoids(scene, 1, distAway);
+        }
+    }
+
     
     //update boid position and velocity
     for (int i = 0; i < (int)scene->boids.size(); i++) {
