@@ -882,9 +882,7 @@ void DrawEnemies(R3Scene *scene)
 		//	enemy->shape->sphere->Translate(direction * enemy->speed);
 		//}
 		DrawShape(enemy->shape);
-
     }
-
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
 }
