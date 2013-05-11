@@ -598,6 +598,84 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     if (!lighting) glDisable(GL_LIGHTING);
 
 }
+void RenderBullets(R3Scene *scene, double current_time, double delta_time)
+{
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    // Define source material
+    /*
+    static R3Material source_material;
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,1,0,1);
+        source_material.ks.Reset(0,1,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,0,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    */
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+    
+    static R3Material sink_material;
+    if (sink_material.id != 33) {
+        sink_material.ka.Reset(0.2,0.2,0.2,1);
+        sink_material.kd.Reset(1,0,0,1);
+        sink_material.ks.Reset(1,0,0,1);
+        sink_material.kt.Reset(0,0,0,1);
+        sink_material.emission.Reset(0,0,0,1);
+        sink_material.shininess = 1;
+        sink_material.indexofrefraction = 1;
+        sink_material.texture = NULL;
+        sink_material.texture_index = -1;
+        sink_material.id = 33;
+    }
+    
+    LoadMaterial(&sink_material);
+    
+    glPointSize(5);
+    glBegin(GL_POINTS);
+    for (int i = 0; i < (int)scene->bullets.size(); i++) {
+        R3Bullet *bullet = scene->bullets[i];
+        if (bullet->type == R3_MISSILE_BULLET) {
+            glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
+            const R3Point& position = bullet->position;
+            glVertex3d(position[0], position[1], position[2]);
+            //bullet->shape->mesh->Draw();
+            //fprintf(stderr, "therearemissiles\n");
+        }
+    }
+    
+    // Clean up
+    if (!lighting) glDisable(GL_LIGHTING);
+    
+    
+    
+    // REPLACE CODE HERE
+    glDisable(GL_LIGHTING);
+    glPointSize(5);
+    glBegin(GL_POINTS);
+    
+    
+    for (int i = 0; i < (int)scene->bullets.size(); i += 10) {
+        R3Bullet *bullet = scene->bullets[i];
+        if (bullet->type == R3_REGULAR_BULLET) {
+            glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
+            const R3Point& position = bullet->position;
+            glVertex3d(position[0], position[1], position[2]);
+        }
+    }
+    glEnd();
+    
+    
+}
+
 
 void DrawBoids(R3Scene *scene)
 {
@@ -1598,56 +1676,7 @@ void GLUTSpecial(int key, int x, int y)
     glutPostRedisplay();
 }
 
-void ShootBullet() {
-    //fprintf(stderr,"%d\n",scene->bullets.size());
-    // generate a bullet from the plane
-    R3Bullet *bullet = new R3Bullet();
-    bullet->type = scene->players[0]->currentbullet;
-    
-    if (bullet->type == R3_REGULAR_BULLET) {
-        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
-        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
-        bullet->lifetimeactive = true;
-        bullet->lifetime = 1.0;
-        static R3Material sink_material;
-        if (sink_material.id != 33) {
-            sink_material.ka.Reset(0.2,0.2,0.2,1);
-            sink_material.kd.Reset(1,0,0,1);
-            sink_material.ks.Reset(1,0,0,1);
-            sink_material.kt.Reset(0,0,0,1);
-            sink_material.emission.Reset(0,0,0,1);
-            sink_material.shininess = 1;
-            sink_material.indexofrefraction = 1;
-            sink_material.texture = NULL;
-            sink_material.texture_index = -1;
-            sink_material.id = 33;
-        }
-        bullet->material = &sink_material;
-    }
-    
-    if (bullet->type == R3_MISSILE_BULLET) {
-        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
-        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
-        bullet->lifetimeactive = true;
-        bullet->lifetime = 1.0;
-        static R3Material sink_material;
-        if (sink_material.id != 33) {
-            sink_material.ka.Reset(0.2,0.2,0.2,1);
-            sink_material.kd.Reset(0,1,1,1);
-            sink_material.ks.Reset(0,1,1,1);
-            sink_material.kt.Reset(0,0,0,1);
-            sink_material.emission.Reset(0,0,0,1);
-            sink_material.shininess = 1;
-            sink_material.indexofrefraction = 1;
-            sink_material.texture = NULL;
-            sink_material.texture_index = -1;
-            sink_material.id = 33;
-        }
-        bullet->material = &sink_material;
-    }
-    
-    scene->bullets.push_back(bullet);
-} 
+
 void keyboard()
 {
     double rotateAmount = 0.02;
@@ -1685,21 +1714,15 @@ void keyboard()
 		//shoot
 		if (keyStates['G'] || keyStates['g']){
             
-            ShootBullet();
+            ShootBullet(scene);
+            
 			
 		}
         
         if (keyStates['Y'] || keyStates['y']) {
 
-            if (scene->players[0]->currentbullet == R3_REGULAR_BULLET) {
-                scene->players[0]->currentbullet = R3_MISSILE_BULLET;
-            }
-            else if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
-                scene->players[0]->currentbullet = R3_REGULAR_BULLET;
-            }
-            else {
-                fprintf(stderr,"Why do you not have a bullettype?");
-            }
+            
+            
             
             
         }
@@ -1735,9 +1758,26 @@ void GLUTKeyboard(unsigned char key, int x, int y)
     // Process keyboard button event
     switch (key) {
             
+            
+            
         case 'W':
         case 'w':
             keyStates['w'] = true;
+            break;
+            
+        case 'Y':
+        case 'y':
+            
+            // bullet toggle
+            if (scene->players[0]->currentbullet == R3_REGULAR_BULLET) {
+                scene->players[0]->currentbullet = R3_MISSILE_BULLET;
+            }
+            else if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
+                scene->players[0]->currentbullet = R3_REGULAR_BULLET;
+            }
+            else {
+                fprintf(stderr,"Why do you not have a bullettype?");
+            }
             break;
             
         case 'S':
