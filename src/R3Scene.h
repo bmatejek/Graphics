@@ -163,6 +163,7 @@ struct R3Player {
     double bulletheat; // heat has values between 0 and 100
     R3BulletType currentbullet; // bullets or missiles?
     double missiletime; // time remaining until another missile is availble
+    int boidsKilled;
     bool accel; 
     R3Vector nose;
     R3Vector wing;
@@ -227,6 +228,8 @@ public:
     vector<R3Bullet *> bullets;
     vector<R3Boid *> boids;
 	vector<R3Enemy *> enemies;
+    double radius;
+    R3Point center;
     R3Vector gravity;
     R3Camera camera;
     R3Box bbox;
