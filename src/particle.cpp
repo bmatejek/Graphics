@@ -62,6 +62,7 @@ double RandomNumber(void)
 // Generating Particles
 ////////////////////////////////////////////////////////////
 
+
 void GenerateParticles(R3Scene *scene, double current_time, double delta_time)
 {
     for (int i = 0; i < scene->NParticleSources(); i++) {
@@ -126,10 +127,9 @@ void GenerateParticles(R3Scene *scene, double current_time, double delta_time)
             }
         }
         
-        
+
         // CIRCLE
         if (source->shape->type == R3_CIRCLE_SHAPE) {
-            
             double numberweshouldmake = delta_time * source->rate + source->remainder;
             int nparts = floor(numberweshouldmake);
             source->remainder = numberweshouldmake - nparts;

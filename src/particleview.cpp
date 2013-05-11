@@ -11,6 +11,9 @@
 #include "particle.h"
 #include "cos426_opengl.h"
 #include "player.h"
+#include "bullet.h"
+#include "boid.h"
+//#include "glut.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -45,6 +48,7 @@ static int show_edges = 0;
 static int show_bboxes = 0;
 static int show_lights = 0;
 static int show_camera = 0;
+static int show_bullets = 1;
 static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
@@ -52,6 +56,8 @@ static int show_particle_sources_and_sinks = 1;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
+static bool follow = false;
+static bool view2 = false;
 static int quit = 0;
 
 
@@ -285,6 +291,7 @@ void LoadCamera(R3Camera *camera)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glMultMatrixd(camera_matrix);
+
     glTranslated(-(camera->eye[0]), -(camera->eye[1]), -(camera->eye[2]));
 }
 
@@ -606,23 +613,36 @@ void DrawPlayers(R3Scene *scene)
     double delta_time = current_time - previous_time;
     
     
-    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
-        delta_time = VIDEO_FRAME_DELAY;
-        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
-        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
-    } else { // real time simulation
-        delta_time = current_time - previous_time;
-    }
     
     // Update players
     UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+ //   UpdateBoids(scene, delta_time);
+    UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
     
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+
+    /*    fprintf(stdout, "plane:");
+    scene->players[0]->pos.Print();
+    fprintf(stdout, "\ncam");
+    camera.eye.Print();
+    */
+    if (follow || view2) {
+      //      camera.eye = scene->players[0]->shape->mesh->Center();
+      camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
+      if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
+      camera.towards = scene->players[0]->nose;
+      camera.right = scene->players[0]->wing;
+      camera.up = camera.right;
+      camera.up.Cross(camera.towards);
+      if (view2) camera.eye += .7*camera.up;
+    }
     
     // Render players
     RenderPlayers(scene, current_time - time_lost_taking_videos, delta_time);
+    RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
+//    RenderBoids(scene, )
     
     // Remember previous time
     previous_time = current_time;
@@ -650,14 +670,6 @@ void DrawParticles(R3Scene *scene)
     double delta_time = current_time - previous_time;
     
     
-    if (save_video) { // in video mode, the time that passes only depends on the frame rate ...
-        delta_time = VIDEO_FRAME_DELAY;
-        // ... but we need to keep track how much time we gained and lost so that we can arbitrarily switch back and forth ...
-        time_lost_taking_videos += (current_time - previous_time) - VIDEO_FRAME_DELAY;
-    } else { // real time simulation
-        delta_time = current_time - previous_time;
-    }
-    
     // Update particles
     UpdateParticles(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
@@ -666,6 +678,38 @@ void DrawParticles(R3Scene *scene)
     
     // Render particles
     if (show_particles) RenderParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Remember previous time
+    previous_time = current_time;
+}
+
+void DrawBullets(R3Scene *scene)
+{
+    // Get current time (in seconds) since start of execution
+    double current_time = GetTime();
+    static double previous_time = 0;
+    
+    
+    static double time_lost_taking_videos = 0; // for switching back and forth
+    // between recording and not
+    // recording smoothly
+    
+    // program just started up?
+    if (previous_time == 0) previous_time = current_time;
+    
+    // time passed since starting
+    double delta_time = current_time - previous_time;
+    
+    
+    
+    // Update particles
+    UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
+    
+    // Generate new particles
+    //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
+    
+    // Render particles
+    if (show_bullets) RenderBullets(scene, current_time - time_lost_taking_videos, delta_time);
     
     // Remember previous time
     previous_time = current_time;
@@ -773,51 +817,7 @@ void DrawParticleSprings(R3Scene *scene)
     if (lighting) glEnable(GL_LIGHTING);
 }
 
-void DrawBoostBar(R3Scene *scene) {
-    
-    /*
-    //these points are used for creating rays through each pixel
-    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
-    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
-    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
-    
-    double y = GLUTwindow_height/10.;
-    double x = GLUTwindow_width/10.;
-    //create ray through each pixel
-    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
-    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
-    
-    R3Point p = p1 + upVector + acrossVector;
-    R3Vector vector = p - camera.eye;
-    vector.Normalize();
-    
-    glPointSize(7);
-    glColor3f(1.0, 1.0, 1.0);
-    glBegin(GL_POINTS);
-    R3Point p4 = p + 10 * vector;
-    glVertex3f(p4.X(), p4.Y(), p4.Z());
-    glEnd();
-    
 
-    double x1 = GLUTwindow_width/60.;
-    //create ray through each pixel
-    acrossVector = (p3 - p1) * ((x1 + .5)/GLUTwindow_width);
-    
-    p = p1 + upVector + acrossVector;
-    vector = p - camera.eye;
-    vector.Normalize();
-    
-    glPointSize(7);
-    glColor3f(1.0, 1.0, 1.0);
-    glBegin(GL_POINTS);
-    p4 = p + 10 * vector;
-    glVertex3f(p4.X(), p4.Y(), p4.Z());
-    glEnd();
-
-  */
-
-
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -835,8 +835,23 @@ void GLUTMainLoop(void)
 void GLUTDrawText(const R3Point& p, const char *s)
 {
     // Draw text string s and position p
+
+    glColor3f(0.0, 1.0, 0.0);
     glRasterPos3d(p[0], p[1], p[2]);
-    while (*s) glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *(s++));
+    while (*s)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *(s++));
+
+}
+
+void GLUTDrawLargeText(const R3Point& p, const char *s)
+{
+    // Draw text string s and position p
+    
+    glColor3f(0.0, 1.0, 0.0);
+    glRasterPos3d(p[0], p[1], p[2]);
+    while (*s)
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *(s++));
+    
 }
 
 
@@ -890,6 +905,8 @@ void GLUTIdle(void)
     // Set current window
     if ( glutGetWindow() != GLUTwindow )
         glutSetWindow(GLUTwindow);
+
+
     
     // Redraw
     glutPostRedisplay();
@@ -912,6 +929,188 @@ void GLUTResize(int w, int h)
     // Redraw
     glutPostRedisplay();
 }
+
+void DisplayBoundaryWarning(R3Scene *scene) {
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height * .5;
+    double x = GLUTwindow_width * .20;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    R3Point p4 = p + 10 * vector;
+    
+    const char* buffer = "Leaving Battlefield! Turn Around!";
+    GLUTDrawLargeText(p4, buffer);
+    
+    
+}
+
+void DisplayVelocity(R3Scene *scene) {
+    
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height * .95;
+    double x = GLUTwindow_width * .78;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    R3Point p4 = p + 10 * vector;
+    
+    char buffer [50];
+    sprintf (buffer, "Velocity = %4.2f", scene->players[0]->velocity);
+    GLUTDrawText(p4, buffer);
+    
+}
+
+void DrawBoostAndHealthBar(R3Scene *scene) {
+    
+    
+    //these points are used for creating rays through each pixel
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = .045* GLUTwindow_height;
+    double x = .05 *GLUTwindow_width;
+    
+    //corner one
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    
+    
+    R3Point bl = p + 10 * vector;
+    
+    //corner 2
+    x = max(0.05, scene->players[0]->boost/100. *.95) * GLUTwindow_width;
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point br = p + 10 * vector;
+    
+    //corner 3
+    y = .08 * GLUTwindow_width;
+    upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point tr = p + 10 * vector;
+    
+    
+    //corner 4
+    x = .05 * GLUTwindow_width;
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point tl = p + 10 * vector;
+    
+    
+    
+    if (scene->players[0]->accel)
+        glColor3f(0.0, 1.0, 0.0);
+    else
+        glColor3f(1.0, 0.0, 0.0);
+    
+    glBegin(GL_QUADS);                      // Draw A Quad
+    glVertex3f(tl.X(), tl.Y(), tl.Z());           // Top Left
+    glVertex3f(tr.X(), tr.Y(), tr.Z());           // Top Right
+    glVertex3f(br.X(), br.Y(), br.Z());           // Bottom Right
+    glVertex3f(bl.X(), bl.Y(), bl.Z());           // Bottom Left
+    glEnd();
+    
+    
+    char buffer [50];
+    sprintf (buffer, "Boost = %4.0f %%", scene->players[0]->boost);
+    bl.SetY(bl.Y() + .03);
+    GLUTDrawText(bl, buffer);
+    
+    //draw health bar
+    y = .1* GLUTwindow_height;
+    x = .05 *GLUTwindow_width;
+    
+    //corner one
+    upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    
+    R3Point hbl = p + 10 * vector;
+    
+    //corner 2
+    x = max(0.05, scene->players[0]->health/100. *.95) * GLUTwindow_width;
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point hbr = p + 10 * vector;
+    
+    //corner 3
+    y = .13 * GLUTwindow_width;
+    upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point htr = p + 10 * vector;
+    
+    
+    //corner 4
+    x = .05 * GLUTwindow_width;
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point htl = p + 10 * vector;
+    
+    
+    
+    glColor3f(0.0, 0.0, .8);
+    
+    glBegin(GL_QUADS);                      // Draw A Quad
+    glVertex3f(htl.X(), htl.Y(), htl.Z());           // Top Left
+    glVertex3f(htr.X(), htr.Y(), htr.Z());           // Top Right
+    glVertex3f(hbr.X(), hbr.Y(), hbr.Z());           // Bottom Right
+    glVertex3f(hbl.X(), hbl.Y(), hbl.Z());           // Bottom Left
+    glEnd();
+    
+    
+    sprintf (buffer, "Health = %4.0f %%", scene->players[0]->health);
+    hbl.SetY(hbl.Y() + .03);
+    GLUTDrawText(hbl, buffer);
+}
+
 
 
 void GLUTRedraw(void)
@@ -955,7 +1154,14 @@ void GLUTRedraw(void)
     DrawParticleSprings(scene);
     
     //draw boost bar
-    DrawBoostBar(scene); 
+    DrawBoostAndHealthBar(scene);
+
+  //  DisplayBoundaryWarning(scene);
+
+    
+    //Display velocity
+    DisplayVelocity(scene); 
+
     
     // Draw scene surfaces
     if (show_faces) {
@@ -1008,6 +1214,10 @@ void GLUTRedraw(void)
             quit = 1;
         }
     }
+
+
+  
+
     
     // Quit here so that can save image before exit
     if (quit) {
@@ -1035,7 +1245,7 @@ void GLUTMotion(int x, int y)
     if ((dx != 0) || (dy != 0)) {
         R3Point scene_center = scene->bbox.Centroid();
         if ((GLUTbutton[0] && (GLUTmodifiers & GLUT_ACTIVE_SHIFT)) || GLUTbutton[1]) {
-            // Scale world
+            // Scale world?
             double factor = (double) dx / (double) GLUTwindow_width;
             factor += (double) dy / (double) GLUTwindow_height;
             factor = exp(2.0 * factor);
@@ -1072,6 +1282,7 @@ void GLUTMotion(int x, int y)
             glutPostRedisplay();
         }
     }
+
     
     // Remember mouse position
     GLUTmouse[0] = x;
@@ -1149,6 +1360,36 @@ void keyboard()
         scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
         
     }
+
+    
+    //shoot
+    if (keyStates['G'] || keyStates['g']){
+        //fprintf(stderr,"%d\n",scene->bullets.size());
+        // generate a bullet from the plane
+        R3Bullet *bullet = new R3Bullet();
+        bullet->position = scene->players[0]->pos + scene->players[0]->nose;
+        bullet->velocity = 6*(scene->players[0]->velocity)*(scene->players[0]->nose);
+        bullet->lifetimeactive = true;
+        bullet->lifetime = 1.0;
+        static R3Material sink_material;
+        if (sink_material.id != 33) {
+            sink_material.ka.Reset(0.2,0.2,0.2,1);
+            sink_material.kd.Reset(1,0,0,1);
+            sink_material.ks.Reset(1,0,0,1);
+            sink_material.kt.Reset(0,0,0,1);
+            sink_material.emission.Reset(0,0,0,1);
+            sink_material.shininess = 1;
+            sink_material.indexofrefraction = 1;
+            sink_material.texture = NULL;
+            sink_material.texture_index = -1;
+            sink_material.id = 33;
+        }
+        bullet->material = &sink_material;
+        
+        scene->bullets.push_back(bullet);
+        
+    }
+
     
     if (keyStates['S'] || keyStates['s']){
         scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
@@ -1170,25 +1411,59 @@ void keyboard()
         //ran out of boost but still pressing h
         if (scene->players[0]->boost <= 0) {
             scene->players[0]->boost = 0;
-            scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+            scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .95);
+            scene->players[0]->accel = false; 
         }
         //boosting
-        else {
-            scene->players[0]->boost -= .01;
-            scene->players[0]->velocity = min(50*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 20);
+        else if (scene->players[0]->accel) {
+            scene->players[0]->boost -= 3;
+            scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
+            /*
+            //generate trail
+            R3ParticleSource *source = new R3ParticleSource();
+            R3Shape *shape = new R3Shape();
+            shape->type = R3_CIRCLE_SHAPE;
+            R3Circle *circle = new R3Circle(scene->players[0]->pos, .2, scene->players[0]->nose);
+            shape->circle = circle;
+            source->shape = shape;
+            source->shape = shape;
+            source->mass = .0001;
+            source->fixed = false;
+            source->drag= 0;
+            source->elasticity = 1;
+            source->lifetime = .5;
+            source->rate = 10;
+            source->velocity = 5;
+            source->angle_cutoff = 1;
+            R3Material *material = new R3Material();
+            material->kd[0] = 1;
+            material->kd[1] = 0;
+            material->kd[2] = 0;
+            source->material = material;
+            GenerateParticles(scene, source, 1);
+            printf("here!\n");
+            delete source->shape;
+            delete source;  */
         }
+        else
+            scene->players[0]->boost = min(scene->players[0]->boost + .33, (double)100);
+
     }
-    else {
-        scene->players[0]->boost = min(scene->players[0]->boost + 1, (double)100);
-        scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .8);
+    else { //regaining boost power
+        scene->players[0]->boost = min(scene->players[0]->boost + .25, (double)100);
+        scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .95);
+        if (scene->players[0]->boost == 100)
+            scene->players[0]->accel = true; 
     }
-     
+
     
 }
 
 void keyUp (unsigned char key, int x, int y) {
     keyStates[key] = false; // Set the state of the current key to not pressed
 }
+
+
 
 void GLUTKeyboard(unsigned char key, int x, int y)
 {
@@ -1218,17 +1493,26 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'A':
         case 'a':
             keyStates['a'] = true;
+            break;
+            
+        case 'G':
+        case 'g':
+            keyStates['g'] = true;
+            break;
+
             
         case 'H':
         case 'h':
             keyStates['h'] = true;
-            
-            
             break;
             
+            
+        //boid test code
         case 'B':
         case 'b':
             show_bboxes = !show_bboxes;
+
+//            GenerateBoids(scene, 2, 15.);
             break;
             
         case 'C':
@@ -1250,6 +1534,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'l':
             show_lights = !show_lights;
             break;
+
             
         case 'P':
         case 'p':
@@ -1260,6 +1545,21 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'r':
             show_particle_springs = !show_particle_springs;
             break;
+            
+        case 'X':
+        case 'x':
+            follow = !follow;
+            if (follow)
+                view2 = false;
+            break;
+            
+        case 'Z':
+        case 'z':
+            view2 = !view2;
+            if (view2)
+                follow = false; 
+            break;
+
             /*
              case 'S':
              case 's':
