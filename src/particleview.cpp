@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // INCLUDE FILES
 ////////////////////////////////////////////////////////////
-
+#include "Utilities.h"
 #include "R3/R3.h"
 #include "R3Scene.h"
 #include "particle.h"
@@ -26,6 +26,18 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 ////////////////////////////////////////////////////////////
 
 void keyboard();
+
+GLint UniformLocation;
+
+bool useShader=false;
+//vertex shader handle                                                                                                                                                             
+static GLuint v;
+//fragment shader handle                                                                                                                                                           
+static GLuint f;
+//shader program handle                                                                                                                                                            
+//using zero value sets OpenGL back to using fixed pipeline                                                                                                                        
+static GLuint shader=0;
+
 
 // Program arguments
 
@@ -255,9 +267,11 @@ void LoadMaterial(R3Material *material)
         // Select texture
         glBindTexture(GL_TEXTURE_2D, material->texture_index);
         glEnable(GL_TEXTURE_2D);
+	glUniform1i(UniformLocation, 1);
     }
     else {
         glDisable(GL_TEXTURE_2D);
+	glUniform1i(UniformLocation, 0);
     }
     
     // Enable blending for transparent surfaces
@@ -1609,7 +1623,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         //boid test code
         case 'B':
         case 'b':
-            show_bboxes = !show_bboxes;
+//            show_bboxes = !show_bboxes;
             GenerateBoids(scene, 2, 15.);
             break;
             
@@ -1669,6 +1683,19 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 27: // ESCAPE
             quit = 1;
             break;
+
+    case 'k':
+      useShader=!useShader;
+      cout<<"\rShader is "<<(useShader?"on ":"off")<<flush;
+      if(useShader) {
+	glUseProgram(shader);
+	UniformLocation = glGetUniformLocation(shader, "texton");
+      }
+      else
+	glUseProgram(0);
+      break;
+    
+
             
         case ' ': {
             printf("camera %g %g %g  %g %g %g  %g %g %g  %g  %g %g \n",
@@ -1852,6 +1879,61 @@ ParseArgs(int argc, char **argv)
 }
 
 
+// set the toon shader stuff
+GLuint setShaders() {
+
+  char *vs,*fs;
+
+  v = glCreateShader(GL_VERTEX_SHADER);
+  f = glCreateShader(GL_FRAGMENT_SHADER);
+
+  if (!v || !f) fprintf(stderr, "well, shit");
+
+  fprintf(stderr, "here1");
+
+  vs = textFileRead("./toon.vert");
+  fprintf(stderr, "here2");
+  fs = textFileRead("./toon.frag");
+  fprintf(stderr, "here3");
+
+  if (!vs) fprintf(stderr, "not v");
+  if (!fs) fprintf(stderr, "not f");
+
+  if(vs && fs)
+    {
+
+      const char * vv = vs;
+      const char * ff = fs;
+
+      fprintf(stderr, "here4");
+      glShaderSource(v, 1, &vv,NULL);
+      glShaderSource(f, 1, &ff,NULL);
+  fprintf(stderr, "here5");
+      free(vs);free(fs);
+
+      glCompileShader(v);
+      printShaderInfoLog(v);
+      glCompileShader(f);
+      printShaderInfoLog(f);
+  fprintf(stderr, "here6");
+      GLuint p = glCreateProgram();
+
+      glAttachShader(p,v);
+      glAttachShader(p,f);
+  fprintf(stderr, "here7");
+      glLinkProgram(p);
+      printProgramInfoLog(p);
+      //glUseProgram(p); --> let's not rush with using the shader right away                                                                                             
+      //see processNormalKeys for turning shader on and off                                                                                                              
+
+  fprintf(stderr, "here8");
+
+      return p;
+    }
+  cerr<<"Could not read the shader source"<<endl;
+  return 0;
+}
+
 
 ////////////////////////////////////////////////////////////
 // MAIN
@@ -1874,6 +1956,22 @@ main(int argc, char **argv)
     // Read scene
     scene = ReadScene(input_scene_name);
     if (!scene) exit(-1);
+
+
+    float versionGL = initGlew(true);
+    if(versionGL!=0.)
+      cout<<"Glew ready to go with OpenGL "<<versionGL<<"\n==================="<<endl;
+    else
+      {
+	cout<<"Glew failed to initialize \n==================="<<endl;
+	exit(-1);
+      }
+
+    shader=setShaders();
+    cout<<"Shader program "<<shader<<endl;
+
+    glShadeModel (GL_SMOOTH);
+
 
     // Run GLUT interface
     GLUTMainLoop();

@@ -66,18 +66,10 @@ bool CheckBoundingBoxWithSphere(R3Sphere *sphere, R3Player *player) {
 
 bool ComputeSphereIntersection(R3Sphere *sphere, R3Player *player) {
 	//if (CheckBoundingBoxWithSphere(sphere, player)) {
-  
-  bool in = true;
-  bool out = true;
 		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
-			
-		  if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) > sphere->Radius())
-		    in = false;
-		  if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) < sphere->Radius())
-		    out = false;
+			if (R3Distance(player->shape->mesh->vertices[i]->position, sphere->Center()) < sphere->Radius())
+				return true;
 		}
-
-		if (!in && !out) return true;
 	//}
 	return false;
 }
@@ -207,7 +199,6 @@ void Explode(R3Scene *scene, R3Player *player) {
 }
 
 void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int integration_type) {
-    
     if (scene->players.size() != 0) {
 		scene->players[0]->pos += delta_time * (scene->players[0]->velocity * scene->players[0]->nose);
 		
@@ -227,5 +218,6 @@ void UpdatePlayers(R3Scene *scene, double current_time, double delta_time, int i
 				Explode(scene, scene->players[0]);
 			}
 		}
+		
 	}
 }

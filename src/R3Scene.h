@@ -171,7 +171,7 @@ struct R3Bullet {
 
 struct R3Boid {
     R3Shape *shape; 
-    R3Point position;
+    R3Point pos;
     R3Vector velocity;
     double health;
     R3Material *material;
