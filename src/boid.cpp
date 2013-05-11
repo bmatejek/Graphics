@@ -1,10 +1,12 @@
 //
 //  boid.cpp
-//  
+//
 //
 //  Created by Mark Whelan on 5/11/13.
 //
 //
+
+
 
 #include "R2/R2.h"
 #include "R3/R3.h"
@@ -23,70 +25,263 @@ using namespace std;
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
 
+////////////////////////////////////////////////////////////
+// checking boid intersections
+////////////////////////////////////////////////////////////
+double meshIntersection(R3Mesh *mesh, R3Ray *ray) {
+    
+    for (int i = 0; i < (int)mesh->faces.size(); i++) {
+        assert (mesh->faces[i]->vertices.size() == 3);
+        
+        //check if ray intersects plane
+        R3Plane *plane = &mesh->faces[i]->plane;
+        double denominator = ray->Vector().Dot(plane->Normal());
+        if (denominator == 0)
+            continue;
+        
+        double numerator = plane->Normal().Dot(plane->Point() - ray->Start());
+        double t = numerator/denominator;
+        
+        if (t <= 0)
+            continue;
+        
+        
+        //check if intersects the face
+        R3Vector v1 = mesh->faces[i]->vertices[0]->position - (ray->Start() + (ray->Vector() * t));
+        R3Vector v2 = mesh->faces[i]->vertices[1]->position - (ray->Start() + (ray->Vector() * t));
+        v1.Cross(v2);
+        v1.Normalize();
+        if (ray->Vector().Dot(v1) > 0)
+            continue;
+        
+        v1 = mesh->faces[i]->vertices[1]->position - (ray->Start() + (ray->Vector() * t));
+        v2 = mesh->faces[i]->vertices[2]->position - (ray->Start() + (ray->Vector() * t));
+        v1.Cross(v2);
+        v1.Normalize();
+        if (ray->Vector().Dot(v1) > 0)
+            continue;
+        
+        v1 = mesh->faces[i]->vertices[2]->position - (ray->Start() + (ray->Vector() * t));
+        v2 = mesh->faces[i]->vertices[0]->position - (ray->Start() + (ray->Vector() * t));
+        v1.Cross(v2);
+        v1.Normalize();
+        if (ray->Vector().Dot(v1) > 0)
+            continue;
+        
+        
+        //check if intersects the triangle
+        return t;
+    }
+    return -1;
+}
+
+////////////////////////////////////////////////////////////
+// Explode Boids
+////////////////////////////////////////////////////////////
+void deleteBoid(R3Scene *scene, R3Boid* boid) {
+   
+    for (int i = 0; i < (int)scene->boids.size(); i++) {
+        if (scene->boids[i] == boid) {
+            scene->boids[i] = scene->boids.back();
+            scene->boids.pop_back();
+            break;
+        }
+    }
+}
+
+void Explode(R3Scene *scene, R3Boid *boid) {
+	if (boid->shape->type == R3_MESH_SHAPE) {
+		for (unsigned int i = 0; i < boid->shape->mesh->vertices.size(); i++) {
+            R3Particle *particle = new R3Particle();
+            double speed = 1 * (double)rand() / RAND_MAX;;
+            double x1 = 10 * (double)rand() / RAND_MAX;;
+            double x2 = 10 * (double)rand() / RAND_MAX;;
+            double x3 = 10 * (double)rand() / RAND_MAX;;
+            double mass = 0.00000001;
+            double drag = 0.0;
+            double elasticity = 0.0;
+            R3Vector velocity = R3Vector(x1, x2, x3);
+            velocity.Normalize();
+            
+            static R3Material sink;
+            static R3Material sink_material;
+            static R3Material sink_material2;
+            static R3Material sink_material3;
+            
+            if (sink.id != 33) {
+                sink.ka.Reset(0.2,0.2,0.2,1);
+                sink.kd.Reset(1,0,0,1);
+                sink.ks.Reset(1,0,0,1);
+                sink.kt.Reset(0,0,0,1);
+                sink.emission.Reset(1, 1, 1,1);
+                sink.shininess = 1;
+                sink.indexofrefraction = 1;
+                sink.texture = NULL;
+                sink.texture_index = -1;
+                sink.id = 33;
+            }
+            if (sink_material.id != 33) {
+                sink_material.ka.Reset(0.2,0.2,0.2,1);
+                sink_material.kd.Reset(1,0,0,1);
+                sink_material.ks.Reset(1,0,0,1);
+                sink_material.kt.Reset(0,0,0,1);
+                sink_material.emission.Reset(1, 1, 1,1);
+                sink_material.shininess = 1;
+                sink_material.indexofrefraction = 1;
+                sink_material.texture = NULL;
+                sink_material.texture_index = -1;
+                sink_material.id = 33;
+            }
+            if (sink_material2.id != 33) {
+                sink_material2.ka.Reset(0.2,0.2,0.2,1);
+                sink_material2.kd.Reset(0.96,0.44,0.11,1);
+                sink_material2.ks.Reset(0.96,0.44,0.11,1);
+                sink_material2.kt.Reset(0,0,0,1);
+                sink_material2.emission.Reset(1, 1, 1,1);
+                sink_material2.shininess = 1;
+                sink_material2.indexofrefraction = 1;
+                sink_material2.texture = NULL;
+                sink_material2.texture_index = -1;
+                sink_material2.id = 33;
+            }
+            if (sink_material3.id != 33) {
+                sink_material3.ka.Reset(0.2,0.2,0.2,1);
+                sink_material.kd.Reset(1,0.83,0,1);
+                sink_material.ks.Reset(1,0.83,0,1);
+                sink_material3.kt.Reset(0,0,0,1);
+                sink_material3.emission.Reset(1, 1, 1,1);
+                sink_material3.shininess = 1;
+                sink_material3.indexofrefraction = 1;
+                sink_material3.texture = NULL;
+                sink_material3.texture_index = -1;
+                sink_material3.id = 33;
+            }
+            
+            particle->position = R3Point(boid->shape->mesh->vertices[i]->position);
+            particle->velocity = speed * velocity;
+            particle->mass = mass;
+            particle->fixed = false;
+            particle->drag = drag;
+            particle->elasticity = elasticity;
+            particle->lifetimeactive = true;
+            particle->lifetime = 1.0;
+            if (x1 < 0.5)
+                particle->material = &sink_material;
+            else if (x1 < 3.33)
+                particle->material = &sink;
+            else if (x1 < 6.67)
+                particle->material = &sink_material2;
+            else
+                particle->material = &sink_material3;
+            scene->particles.push_back(particle);
+        }
+	}
+    deleteBoid(scene, boid);
+}
+
+
+
+////////////////////////////////////////////////////////////
+// Generate Boids
+////////////////////////////////////////////////////////////
 void GenerateBoids(R3Scene *scene, int quantity, double distAway){
-
-    double u = (double)rand() / RAND_MAX;
-    double v = (double)rand() / RAND_MAX;
     
-    double theta = 2 * M_PI * u;
-    double phi = acos((2 * v) - 1);
     
-    double x = scene->players[0]->pos.X() + (distAway * cos(theta) * sin(phi));
-    double y = scene->players[0]->pos.Y() + (distAway * sin(theta) * sin(phi));
-    double z = scene->players[0]->pos.Z() + (distAway * cos(phi));
-    
-    R3Boid *boid = new R3Boid();
-    boid->pos = R3Point(x, y, z);
-    
-    //create mesh
-    R3Mesh *mesh = new R3Mesh();
-    if (!mesh) {
-        fprintf(stderr, "Unable to allocate mesh\n");
-        return;
+    for (int i = 0; i < quantity; i++) {
+        double u = (double)rand() / RAND_MAX;
+        double v = (double)rand() / RAND_MAX;
+        
+        double theta = 2 * M_PI * u;
+        double phi = acos((2 * v) - 1);
+        
+        double x = scene->players[0]->pos.X() + (distAway * cos(theta) * sin(phi));
+        double y = scene->players[0]->pos.Y() + (distAway * sin(theta) * sin(phi));
+        double z = scene->players[0]->pos.Z() + (distAway * cos(phi));
+        
+        R3Boid *boid = new R3Boid();
+        boid->pos = R3Point(x, y, z);
+        
+        //create mesh
+        R3Mesh *mesh = new R3Mesh();
+        if (!mesh) {
+            fprintf(stderr, "Unable to allocate mesh\n");
+            return;
+        }
+        
+        // Read mesh file
+        if (!mesh->Read("../input/smallTetra.off")) {
+            fprintf(stderr, "Unable to read mesh: ../input/smallTetra.off\n");
+            return;
+        }
+        
+        
+        // Create shape
+        R3Shape *shape = new R3Shape();
+        shape->type = R3_MESH_SHAPE;
+        shape->box = NULL;
+        shape->sphere = NULL;
+        shape->cylinder = NULL;
+        shape->cone = NULL;
+        shape->mesh = mesh;
+        shape->segment = NULL;
+        boid->shape = shape;
+        
+        //create boid
+        R3Vector towardsPlayer = scene->players[0]->pos - boid->pos;
+        towardsPlayer.Normalize();
+        boid->velocity = towardsPlayer;
+        boid->velocity.Normalize();
+        //        boid->speed = scene->players[0]->defaultVelocity;
+        boid->speed = 0;
+        boid->health = 100;
+        R3Material *material = new R3Material();
+        material->kd[0] = 0;
+        material->kd[1] = 0;
+        material->kd[2] = 1;
+        boid->material = material;
+        
+        //update mesh properties
+        boid->shape->mesh->Translate(x, y, z);
+        boid->shape->mesh->Center() = boid->pos;
+        
+        scene->boids.push_back(boid);
     }
+}
 
-    // Read mesh file
-    if (!mesh->Read("../input/smallTetra.off")) {
-        fprintf(stderr, "Unable to read mesh: ../input/smallTetra.off\n");
-        return;
+void updateBoidVelocity(R3Scene *scene, R3Boid *boid) {
+    boid->velocity = scene->players[0]->pos - boid->pos;
+    boid->velocity.Normalize();
+}
+
+
+void killShotBoids(R3Scene *scene, double delta_time) {
+    for (int i = 0; i < (int)scene->bullets.size(); i++) {
+        for (int j = 0; j < (int)scene->boids.size(); j++) {
+            R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
+            double intersection = meshIntersection(scene->boids[j]->shape->mesh, ray);
+            if (intersection > 0) {
+                Explode(scene, scene->boids[j]);
+                deleteBoid(scene, scene->boids[j]);
+            }
+        }
     }
-    
-    
-    // Create shape
-    R3Shape *shape = new R3Shape();
-    shape->type = R3_MESH_SHAPE;
-    shape->box = NULL;
-    shape->sphere = NULL;
-    shape->cylinder = NULL;
-    shape->cone = NULL;
-    shape->mesh = mesh;
-    shape->segment = NULL;
-    boid->shape = shape; 
-    
-    //create boid
-    R3Vector towardsPlayer = scene->players[0]->pos - boid->pos;
-    towardsPlayer.Normalize();
-    boid->velocity = .5 * scene->players[0]->velocity * towardsPlayer;
-    boid->health = 100;
-    R3Material *material = new R3Material();
-    material->kd[0] = 0;
-    material->kd[1] = 0;
-    material->kd[2] = 1;
-    boid->material = material;
-    
-    scene->boids.push_back(boid);
-    printf("num boids = %d \n", (int)scene->boids.size()); 
 }
 
 void UpdateBoids(R3Scene *scene, double delta_time) {
     
-    for (int i = 0; i < (int)scene->boids.size(); i++) { 
-        scene->boids[i]->pos += delta_time * (scene->boids[i]->velocity);
+    //check if any boids have died
+    killShotBoids(scene, delta_time);
+    
+    //update boid position and velocity
+    for (int i = 0; i < (int)scene->boids.size(); i++) {
+        scene->boids[i]->pos += delta_time * (scene->boids[i]->speed * scene->boids[i]->velocity);
         
-        double dx = delta_time* scene->boids[i]->velocity.X();
-        double dy = delta_time* scene->boids[i]->velocity.Y();
-        double dz = delta_time* scene->boids[i]->velocity.Z();
+        double dx = delta_time* scene->boids[i]->speed * scene->boids[i]->velocity.X();
+        double dy = delta_time* scene->boids[i]->speed *scene->boids[i]->velocity.Y();
+        double dz = delta_time* scene->boids[i]->speed * scene->boids[i]->velocity.Z();
         scene->boids[i]->shape->mesh->Translate(dx, dy, dz);
-        scene->boids[i]->shape->mesh->Center() += delta_time * (scene->boids[i]->velocity);
+        scene->boids[i]->shape->mesh->Center() += delta_time * (scene->boids[i]->speed * scene->boids[i]->velocity);
+        
+        updateBoidVelocity(scene, scene->boids[i]);
     }
 }

@@ -1731,7 +1731,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'B':
         case 'b':
 //            show_bboxes = !show_bboxes;
-            GenerateBoids(scene, 2, 15.);
+            GenerateBoids(scene, 2, 50.);
             break;
             
         case 'C':
