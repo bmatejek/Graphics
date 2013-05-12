@@ -6,7 +6,8 @@
 
 ambient 1 1 1 
 
-material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 lion.jpg
+material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 mars.jpg
+material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 stars.jpg
 
 # A mesh with default material (-1) read from ico.off
 player   -1    77.off 0 0 0 0 0 -1 1 0 0 1
@@ -14,7 +15,7 @@ player   -1    77.off 0 0 0 0 0 -1 1 0 0 1
 
 ### this sphere has to be first
 sphere 
-	0 0 -12 -15 100
+  1 0 0 0 1000
  
 sphere
  -1 -30 -40 -10 14
@@ -24,16 +25,9 @@ sphere
 
 sphere
  -1 -60 60 -150 20
-
 	
-#enemy
-#	0.1 0 0.0 0.0 1.0 -1
-#	35 1 0
-#	0.0 0 0 1
-#	sphere -10 0 0 0.4
-	
-#enemy
-#	0.1 0 0.0 0.0 1.0 -1
-#	35 1 0
-#	0.05 0 0 1
-#	sphere -20 0 0 0.4
+enemy
+	0.1 0 0.0 0.0 1.0 -1
+	35 1 0
+	0.0 0 0 1
+	mesh ship_01.off

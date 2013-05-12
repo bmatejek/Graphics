@@ -14,6 +14,7 @@
 #include "bullet.h"
 #include "boid.h"
 #include "raytrace.h"
+#include <cstdlib>
 
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
@@ -894,6 +895,21 @@ void DrawParticleSources(R3Scene *scene)
     if (!lighting) glDisable(GL_LIGHTING);
 }
 
+void killShotEnemy(R3Scene *scene, double delta_time) {
+  if (scene->enemies.size() == 0)
+    return;
+
+  double distAway = 15;
+  for (int i = 0; i < (int) scene->bullets.size(); i++) {
+    R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
+    double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
+    if (intersection > scene->bullets[i]->velocity.Length() * delta_time) {
+      printf("Here\n");
+      scene->enemies[0]->health -= 1;
+    }
+  }
+}
+
 
 void DrawEnemies(R3Scene *scene)
 {
@@ -906,12 +922,14 @@ void DrawEnemies(R3Scene *scene)
     GLboolean lighting = glIsEnabled(GL_LIGHTING);
     glEnable(GL_LIGHTING);
 
+
+
     // Define source material
     static R3Material enemy_material;
     if (enemy_material.id != 33) {
         enemy_material.ka.Reset(0.2,0.2,0.2,1);
-        enemy_material.kd.Reset(0.69,0.8,0.05,1);
-        enemy_material.ks.Reset(0.69,0.8,0.05,1);
+        enemy_material.kd.Reset(0.45,0.45,0.45,1);
+        enemy_material.ks.Reset(0.45,0.45,0.45,1);
         enemy_material.kt.Reset(0,0,0,1);
         enemy_material.emission.Reset(0,0,0,1);
         enemy_material.shininess = 1;
@@ -925,6 +943,8 @@ void DrawEnemies(R3Scene *scene)
     
     // time passed since starting
     double delta_time = current_time - previous_time;
+
+    killShotEnemy(scene, delta_time);
 	
     // Draw all particle sources
     glEnable(GL_LIGHTING);
@@ -933,13 +953,11 @@ void DrawEnemies(R3Scene *scene)
         R3Enemy *enemy = scene->enemies[i];
 		// update the center position
 		if (scene->players.size() != 0) {
-			R3Vector direction = scene->players[i]->shape->mesh->Center() - enemy->shape->sphere->Center();
-			R3Ray *ray = new R3Ray(enemy->shape->sphere->Center(), direction);
+			R3Vector direction = scene->players[i]->shape->mesh->Center() - enemy->shape->mesh->Center();
+			R3Ray *ray = new R3Ray(enemy->shape->mesh->Center() + direction * enemy->shape->mesh->bbox.ZLength() / 2, direction);
 			R3Intersect intersection = ComputeIntersect(scene, scene->root, ray);
-			if (!intersection.intersected) {
-				direction.Normalize();
-				enemy->shape->sphere->Translate(direction * enemy->speed);
-			}
+			direction.Normalize();
+			enemy->shape->mesh->Translate(direction.X() * enemy->speed, direction.Y() * enemy->speed, direction.Z() * enemy->speed);
 		}
 		//else {
 		//	R3Vector direction = scene->root->children[0]->shape->sphere->Center() - scene->players[i]->shape->mesh->Center();
@@ -1439,7 +1457,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     glEnable(GL_LIGHTING);
     LoadMaterial(&source_material1);
     
-    glBegin(GL_QUADS);                      // Draw A Quad
+    glBegin(GL_QUADS);                               // Draw A Quad
     glVertex3f(htl.X(), htl.Y(), htl.Z());           // Top Left
     glVertex3f(htr.X(), htr.Y(), htr.Z());           // Top Right
     glVertex3f(hbr.X(), hbr.Y(), hbr.Z());           // Bottom Right
@@ -1451,6 +1469,90 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
  //   hbl.SetY(hbl.Y() + .03);
     GLUTDrawText(hbl, buffer);
      */
+
+    double top = 0.98;
+
+    /* Draw Health Bar for Main Boss */
+    y = top * GLUTwindow_height;
+    x = left * GLUTwindow_width;
+    
+    //corner one
+    upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    
+    R3Point ebl = p + depth * vector;
+    
+    //corner 2
+    x = max(left, scene->enemies[0]->health/100. *right) * GLUTwindow_width;
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point ebr = p + depth * vector;
+    
+    //corner 3
+    y = (top + height) * GLUTwindow_width;
+    upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point etr = p + depth * vector;
+    
+    
+    //corner 4
+    x = left * GLUTwindow_width;
+    acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    p = p1 + upVector + acrossVector;
+    vector = p - camera.eye;
+    vector.Normalize();
+    
+    R3Point etl = p + depth * vector;
+        
+    // Define source material
+    static R3Material source_material_enemy;
+    if (source_material_enemy.id != 33) {
+        source_material_enemy.ka.Reset(0.2,0.2,0.2,1);
+        source_material_enemy.kd.Reset(1,0,0,1);
+        source_material_enemy.ks.Reset(1,0,0,1);
+        source_material_enemy.kt.Reset(0,0,0,1);
+        source_material_enemy.emission.Reset(1,0,0,1);
+        source_material_enemy.shininess = 1;
+        source_material_enemy.indexofrefraction = 1;
+        source_material_enemy.texture = NULL;
+        source_material_enemy.texture_index = -1;
+        source_material_enemy.id = 33;
+    }
+    
+    // Draw all particle sources
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material_enemy);
+    
+    glBegin(GL_QUADS);                               // Draw A Quad
+    glVertex3f(etl.X(), etl.Y(), etl.Z());           // Top Left
+    glVertex3f(etr.X(), etr.Y(), etr.Z());           // Top Right
+    glVertex3f(ebr.X(), ebr.Y(), ebr.Z());           // Bottom Right
+    glVertex3f(ebl.X(), ebl.Y(), ebl.Z());           // Bottom Left
+    glEnd();
+    
+
+    // Draw crosshairs
+    x = 0.5 * GLUTwindow_height;
+    y = 0.5 * GLUTwindow_width;
+    
+    /*glBegin(GL_LINE);
+    glVertex3f(x);
+    glVertex3f();
+    glEnd();*/
     
     // Clean up
     glLineWidth(1);
@@ -2152,10 +2254,7 @@ GLuint setShaders() {
       glLinkProgram(p);
       printProgramInfoLog(p);
       //glUseProgram(p); --> let's not rush with using the shader right away                                                                                             
-      //see processNormalKeys for turning shader on and off                                                                                                              
-
-
-
+      //see processNormalKeys for turning shader on and off                                                                                                          
       return p;
     }
   cerr<<"Could not read the shader source"<<endl;
@@ -2170,6 +2269,7 @@ GLuint setShaders() {
 int
 main(int argc, char **argv)
 {
+  system("java HelloWorld");
     for (int i = 0; i < 256; i++) {
         keyStates[i] = false;
     }
@@ -2185,7 +2285,12 @@ main(int argc, char **argv)
     scene = ReadScene(input_scene_name);
     if (!scene) exit(-1);
 
-
+    if (scene->enemies.size() != 0 && scene->enemies[0]->shape->type == R3_MESH_SHAPE) {
+      scene->enemies[0]->shape->mesh->Translate(-10, -40, -40);
+      scene->enemies[0]->shape->mesh->Scale(0.50, 0.50, 0.50);
+      scene->enemies[0]->shape->mesh->Rotate(1.57, R3Line(R3Point(-10, -40, -40), R3Vector(0, 0, -1)));
+    }
+    
     float versionGL = initGlew(true);
     if(versionGL!=0.)
       cout<<"Glew ready to go with OpenGL "<<versionGL<<"\n==================="<<endl;
