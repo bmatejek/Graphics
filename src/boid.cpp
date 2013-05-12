@@ -25,6 +25,7 @@ using namespace std;
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
 
+
 ////////////////////////////////////////////////////////////
 // checking boid bullet intersections
 ////////////////////////////////////////////////////////////
@@ -72,7 +73,8 @@ double meshIntersection(R3Mesh *mesh, R3Ray *ray) {
         //check if intersects the triangle
         return t;
     }
-    return -1;
+    // return a ridiculously large number
+    return 1e80;
 }
 
 ////////////////////////////////////////////////////////////
@@ -263,7 +265,7 @@ void killShotBoids(R3Scene *scene, double delta_time) {
         for (int j = 0; j < (int)scene->boids.size(); j++) {
             R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
             double intersection = meshIntersection(scene->boids[j]->shape->mesh, ray);
-            if (intersection > scene->bullets[i]->velocity.Length() * delta_time) {
+            if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
                 Explode(scene, scene->boids[j]);
                 deleteBoid(scene, scene->boids[j]);
                 GenerateBoids(scene, 2, distAway);

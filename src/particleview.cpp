@@ -899,13 +899,22 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
   if (scene->enemies.size() == 0)
     return;
 
-  double distAway = 15;
+  vector<int> deleteBullets;
+
   for (int i = 0; i < (int) scene->bullets.size(); i++) {
     R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
     double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
-    if (intersection > scene->bullets[i]->velocity.Length() * delta_time) {
-      printf("Here\n");
+    //printf("%f\n", intersection);
+    //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
+    if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
       scene->enemies[0]->health -= 1;
+      scene->bullets.erase(scene->bullets.begin() + i);
+      i--;
+      if (scene->enemies[0]->health < 0) {
+	// PRINT WIN MESSAGE
+	Explode(scene, scene->enemies[0]);
+	return;
+      }
     }
   }
 }
@@ -913,7 +922,9 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
 
 void DrawEnemies(R3Scene *scene)
 {
-    
+  if (scene->enemies.size() == 0)
+    return;
+
   // Get current time (in seconds) since start of execution
   double current_time = GetTime();
   static double previous_time = 0;
@@ -945,7 +956,9 @@ void DrawEnemies(R3Scene *scene)
     double delta_time = current_time - previous_time;
 
     killShotEnemy(scene, delta_time);
-	
+    if (scene->enemies.size() == 0)
+      return;
+
     // Draw all particle sources
     glEnable(GL_LIGHTING);
     LoadMaterial(&enemy_material);
