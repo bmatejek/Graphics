@@ -914,30 +914,30 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
 void DrawEnemies(R3Scene *scene)
 {
     
-	// Get current time (in seconds) since start of execution
-    double current_time = GetTime();
-    static double previous_time = 0;
+  // Get current time (in seconds) since start of execution
+  double current_time = GetTime();
+  static double previous_time = 0;
 	
-    // Setup
-    GLboolean lighting = glIsEnabled(GL_LIGHTING);
-    glEnable(GL_LIGHTING);
+  // Setup
+  GLboolean lighting = glIsEnabled(GL_LIGHTING);
+  glEnable(GL_LIGHTING);
 
 
 
-    // Define source material
-    static R3Material enemy_material;
-    if (enemy_material.id != 33) {
-        enemy_material.ka.Reset(0.2,0.2,0.2,1);
-        enemy_material.kd.Reset(0.45,0.45,0.45,1);
-        enemy_material.ks.Reset(0.45,0.45,0.45,1);
-        enemy_material.kt.Reset(0,0,0,1);
-        enemy_material.emission.Reset(0,0,0,1);
-        enemy_material.shininess = 1;
-        enemy_material.indexofrefraction = 1;
-        enemy_material.texture = NULL;
-        enemy_material.texture_index = -1;
-        enemy_material.id = 33;
-    }
+  // Define source material
+  static R3Material enemy_material;
+  if (enemy_material.id != 33) {
+    enemy_material.ka.Reset(0.2,0.2,0.2,1);
+    enemy_material.kd.Reset(0.45,0.45,0.45,1);
+    enemy_material.ks.Reset(0.45,0.45,0.45,1);
+    enemy_material.kt.Reset(0,0,0,1);
+    enemy_material.emission.Reset(0,0,0,1);
+    enemy_material.shininess = 1;
+    enemy_material.indexofrefraction = 1;
+    enemy_material.texture = NULL;
+    enemy_material.texture_index = -1;
+    enemy_material.id = 33;
+  }
 	// program just started up?
     if (previous_time == 0) previous_time = current_time;
     

@@ -462,7 +462,7 @@ Read(const char *filename, R3Node *node)
             else if (shape->type == R3_MESH_SHAPE) bbox.Union(shape->mesh->bbox);
         }
 		
-		else if (!strcmp(cmd, "enemy")) {
+	else if (!strcmp(cmd, "enemy")) {
             // Read enemy parameters
             double mass, drag, elasticity, lifetime;
             double rate, velocity, angle_cutoff;
@@ -518,8 +518,9 @@ Read(const char *filename, R3Node *node)
             enemy->angle_cutoff = angle_cutoff;
             enemy->shape = shape;
             enemy->remainder = 0;
-			enemy->direction = R3Vector(x1, x2, x3);
-			enemy->speed = speed;
+	    enemy->direction = R3Vector(x1, x2, x3);
+	    enemy->speed = speed;
+	    enemy->health = 100.0;
             
             // Add particle source to scene
             enemies.push_back(enemy);
