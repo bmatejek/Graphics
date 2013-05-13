@@ -169,7 +169,7 @@ void ShootBullet(R3Scene *scene) {
             ellapsedTime = (current_time.tv_sec - last_missile_sound.tv_sec) * 1000.0;
             ellapsedTime += (current_time.tv_usec - last_missile_sound.tv_usec) / 1000.0;
         }
-        if (ellapsedTime > 4000 || f!missile_shot) {
+        if (ellapsedTime > 4000 || !missile_shot) {
             gettimeofday(&last_missile_sound, NULL);
             missile_shot = true;
             pid_t pid;
