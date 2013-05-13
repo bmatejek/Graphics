@@ -222,7 +222,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("afplay boomPlayer");
+	  system("afplay boomPlayer.wav");
 	  exit(0);
 	}
 	scene->players.erase(scene->players.begin());
