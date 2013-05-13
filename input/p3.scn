@@ -1,0 +1,27 @@
+# This scene shows a close-up view of a icosahedron mesh 
+# with default camera, materials, and lighting.
+# It is useful for testing ray-mesh intersection.
+
+material  0 0 0  1 1 0  1 1 1  0 0 0  0 0 0  10 1 0
+material  .5 .5 .5  0.5 0.5 0.5  0.5 0.5 0.5  0 0 0  0 0 0  10 1 checker.bmp
+material  0 0 0  1 1 1  1 1 1  0 0 0  0 0 0  10 1 mars.jpeg
+material  0 0 0  1 1 1  1 1 1  0 0 0  0 0 0  10 1 lion.jpg
+
+ambient .5 .5 .5
+
+# A mesh with default material (-1) read from ico.off
+mesh   -1    77.off
+
+player   -1    77.off 0 0 0 0 0 -1 1 0 0 4
+
+sphere 
+1 -2 0 -100 1
+
+sphere 
+2 2 0 -100 1
+
+sphere 
+0 4 0 -100 1
+
+sphere 
+1 -4 0 -100 200

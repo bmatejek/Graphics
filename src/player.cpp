@@ -13,6 +13,9 @@
 #include "raytrace.h"
 #include "player.h"
 #include "bullet.h"
+#include <sys/types.h>
+#include <unistd.h>
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -216,6 +219,12 @@ void Explode(R3Scene *scene, R3Player *player) {
 			}
 		}
 	}
+	pid_t pid;
+	pid = fork();
+	if (pid == 0) {
+	  system("java explosion Player");
+	  exit(0);
+	}
 	scene->players.erase(scene->players.begin());
 }
 
@@ -226,11 +235,11 @@ void Explode(R3Scene *scene, R3Player *player) {
 void Explode(R3Scene *scene, R3Enemy *enemy) {
 	if (enemy->shape->type == R3_MESH_SHAPE) {
 		for (unsigned int i = 0; i < enemy->shape->mesh->vertices.size(); i++) {
-			int percent = 20;
+			int percent = 1;
 			//int percent = player->shape->mesh->vertices.size() / 150;
-			if (enemy->shape->mesh->vertices.size() < 300) {
+			/*if (enemy->shape->mesh->vertices.size() < 300) {
 				percent = 10;
-			}
+				}*/
 			if (i % percent == 0) {
 				R3Particle *particle = new R3Particle();
 				double speed = 1 * RandomNumber();
@@ -317,6 +326,14 @@ void Explode(R3Scene *scene, R3Enemy *enemy) {
 			}
 		}
 	}
+
+	pid_t pid;
+	pid = fork();
+	if (pid == 0) {
+	  system("java explosion Enemy");
+	  exit(0);
+	}
+
 	scene->enemies.erase(scene->enemies.begin());
 }
 

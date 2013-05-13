@@ -14,6 +14,7 @@
 #include "bullet.h"
 #include "boid.h"
 #include "raytrace.h"
+#include <time.h>
 
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
@@ -81,7 +82,7 @@ static int GLUTmouse[2] = { 0, 0 };
 static int GLUTbutton[3] = { 0, 0, 0 };
 static int GLUTmodifiers = 0;
 
-
+static time_t last_boost_time = time(NULL);
 
 // GLUT command list
 
@@ -1846,6 +1847,18 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
+	    time_t current_time = time(NULL);
+	    double diff_time = difftime(current_time, last_boost_time);
+	    if (diff_time > 2.0) {
+	      time(&last_boost_time);
+	      pid_t pid;
+	      pid = fork();
+	      if (pid == 0) {
+		system("java Boost");
+		exit(0);
+	      }
+	    }
+
         }
         else
             scene->players[0]->boost = min(scene->players[0]->boost + .33, (double)100);

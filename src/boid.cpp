@@ -14,6 +14,8 @@
 #include "particle.h"
 #include "raytrace.h"
 #include "boid.h"
+#include <unistd.h>
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -179,7 +181,13 @@ void Explode(R3Scene *scene, R3Boid *boid) {
                     particle->material = &sink_material3;
                 scene->particles.push_back(particle);
             }
-        }
+	   }
+	}
+	pid_t pid;
+	pid = fork();
+	if (pid == 0) {
+	  system("java explosion Boid");
+	  exit(0);
 	}
 }
 

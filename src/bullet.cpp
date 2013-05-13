@@ -32,6 +32,8 @@ using namespace std;
 
 static time_t last_bullet_sound = time(NULL);
 static time_t last_missile_sound = time(NULL);
+static bool bullet_shot = false;
+static bool missile_shot = false;
 
 void ShootBullet(R3Scene *scene) {
     //fprintf(stderr,"%d\n",scene->bullets.size());
@@ -64,8 +66,9 @@ void ShootBullet(R3Scene *scene) {
 
 	// generate sound
 	double seconds_since_start = difftime(time(NULL), last_bullet_sound);
-	if (seconds_since_start > 0.5) {
+	if (seconds_since_start > 0.5 || !bullet_shot) {
 	  time(&last_bullet_sound);
+	  bullet_shot = true;
 	  pid_t pid;
 	  pid = fork();
 	  if (pid == 0) {
@@ -143,8 +146,9 @@ void ShootBullet(R3Scene *scene) {
         bullet->shape->mesh->Translate(dx,dy,dz);
         
 	double seconds_since_start = difftime(time(NULL), last_missile_sound);
-	if (seconds_since_start > 4.0) {
+	if (seconds_since_start > 4.0 || !missile_shot) {
 	  time(&last_missile_sound);
+	  missile_shot = true;
 	  pid_t pid;
 	  pid = fork();
 	  if (pid == 0) {
