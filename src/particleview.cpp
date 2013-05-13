@@ -443,6 +443,7 @@ void DrawNode(R3Scene *scene, R3Node *node)
         node->bbox.Outline();
         if (lighting) glEnable(GL_LIGHTING);
     }
+    
 }
 
 
@@ -901,32 +902,33 @@ void DrawParticleSources(R3Scene *scene)
 }
 
 void killShotEnemy(R3Scene *scene, double delta_time) {
-  if (scene->enemies.size() == 0)
-    return;
-
-  vector<int> deleteBullets;
-
-  for (int i = 0; i < (int) scene->bullets.size(); i++) {
-      R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
-    double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
-    //printf("%f\n", intersection);
-    //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
-    if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
-      if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
-	scene->enemies[0]->health -= 0.1;
-      }
-      else {
-	scene->enemies[0]->health -= 5.0;
-      }
-	scene->bullets.erase(scene->bullets.begin() + i);
-	i--;
-      if (scene->enemies[0]->health < 0) {
-	// PRINT WIN MESSAGE
-	Explode(scene, scene->enemies[0]);
-	return;
-      }
+    if (scene->enemies.size() == 0)
+        return;
+    
+    vector<int> deleteBullets;
+    
+    for (int i = 0; i < (int) scene->bullets.size(); i++) {
+        
+        R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
+        double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
+        //printf("%f\n", intersection);
+        //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
+        if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
+            if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
+                scene->enemies[0]->health -= 0.1;
+            }
+            else {
+                scene->enemies[0]->health -= 5.0;
+            }
+            scene->bullets.erase(scene->bullets.begin() + i);
+            i--;
+            if (scene->enemies[0]->health < 0) {
+                // PRINT WIN MESSAGE
+                Explode(scene, scene->enemies[0]);
+                return;
+            }
+        }
     }
-  }
 }
 
 
@@ -991,6 +993,8 @@ void DrawEnemies(R3Scene *scene)
     }
     // Clean up
     if (!lighting) glDisable(GL_LIGHTING);
+    
+    previous_time = current_time;
 }
 
 
