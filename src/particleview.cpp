@@ -706,7 +706,7 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(0,1,0,1);
+        source_material.kd.Reset(0,0,1,1);
         source_material.ks.Reset(0,1,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
@@ -901,7 +901,7 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
 
   double distAway = 15;
   for (int i = 0; i < (int) scene->bullets.size(); i++) {
-    R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
+      R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
     double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
     if (intersection > scene->bullets[i]->velocity.Length() * delta_time) {
       printf("Here\n");
@@ -1271,6 +1271,66 @@ void DisplayBoidsKilled(R3Scene *scene) {
     
 }
 
+void DrawCrossHairs(R3Scene *scene) {
+    
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    
+    double intersection = 15;
+    for (unsigned int i = 0; i < scene->boids.size(); i++) {
+    R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
+    double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
+    if ((current < intersection) && (current != -1))
+        intersection = current; 
+    }
+    if (intersection < 0)
+        intersection = 15; 
+     
+    
+    R3Point startPos = scene->players[0]->pos + intersection*scene->players[0]->nose;
+    R3Point verticalTop = startPos + .2*camera.up;
+    R3Point verticalBottom = startPos - .2*camera.up;
+    R3Point horizRight = startPos + .2*camera.right;
+    R3Point horizLeft = startPos - .2*camera.right;
+    
+    
+
+    static R3Material source_material;
+    // Define source material
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0,0,0,1);
+        source_material.kd.Reset(0,0,0,1);
+        source_material.ks.Reset(0,0,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,1,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+
+    
+    glLineWidth(2.5);
+    glBegin(GL_LINES);
+    glVertex3f(verticalTop.X(), verticalTop.Y(), verticalTop.Z());
+    glVertex3f(verticalBottom.X(), verticalBottom.Y(), verticalBottom.Z());
+    
+    glVertex3f(horizLeft.X(), horizLeft.Y(), horizLeft.Z());
+    glVertex3f(horizRight.X(), horizRight.Y(), horizRight.Z()); 
+    glEnd();
+
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
+    
+}
+
 void DrawBoostAndHealthBar(R3Scene *scene) {
 
     // Setup
@@ -1545,15 +1605,6 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     glEnd();
     
 
-    // Draw crosshairs
-    x = 0.5 * GLUTwindow_height;
-    y = 0.5 * GLUTwindow_width;
-    
-    /*glBegin(GL_LINE);
-    glVertex3f(x);
-    glVertex3f();
-    glEnd();*/
-    
     // Clean up
     glLineWidth(1);
     if (lighting) glEnable(GL_LIGHTING);
@@ -1586,6 +1637,9 @@ void GLUTRedraw(void)
     if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
     
+    //draw cross hairs for aiming
+    DrawCrossHairs(scene);
+    
     //Display velocity
     DisplayVelocity(scene);
     
@@ -1595,6 +1649,7 @@ void GLUTRedraw(void)
     //draw boost bar
     DrawBoostAndHealthBar(scene);
     
+
 
     
     // Draw scene camera
@@ -1612,6 +1667,7 @@ void GLUTRedraw(void)
     if (scene->players[0]->health > 0)
         DrawPlayers(scene);
     DrawBoids(scene);
+
 
    
     // Draw particle sources
