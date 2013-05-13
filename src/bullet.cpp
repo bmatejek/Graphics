@@ -28,6 +28,7 @@ using namespace std;
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
 #define MISSILE_SCALE_FACTOR 0.1
+#define MISSILE_ROTATE_FACTOR 0.1
 
 static timeval last_bullet_sound;
 static timeval last_missile_sound;
@@ -197,6 +198,10 @@ void UpdateBullets(R3Scene *scene, double current_time, double delta_time, int i
             double dy = change.Y();
             double dz = change.Z();
             bullet->shape->mesh->Translate(dx,dy,dz);
+            
+            
+            R3Line l = R3Line(bullet->position, bullet->position + bullet->velocity);
+            bullet->shape->mesh->Rotate(MISSILE_ROTATE_FACTOR, l);
         }
         
         if (bullet->lifetimeactive) {
