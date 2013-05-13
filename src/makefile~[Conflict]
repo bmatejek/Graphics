@@ -6,7 +6,9 @@
 # List of source files
 #
 
-SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp
+
+SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp boid.cpp Utilities.cpp
+
 OBJS=$(SRCS:.cpp=.o)
 
 #
@@ -14,7 +16,11 @@ OBJS=$(SRCS:.cpp=.o)
 #
 
 CXX=g++
-CXXFLAGS=-Wall -I. -g -DUSE_JPEG
+<<<<<<< HEAD
+CXXFLAGS=-Wall -I. -g -DUSE_JPEG -I/usr/local/include/SDL/
+=======
+CXXFLAGS=-Wall -I. -g -DUSE_JPEG -DGLEW_STATIC
+>>>>>>> 57f05a9cdcbfbb94286b719394e9d385df22416e
 
 #
 # Libraries
@@ -27,12 +33,12 @@ LIBS=R3/libR3.a R2/libR2.a jpeg/libjpeg.a
 #
 UNAME := $(shell uname)
 ifneq (,$(findstring Darwin,$(UNAME)))
-	GLLIBS = -framework GLUT -framework OpenGL
+	GLLIBS = -framework GLUT -framework OpenGL  -lGLEW
 else
   ifneq (,$(findstring CYGWIN,$(UNAME)))
-	GLLIBS = -lglut32 -lglu32 -lopengl32
+	GLLIBS = -lglut32 -lglu32 -lopengl32 -lglew32
   else
-	GLLIBS = -lglut -lGLU -lGL
+	GLLIBS = -lglut -lGLU -lGL -lGLEW
   endif
 endif
 
@@ -51,7 +57,7 @@ all: particleview
 
 particleview: $(OBJS) $(LIBS)
 		rm -f $@
-	    $(CXX) $(CXXFLAGS) $^ -lm -o $@ $(GLLIBS)
+	    $(CXX) $(CXXFLAGS) $^ -lm -o $@ $(GLLIBS) `sdl-config --cflags --libs`
 
 R3/libR3.a: 
 	    $(MAKE) -C R3

@@ -65,7 +65,7 @@ void ShootBullet(R3Scene *scene) {
         bullet->material = &sink_material;
 	double ellapsedTime = 0.0;
 	// generate sound
-	if (!bullet_shot) {
+	/*if (!bullet_shot) {
 	  gettimeofday(&last_bullet_sound, NULL);
 	}
 	else {
@@ -89,7 +89,7 @@ void ShootBullet(R3Scene *scene) {
 	    //	    execv("java", &"BulletSound");
 	    exit(0);
 	  }
-	}
+	  }*/
     }
 
     
@@ -160,7 +160,7 @@ void ShootBullet(R3Scene *scene) {
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
 	double ellapsedTime = 0.0;
-        if (!missile_shot) {
+        /*if (!missile_shot) {
 	  gettimeofday(&last_missile_sound, NULL);
 	} else {
 	  timeval current_time;
@@ -177,7 +177,7 @@ void ShootBullet(R3Scene *scene) {
 	    system("java MissileSound");
 	    exit(0);
 	  }
-	}
+	  }*/
         
     }
       

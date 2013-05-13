@@ -70,6 +70,7 @@ static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
 static int show_particle_sources_and_sinks = 1;
+static int play_sounds = 0;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
@@ -710,7 +711,7 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(0,1,0,1);
+        source_material.kd.Reset(0,0,1,1);
         source_material.ks.Reset(0,1,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
@@ -906,14 +907,19 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
   vector<int> deleteBullets;
 
   for (int i = 0; i < (int) scene->bullets.size(); i++) {
-    R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
+      R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
     double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
     //printf("%f\n", intersection);
     //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
     if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
-      scene->enemies[0]->health -= 1;
-      scene->bullets.erase(scene->bullets.begin() + i);
-      i--;
+      if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
+	scene->enemies[0]->health -= 0.1;
+      }
+      else {
+	scene->enemies[0]->health -= 5.0;
+      }
+	scene->bullets.erase(scene->bullets.begin() + i);
+	i--;
       if (scene->enemies[0]->health < 0) {
 	// PRINT WIN MESSAGE
 	Explode(scene, scene->enemies[0]);
@@ -1106,6 +1112,45 @@ void GLUTDrawText(const R3Point& p, const char *s)
 
 }
 
+void GLUTDrawRedText(const R3Point& p, const char *s)
+{
+    // Draw text string s and position p
+    
+    //    glColor3f(0.0, 1.0, 0.0);
+    
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    
+    static R3Material source_material;
+    // Define source material
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,0,0,1);
+        source_material.ks.Reset(0,0,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(1,0,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+    
+    
+    glRasterPos3d(p[0], p[1], p[2]);
+    while (*s)
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_12, *(s++));
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
+    
+}
+
 void GLUTDrawLargeText(const R3Point& p, const char *s)
 {
     // Setup
@@ -1216,6 +1261,28 @@ void GLUTResize(int w, int h)
     glutPostRedisplay();
 }
 
+void DisplayYouLose(R3Scene *scene) {
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height * .5;
+    double x = GLUTwindow_width * .20;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    R3Point p4 = p + 10 * vector;
+    
+    const char* buffer = "You Lose";
+    GLUTDrawLargeText(p4, buffer);
+    
+    
+}
+
 void DisplayBoundaryWarning(R3Scene *scene) {
     R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
@@ -1285,6 +1352,88 @@ void DisplayBoidsKilled(R3Scene *scene) {
     char buffer [50];
     sprintf (buffer, "Boids Killed = %d", scene->players[0]->boidsKilled);
     GLUTDrawText(p4, buffer);
+    
+}
+
+void DrawCrossHairs(R3Scene *scene) {
+    
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    
+    double intersection = 100;
+    for (unsigned int i = 0; i < scene->boids.size(); i++) {
+    R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
+    double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
+    if ((current < intersection) && (current != -1))
+        intersection = current; 
+    }
+    for (unsigned int i = 0; i < scene->enemies.size(); i++) {
+        R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
+        double current = meshIntersection(scene->enemies[i]->shape->mesh, ray);
+        if ((current < intersection) && (current != -1))
+            intersection = current;
+    }
+
+    double factor = .0057 * intersection + .029;
+    
+    R3Point startPos = scene->players[0]->pos + .95*intersection*scene->players[0]->nose;
+    R3Point verticalTop = startPos + factor*camera.up;
+    R3Point verticalBottom = startPos - factor*camera.up;
+    R3Point horizRight = startPos + factor*camera.right;
+    R3Point horizLeft = startPos - factor*camera.right;
+    
+    
+
+    static R3Material source_material;
+    // Define source material
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0,0,0,1);
+        source_material.kd.Reset(0,0,0,1);
+        source_material.ks.Reset(0,0,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(0,1,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    if (intersection < 100)
+        source_material.emission.Reset(1,0,0,1);
+    else
+        source_material.emission.Reset(0,1,0,1);
+    
+    
+    if (intersection < 100) {
+        char buffer [50];
+        sprintf (buffer, "%4.2f", intersection);
+        GLUTDrawRedText(horizRight, buffer);
+    }
+    
+    if (intersection < 100)
+        source_material.emission.Reset(1,0,0,1);
+    else
+        source_material.emission.Reset(0,1,0,1);
+    
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+
+    
+    glLineWidth(2.5);
+    glBegin(GL_LINES);
+    glVertex3f(verticalTop.X(), verticalTop.Y(), verticalTop.Z());
+    glVertex3f(verticalBottom.X(), verticalBottom.Y(), verticalBottom.Z());
+    
+    glVertex3f(horizLeft.X(), horizLeft.Y(), horizLeft.Z());
+    glVertex3f(horizRight.X(), horizRight.Y(), horizRight.Z()); 
+    glEnd();
+
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
     
 }
 
@@ -1562,15 +1711,6 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     glEnd();
     
 
-    // Draw crosshairs
-    x = 0.5 * GLUTwindow_height;
-    y = 0.5 * GLUTwindow_width;
-    
-    /*glBegin(GL_LINE);
-    glVertex3f(x);
-    glVertex3f();
-    glEnd();*/
-    
     // Clean up
     glLineWidth(1);
     if (lighting) glEnable(GL_LIGHTING);
@@ -1603,6 +1743,12 @@ void GLUTRedraw(void)
     if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
     
+    if (scene->players[0]->health <= 0)
+        DisplayYouLose(scene);
+    
+    //draw cross hairs for aiming
+    DrawCrossHairs(scene);
+    
     //Display velocity
     DisplayVelocity(scene);
     
@@ -1612,6 +1758,7 @@ void GLUTRedraw(void)
     //draw boost bar
     DrawBoostAndHealthBar(scene);
     
+
 
     
     // Draw scene camera
@@ -1629,6 +1776,7 @@ void GLUTRedraw(void)
     if (scene->players[0]->health > 0)
         DrawPlayers(scene);
     DrawBoids(scene);
+
 
    
     // Draw particle sources
@@ -1851,7 +1999,7 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
-	    timeval current_time;
+	    /*timeval current_time;
 	    gettimeofday(&current_time, NULL);
 	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
 	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
@@ -1863,7 +2011,7 @@ void keyboard()
 		system("java Boost");
 		exit(0);
 	      }
-	    }
+	      }*/
 
         }
         else
@@ -1977,7 +2125,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'g':
             keyStates['g'] = true;
 
-	    if (BSound == -1) {
+	    /*if (BSound == -1) {
 	      BSound = fork();
 	      fprintf(stderr, "bsound %d", BSound);
 	      if (BSound == 0) {
@@ -1990,7 +2138,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
 		//	    execv("java", &"BulletSound");
 		exit(0);
 	      }
-	    }
+	      }*/
             break;
 
             

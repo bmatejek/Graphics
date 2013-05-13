@@ -125,7 +125,9 @@ bool ComputeIntersection(R3Scene *scene, R3Node *node, R3Player *player) {
 	return false;
 }
 
+
 void Explode(R3Scene *scene, R3Player *player) {
+ 
 	if (player->shape->type == R3_MESH_SHAPE) {
 		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
 			int percent = 25;
@@ -219,13 +221,13 @@ void Explode(R3Scene *scene, R3Player *player) {
 			}
 		}
 	}
-	pid_t pid;
+	/*pid_t pid;
 	pid = fork();
 	if (pid == 0) {
 	  system("java explosion Player");
 	  exit(0);
 	}
-	scene->players.erase(scene->players.begin());
+	scene->players.erase(scene->players.begin());*/
 }
 
 
@@ -327,12 +329,12 @@ void Explode(R3Scene *scene, R3Enemy *enemy) {
 		}
 	}
 
-	pid_t pid;
+	/*pid_t pid;
 	pid = fork();
 	if (pid == 0) {
 	  system("java explosion Enemy");
 	  exit(0);
-	}
+	  }*/
 
 	scene->enemies.erase(scene->enemies.begin());
 }
