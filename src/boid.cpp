@@ -14,6 +14,8 @@
 #include "particle.h"
 #include "raytrace.h"
 #include "boid.h"
+#include <unistd.h>
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -24,6 +26,7 @@ using namespace std;
 #define GRAV_CONSTANT 6.67428e-11
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
+
 
 ////////////////////////////////////////////////////////////
 // checking boid bullet intersections
@@ -72,7 +75,8 @@ double meshIntersection(R3Mesh *mesh, R3Ray *ray) {
         //check if intersects the triangle
         return t;
     }
-    return -1;
+    // return a ridiculously large number
+    return 1e80;
 }
 
 ////////////////////////////////////////////////////////////
@@ -177,7 +181,13 @@ void Explode(R3Scene *scene, R3Boid *boid) {
                     particle->material = &sink_material3;
                 scene->particles.push_back(particle);
             }
-        }
+	   }
+	}
+	pid_t pid;
+	pid = fork();
+	if (pid == 0) {
+	  system("java explosion Boid");
+	  exit(0);
 	}
 }
 
@@ -275,7 +285,7 @@ void killShotBoids(R3Scene *scene, double delta_time) {
         for (int j = 0; j < (int)scene->boids.size(); j++) {
             R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
             double intersection = meshIntersection(scene->boids[j]->shape->mesh, ray);
-            if ((intersection != -1) && (intersection < scene->bullets[i]->velocity.Length() * delta_time)) {
+            if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
                 Explode(scene, scene->boids[j]);
                 deleteBoid(scene, scene->boids[j]);
                 if (scene->boids.size() < 50)

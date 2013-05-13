@@ -13,6 +13,11 @@
 #include "raytrace.h"
 #include "bullet.h"
 #include "particleview.h"
+#include <cstdlib>
+#include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -24,6 +29,11 @@ using namespace std;
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
 #define MISSILE_SCALE_FACTOR 0.1
+
+static time_t last_bullet_sound = time(NULL);
+static time_t last_missile_sound = time(NULL);
+static bool bullet_shot = false;
+static bool missile_shot = false;
 
 void ShootBullet(R3Scene *scene) {
     //fprintf(stderr,"%d\n",scene->bullets.size());
@@ -53,7 +63,27 @@ void ShootBullet(R3Scene *scene) {
             sink_material.id = 33;
         }
         bullet->material = &sink_material;
+
+	// generate sound
+	double seconds_since_start = difftime(time(NULL), last_bullet_sound);
+	if (seconds_since_start > 0.5 || !bullet_shot) {
+	  time(&last_bullet_sound);
+	  bullet_shot = true;
+	  pid_t pid;
+	  pid = fork();
+	  if (pid == 0) {
+	    system("java BulletSound");
+	    //	    std::vector<char*> args;
+	    //	    args.push_back("java");
+	    //	    args.push_back((char*)"BulletSound");
+	    //	    args.push_back(0);
+	    //	    execvp(args[0], &args.front());
+	    //	    execv("java", &"BulletSound");
+	    exit(0);
+	  }
+	}
     }
+
     
     if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
         if (scene->players[0]->missiletime > 0) return;
@@ -122,10 +152,20 @@ void ShootBullet(R3Scene *scene) {
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
         
-        
+	double seconds_since_start = difftime(time(NULL), last_missile_sound);
+	if (seconds_since_start > 4.0 || !missile_shot) {
+	  time(&last_missile_sound);
+	  missile_shot = true;
+	  pid_t pid;
+	  pid = fork();
+	  if (pid == 0) {
+	    system("java MissileSound");
+	    exit(0);
+	  }
+	}
         
     }
-    
+      
     scene->bullets.push_back(bullet);
 }
 

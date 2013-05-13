@@ -6,11 +6,7 @@
 # List of source files
 #
 
-<<<<<<< HEAD
-SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp Utilities.cpp
-=======
-SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp boid.cpp
->>>>>>> 9906068c4083a3496a1edfefde3c04c6b072505d
+SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp
 OBJS=$(SRCS:.cpp=.o)
 
 #
@@ -31,12 +27,12 @@ LIBS=R3/libR3.a R2/libR2.a jpeg/libjpeg.a
 #
 UNAME := $(shell uname)
 ifneq (,$(findstring Darwin,$(UNAME)))
-	GLLIBS = -framework GLUT -framework OpenGL  -lGLEW
+	GLLIBS = -framework GLUT -framework OpenGL
 else
   ifneq (,$(findstring CYGWIN,$(UNAME)))
-	GLLIBS = -lglut32 -lglu32 -lopengl32 -lglew32
+	GLLIBS = -lglut32 -lglu32 -lopengl32
   else
-	GLLIBS = -lglut -lGLU -lGL -lGLEW
+	GLLIBS = -lglut -lGLU -lGL
   endif
 endif
 
