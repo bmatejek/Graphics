@@ -1,6 +1,6 @@
 //
 //  bullet.cpp
-//  
+//
 //
 //  Created by Ethan Leeman on 5/7/13.
 //
@@ -63,35 +63,35 @@ void ShootBullet(R3Scene *scene) {
             sink_material.id = 33;
         }
         bullet->material = &sink_material;
-	double ellapsedTime = 0.0;
-	// generate sound
-	/*if (!bullet_shot) {
-	  gettimeofday(&last_bullet_sound, NULL);
-	}
-	else {
-	  timeval current_time;
-	  gettimeofday(&current_time, NULL);
-	  ellapsedTime = ( current_time.tv_sec - last_bullet_sound.tv_sec) * 1000.0;
-	  ellapsedTime += (current_time.tv_usec - last_bullet_sound.tv_usec) / 1000.0;
-	}
-	if (ellapsedTime > 500 || !bullet_shot) {
-	  gettimeofday(&last_bullet_sound, NULL);
-	  bullet_shot = true;
-	  pid_t pid;
-	  pid = fork();
-	  if (pid == 0) {
-	    system("java BulletSound");
-	    //	    std::vector<char*> args;
-	    //	    args.push_back("java");
-	    //	    args.push_back((char*)"BulletSound");
-	    //	    args.push_back(0);
-	    //	    execvp(args[0], &args.front());
-	    //	    execv("java", &"BulletSound");
-	    exit(0);
-	  }
-	  }*/
+            double ellapsedTime = 0.0;
+            // generate sound
+            if (!bullet_shot) {
+                gettimeofday(&last_bullet_sound, NULL);
+            }
+            else {
+                timeval current_time;
+                gettimeofday(&current_time, NULL);
+                ellapsedTime = ( current_time.tv_sec - last_bullet_sound.tv_sec) * 1000.0;
+                ellapsedTime += (current_time.tv_usec - last_bullet_sound.tv_usec) / 1000.0;
+                //printf("%f\n", ellapsedTime);
+            }
+            if (ellapsedTime > 500 || !bullet_shot) {
+                //printf("%f\n", ellapsedTime);
+                gettimeofday(&last_bullet_sound, NULL);
+                bullet_shot = true;
+                pid_t pid;
+                pid = fork();
+                if (pid == 0) {
+                    system("afplay bullet.wav");
+                    exit(0);
+                }
+            }
+            else {
+                //printf("There\n");
+                
+            }
     }
-
+    
     
     if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
         if (scene->players[0]->missiletime > 0) return;
@@ -150,8 +150,8 @@ void ShootBullet(R3Scene *scene) {
         R3Vector cross = scene->players[0]->nose;
         cross.Cross(begin);
         if (cross.Length() > 0) {
-        R3Line line = R3Line(R3Point(0,0,0), cross);
-        bullet->shape->mesh->Rotate(-acos(scene->players[0]->nose.Dot(begin)),line);
+            R3Line line = R3Line(R3Point(0,0,0), cross);
+            bullet->shape->mesh->Rotate(-acos(scene->players[0]->nose.Dot(begin)),line);
         }
         
         bullet->shape->mesh->Center() = bullet->position;
@@ -159,7 +159,28 @@ void ShootBullet(R3Scene *scene) {
         double dy = bullet->position.Y();
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
-	double ellapsedTime = 0.0;
+//<<<<<<< HEAD
+        double ellapsedTime = 0.0;
+        if (!missile_shot) {
+            gettimeofday(&last_missile_sound, NULL);
+        } else {
+            timeval current_time;
+            gettimeofday(&current_time, NULL);
+            ellapsedTime = (current_time.tv_sec - last_missile_sound.tv_sec) * 1000.0;
+            ellapsedTime += (current_time.tv_usec - last_missile_sound.tv_usec) / 1000.0;
+        }
+        if (ellapsedTime > 4000 || !missile_shot) {
+            gettimeofday(&last_missile_sound, NULL);
+            missile_shot = true;
+            pid_t pid;
+            pid = fork();
+            if (pid == 0) {
+                system("afplay missile.wav");
+                exit(0);
+            }
+        }
+//=======
+//	double ellapsedTime = 0.0;
         /*if (!missile_shot) {
 	  gettimeofday(&last_missile_sound, NULL);
 	} else {
@@ -178,9 +199,10 @@ void ShootBullet(R3Scene *scene) {
 	    exit(0);
 	  }
 	  }*/
+//>>>>>>> b32eba5dbe4e612219b7fa84012affbfb21ae7e8
         
     }
-      
+    
     scene->bullets.push_back(bullet);
 }
 
@@ -190,7 +212,7 @@ void UpdateBullets(R3Scene *scene, double current_time, double delta_time, int i
     int i;
     for (i = 0; i < (int)scene->bullets.size(); i++) {
         R3Bullet *bullet = scene->bullets[i];
-    
+        
         bullet->position += delta_time * bullet->velocity;
         if (bullet->type == R3_MISSILE_BULLET) {
             R3Vector change = delta_time * bullet->velocity;
@@ -229,23 +251,23 @@ void UpdateBullets(R3Scene *scene, double current_time, double delta_time, int i
 }
 
 /* Now in particleview
-void RenderBullets(R3Scene *scene, double current_time, double delta_time)
-{
-    // Draw every particle
-    
-    // REPLACE CODE HERE
-  //    glDisable(GL_LIGHTING);
-    glPointSize(5);
-    glBegin(GL_POINTS);
-
-    
-    for (int i = 0; i < (int)scene->bullets.size(); i += 10) {
-        R3Bullet *bullet = scene->bullets[i];
-	//    glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
-	LoadMaterial(bullet->material);
-        const R3Point& position = bullet->position;
-        glVertex3d(position[0], position[1], position[2]);
-    }
-    glEnd();
-}
-*/
+ void RenderBullets(R3Scene *scene, double current_time, double delta_time)
+ {
+ // Draw every particle
+ 
+ // REPLACE CODE HERE
+ //    glDisable(GL_LIGHTING);
+ glPointSize(5);
+ glBegin(GL_POINTS);
+ 
+ 
+ for (int i = 0; i < (int)scene->bullets.size(); i += 10) {
+ R3Bullet *bullet = scene->bullets[i];
+ //    glColor3d(bullet->material->kd[0], bullet->material->kd[1], bullet->material->kd[2]);
+ LoadMaterial(bullet->material);
+ const R3Point& position = bullet->position;
+ glVertex3d(position[0], position[1], position[2]);
+ }
+ glEnd();
+ }
+ */

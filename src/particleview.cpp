@@ -177,7 +177,9 @@ void DrawShape(R3Shape *shape)
     else if (shape->type == R3_SPHERE_SHAPE) shape->sphere->Draw();
     else if (shape->type == R3_CYLINDER_SHAPE) shape->cylinder->Draw();
     else if (shape->type == R3_CONE_SHAPE) shape->cone->Draw();
-    else if (shape->type == R3_MESH_SHAPE) shape->mesh->Draw();
+    else if (shape->type == R3_MESH_SHAPE) {
+      shape->mesh->Draw();
+    }
     else if (shape->type == R3_SEGMENT_SHAPE) shape->segment->Draw();
     else if (shape->type == R3_CIRCLE_SHAPE) shape->circle->Draw();
     else fprintf(stderr, "Unrecognized shape type: %d\n", shape->type);
@@ -581,14 +583,24 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(0,1,0,1);
-        source_material.ks.Reset(0,1,0,1);
+        source_material.kd.Reset(1,1,0,1);
+        source_material.ks.Reset(1,1,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-        source_material.texture = NULL;
-        source_material.texture_index = -1;
+	//        source_material.texture = NULL;
+        source_material.texture = new R2Image();
+	if (!source_material.texture->Read("../input/checker.bmp")) {
+	  fprintf(stderr, "oops");
+	}
+	else {
+	  fprintf(stderr, "YAY\n");
+	}
+	
+
+		//source_material.texture_index = -1;
+	source_material.texture_index = 0;
         source_material.id = 33;
     }
 
@@ -712,13 +724,13 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(0,0,1,1);
-        source_material.ks.Reset(0,1,0,1);
+        source_material.kd.Reset(1,0,1,1);
+        source_material.ks.Reset(0,0,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-        source_material.texture = NULL;
+	source_material.texture = NULL;
         source_material.texture_index = -1;
         source_material.id = 33;
     }
@@ -2012,8 +2024,8 @@ void keyboard()
 	      pid_t pid;
 	      pid = fork();
 	      if (pid == 0) {
-		system("java Boost");
-		exit(0);
+              system("afplay Comet.wav");
+              exit(0);
 	      }
 	      }*/
 
@@ -2128,21 +2140,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'G':
         case 'g':
             keyStates['g'] = true;
-
-	    /*if (BSound == -1) {
-	      BSound = fork();
-	      fprintf(stderr, "bsound %d", BSound);
-	      if (BSound == 0) {
-		system("java BulletSound");
-		//	    std::vector<char*> args;
-		//	    args.push_back("java");
-		//	    args.push_back((char*)"BulletSound");
-		//	    args.push_back(0);
-		//	    execvp(args[0], &args.front());
-		//	    execv("java", &"BulletSound");
-		exit(0);
-	      }
-	      }*/
             break;
 
             
