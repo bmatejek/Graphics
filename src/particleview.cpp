@@ -70,6 +70,7 @@ static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
 static int show_particle_sources_and_sinks = 1;
+static int play_sounds = 0;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
@@ -176,7 +177,9 @@ void DrawShape(R3Shape *shape)
     else if (shape->type == R3_SPHERE_SHAPE) shape->sphere->Draw();
     else if (shape->type == R3_CYLINDER_SHAPE) shape->cylinder->Draw();
     else if (shape->type == R3_CONE_SHAPE) shape->cone->Draw();
-    else if (shape->type == R3_MESH_SHAPE) shape->mesh->Draw();
+    else if (shape->type == R3_MESH_SHAPE) {
+      shape->mesh->Draw();
+    }
     else if (shape->type == R3_SEGMENT_SHAPE) shape->segment->Draw();
     else if (shape->type == R3_CIRCLE_SHAPE) shape->circle->Draw();
     else fprintf(stderr, "Unrecognized shape type: %d\n", shape->type);
@@ -579,14 +582,24 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(0,1,0,1);
-        source_material.ks.Reset(0,1,0,1);
+        source_material.kd.Reset(1,1,0,1);
+        source_material.ks.Reset(1,1,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-        source_material.texture = NULL;
-        source_material.texture_index = -1;
+	//        source_material.texture = NULL;
+        source_material.texture = new R2Image();
+	if (!source_material.texture->Read("../input/checker.bmp")) {
+	  fprintf(stderr, "oops");
+	}
+	else {
+	  fprintf(stderr, "YAY\n");
+	}
+	
+
+		//source_material.texture_index = -1;
+	source_material.texture_index = 0;
         source_material.id = 33;
     }
 
@@ -710,13 +723,13 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(0,0,1,1);
-        source_material.ks.Reset(0,1,0,1);
+        source_material.kd.Reset(1,0,1,1);
+        source_material.ks.Reset(0,0,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-        source_material.texture = NULL;
+	source_material.texture = NULL;
         source_material.texture_index = -1;
         source_material.id = 33;
     }
@@ -911,9 +924,14 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
     //printf("%f\n", intersection);
     //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
     if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
-      scene->enemies[0]->health -= 1;
-      scene->bullets.erase(scene->bullets.begin() + i);
-      i--;
+      if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
+	scene->enemies[0]->health -= 0.1;
+      }
+      else {
+	scene->enemies[0]->health -= 5.0;
+      }
+	scene->bullets.erase(scene->bullets.begin() + i);
+	i--;
       if (scene->enemies[0]->health < 0) {
 	// PRINT WIN MESSAGE
 	Explode(scene, scene->enemies[0]);
@@ -1993,7 +2011,7 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
-	    timeval current_time;
+	    /*timeval current_time;
 	    gettimeofday(&current_time, NULL);
 	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
 	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
@@ -2005,7 +2023,7 @@ void keyboard()
               system("afplay Comet.wav");
               exit(0);
 	      }
-	    }
+	      }*/
 
         }
         else
@@ -2118,7 +2136,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'G':
         case 'g':
             keyStates['g'] = true;
-
             break;
 
             

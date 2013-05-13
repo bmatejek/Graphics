@@ -62,7 +62,6 @@ void ShootBullet(R3Scene *scene) {
             sink_material.id = 33;
         }
         bullet->material = &sink_material;
-        //if (scene->bullets.size() % 40 == 0) {
             double ellapsedTime = 0.0;
             // generate sound
             if (!bullet_shot) {
@@ -90,7 +89,6 @@ void ShootBullet(R3Scene *scene) {
                 //printf("There\n");
                 
             }
-        //}
     }
     
     
@@ -160,6 +158,7 @@ void ShootBullet(R3Scene *scene) {
         double dy = bullet->position.Y();
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
+<<<<<<< HEAD
         double ellapsedTime = 0.0;
         if (!missile_shot) {
             gettimeofday(&last_missile_sound, NULL);
@@ -179,6 +178,27 @@ void ShootBullet(R3Scene *scene) {
                 exit(0);
             }
         }
+=======
+	double ellapsedTime = 0.0;
+        /*if (!missile_shot) {
+	  gettimeofday(&last_missile_sound, NULL);
+	} else {
+	  timeval current_time;
+	  gettimeofday(&current_time, NULL);
+	  ellapsedTime = (current_time.tv_sec - last_missile_sound.tv_sec) * 1000.0;
+	  ellapsedTime += (current_time.tv_usec - last_missile_sound.tv_usec) / 1000.0;
+	}
+	if (ellapsedTime > 4000 || !missile_shot) {
+	  gettimeofday(&last_missile_sound, NULL);
+	  missile_shot = true;
+	  pid_t pid;
+	  pid = fork();
+	  if (pid == 0) {
+	    system("java MissileSound");
+	    exit(0);
+	  }
+	  }*/
+>>>>>>> b32eba5dbe4e612219b7fa84012affbfb21ae7e8
         
     }
     
