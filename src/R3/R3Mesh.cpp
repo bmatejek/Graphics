@@ -824,9 +824,11 @@ Draw(void) const
       R3MeshVertex *vertex = face->vertices[j];
       const R3Point& p = vertex->position;
       glVertex3d(p[0], p[1], p[2]);
+      glTexCoord2f((double)(j%2), (double)((j-1)%2));      
     }
     glEnd();
   }
+  
 }
 
 void R3Mesh::
