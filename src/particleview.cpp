@@ -2174,7 +2174,6 @@ main(int argc, char **argv)
         keyStates[i] = false;
     }
     
-    
     // Parse program arguments
     if (!ParseArgs(argc, argv)) exit(1);
     

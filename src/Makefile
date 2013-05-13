@@ -16,7 +16,7 @@ OBJS=$(SRCS:.cpp=.o)
 #
 
 CXX=g++
-CXXFLAGS=-Wall -I. -g -DUSE_JPEG
+CXXFLAGS=-Wall -I. -g -DUSE_JPEG -I/usr/local/include/SDL/
 
 #
 # Libraries
@@ -53,7 +53,7 @@ all: particleview
 
 particleview: $(OBJS) $(LIBS)
 		rm -f $@
-	    $(CXX) $(CXXFLAGS) $^ -lm -o $@ $(GLLIBS)
+	    $(CXX) $(CXXFLAGS) $^ -lm -o $@ $(GLLIBS) `sdl-config --cflags --libs`
 
 R3/libR3.a: 
 	    $(MAKE) -C R3

@@ -6,11 +6,9 @@
 # List of source files
 #
 
-<<<<<<< HEAD
-SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp Utilities.cpp
-=======
-SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp boid.cpp
->>>>>>> 9906068c4083a3496a1edfefde3c04c6b072505d
+
+SRCS=particleview.cpp particle.cpp R3Scene.cpp raytrace.cpp player.cpp bullet.cpp boid.cpp Utilities.cpp
+
 OBJS=$(SRCS:.cpp=.o)
 
 #
@@ -18,7 +16,7 @@ OBJS=$(SRCS:.cpp=.o)
 #
 
 CXX=g++
-CXXFLAGS=-Wall -I. -g -DUSE_JPEG
+CXXFLAGS=-Wall -I. -g -DUSE_JPEG -I/usr/local/include/SDL/
 
 #
 # Libraries
