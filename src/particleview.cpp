@@ -70,6 +70,7 @@ static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
 static int show_particle_sources_and_sinks = 1;
+static int play_sounds = 0;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
