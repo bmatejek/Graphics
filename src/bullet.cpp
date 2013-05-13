@@ -14,7 +14,6 @@
 #include "bullet.h"
 #include "particleview.h"
 #include <cstdlib>
-#include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -30,8 +29,8 @@ using namespace std;
 #define eps 2e-12
 #define MISSILE_SCALE_FACTOR 0.1
 
-static time_t last_bullet_sound = time(NULL);
-static time_t last_missile_sound = time(NULL);
+static timeval last_bullet_sound;
+static timeval last_missile_sound;
 static bool bullet_shot = false;
 static bool missile_shot = false;
 
@@ -63,11 +62,19 @@ void ShootBullet(R3Scene *scene) {
             sink_material.id = 33;
         }
         bullet->material = &sink_material;
-
+	double ellapsedTime = 0.0;
 	// generate sound
-	double seconds_since_start = difftime(time(NULL), last_bullet_sound);
-	if (seconds_since_start > 0.5 || !bullet_shot) {
-	  time(&last_bullet_sound);
+	if (!bullet_shot) {
+	  gettimeofday(&last_bullet_sound, NULL);
+	}
+	else {
+	  timeval current_time;
+	  gettimeofday(&current_time, NULL);
+	  ellapsedTime = ( current_time.tv_sec - last_bullet_sound.tv_sec) * 1000.0;
+	  ellapsedTime += (current_time.tv_usec - last_bullet_sound.tv_usec) / 1000.0;
+	}
+	if (ellapsedTime > 500 || !bullet_shot) {
+	  gettimeofday(&last_bullet_sound, NULL);
 	  bullet_shot = true;
 	  pid_t pid;
 	  pid = fork();
@@ -151,10 +158,17 @@ void ShootBullet(R3Scene *scene) {
         double dy = bullet->position.Y();
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
-        
-	double seconds_since_start = difftime(time(NULL), last_missile_sound);
-	if (seconds_since_start > 4.0 || !missile_shot) {
-	  time(&last_missile_sound);
+	double ellapsedTime = 0.0;
+        if (!missile_shot) {
+	  gettimeofday(&last_missile_sound, NULL);
+	} else {
+	  timeval current_time;
+	  gettimeofday(&current_time, NULL);
+	  ellapsedTime = (current_time.tv_sec - last_missile_sound.tv_sec) * 1000.0;
+	  ellapsedTime += (current_time.tv_usec - last_missile_sound.tv_usec) / 1000.0;
+	}
+	if (ellapsedTime > 4000 || !missile_shot) {
+	  gettimeofday(&last_missile_sound, NULL);
 	  missile_shot = true;
 	  pid_t pid;
 	  pid = fork();
