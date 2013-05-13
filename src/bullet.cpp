@@ -158,7 +158,7 @@ void ShootBullet(R3Scene *scene) {
         double dy = bullet->position.Y();
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
-<<<<<<< HEAD
+//<<<<<<< HEAD
         double ellapsedTime = 0.0;
         if (!missile_shot) {
             gettimeofday(&last_missile_sound, NULL);
@@ -178,8 +178,8 @@ void ShootBullet(R3Scene *scene) {
                 exit(0);
             }
         }
-=======
-	double ellapsedTime = 0.0;
+//=======
+//	double ellapsedTime = 0.0;
         /*if (!missile_shot) {
 	  gettimeofday(&last_missile_sound, NULL);
 	} else {
@@ -198,7 +198,7 @@ void ShootBullet(R3Scene *scene) {
 	    exit(0);
 	  }
 	  }*/
->>>>>>> b32eba5dbe4e612219b7fa84012affbfb21ae7e8
+//>>>>>>> b32eba5dbe4e612219b7fa84012affbfb21ae7e8
         
     }
     
