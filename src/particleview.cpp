@@ -14,7 +14,6 @@
 #include "bullet.h"
 #include "boid.h"
 #include "raytrace.h"
-#include <cstdlib>
 
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
@@ -51,6 +50,7 @@ static int integration_type = EULER_INTEGRATION;
 bool* keyStates = new bool[256];
 
 
+
 // Display variables
 
 static R3Scene *scene = NULL;
@@ -71,7 +71,6 @@ static int num_frames_to_record = -1;
 static bool follow = false;
 static bool view2 = true;
 static int quit = 0;
-
 
 // GLUT variables
 
@@ -1866,12 +1865,7 @@ void keyboard()
 
 		//shoot
 		if (keyStates['G'] || keyStates['g']){
-
-            
-            ShootBullet(scene);
-            
-
-			
+		  ShootBullet(scene);
 		}
         
         if (keyStates['Y'] || keyStates['y']) {
@@ -1969,37 +1963,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'b':
             show_bboxes = !show_bboxes;
    //         GenerateBoids(scene, 2, 40.);
-            break;
-            
-        case 'C':
-        case 'c':
-            show_camera = !show_camera;
-            break;
-            
-        case 'E':
-        case 'e':
-            show_edges = !show_edges;
-            break;
-            
-        case 'F':
-        case 'f':
-            show_faces = !show_faces;
-            break;
-            
-        case 'L':
-        case 'l':
-            show_lights = !show_lights;
-            break;
-
-            
-        case 'P':
-        case 'p':
-            show_particles = !show_particles;
-            break;
-            
-        case 'R':
-        case 'r':
-            show_particle_springs = !show_particle_springs;
             break;
             
         case 'X':
@@ -2282,12 +2245,10 @@ GLuint setShaders() {
 int
 main(int argc, char **argv)
 {
-  system("java HelloWorld");
-    for (int i = 0; i < 256; i++) {
+
+  for (int i = 0; i < 256; i++) {
         keyStates[i] = false;
-    }
-    
-    
+  }
     // Parse program arguments
     if (!ParseArgs(argc, argv)) exit(1);
     
