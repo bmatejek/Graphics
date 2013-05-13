@@ -16,7 +16,7 @@ OBJS=$(SRCS:.cpp=.o)
 #
 
 CXX=g++
-CXXFLAGS=-Wall -I. -g -DUSE_JPEG -I/usr/local/include/SDL/
+CXXFLAGS=-Wall -I. -g -DUSE_JPEG -DGLEW_STATIC
 
 #
 # Libraries

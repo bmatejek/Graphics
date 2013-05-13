@@ -101,7 +101,7 @@ float initGlew(bool verbose)
 			cout<<"==============\nChecking available shaders:"<<endl;
 			cout<<"Vertex shader: "<<(GLEW_ARB_vertex_shader?"Supported":"Not Supported")<<endl;
 			cout<<"Fragment shader: "<<(GLEW_ARB_fragment_shader?"Supported":"Not Supported")<<endl;
-			cout<<"Tesselation shader: "<<(GLEW_ARB_tessellation_shader?"Supported":"Not Supported")<<endl;
+			//cout<<"Tesselation shader: "<<(GLEW_ARB_tessellation_shader?"Supported":"Not Supported")<<endl;
 			cout<<"Geometry shader 4: "<<(GLEW_ARB_geometry_shader4?"Supported":"Not Supported")<<endl;
 		}
 	}

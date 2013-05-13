@@ -122,20 +122,21 @@ struct R3ParticleSource {
 
 
 struct R3Enemy {
-    R3Shape *shape;
-    double rate;
-    double velocity;
-    double angle_cutoff;
-    double mass;
-    bool fixed;
-    double remainder;
-    double drag;
-    double elasticity;
-    bool lifetimeactive;
-    double lifetime;
-    R3Material *material;
-	R3Vector direction;
-	double speed;
+  R3Shape *shape;
+  double rate;
+  double velocity;
+  double angle_cutoff;
+  double mass;
+  bool fixed;
+  double remainder;
+  double drag;
+  double elasticity;
+  bool lifetimeactive;
+  double lifetime;
+  R3Material *material;
+  R3Vector direction;
+  double speed;
+  double health;
 };
 
 struct R3ParticleSink {
