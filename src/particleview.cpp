@@ -1560,6 +1560,12 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     glVertex3f(bl.X(), bl.Y(), bl.Z());           // Bottom Left
     glEnd();
     
+    
+//    if ((left <= scene->players[0]->boost/100. *right) && (scene->players[0]->accel)) {
+//        scene->players[0]->boost = 0;
+//        scene->players[0]->accel = false;
+//    }
+    
     /*
     char buffer [50];
     sprintf (buffer, "Boost = %4.0f %%", scene->players[0]->boost);
