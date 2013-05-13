@@ -97,18 +97,18 @@ void main()
 	
 	for (int i = 0; i < 3; i++){ 
 
-	if (intensity[i] > 0.65)  
+	if (intensity[i] > 0.75)  
 		//color = vec4(1.0,1.0,1.0,1.0);
 		color[i] = 1.0;
-	else if (intensity[i] > 0.4)
+	else if (intensity[i] > 0.5)
 		//color = vec4(0.6,0.6,0.6,1.0);
 		color[i] = .75;
-	else if (intensity[i] > 0.2)
+	else if (intensity[i] > 0.25)
 		//color = vec4(0.4,0.4,0.4,1.0);
 		color[i] = .5;
 	else 
 		//color = vec4(0.2,0.2,0.2,1.0);
-		color[i] = 0.0;
+		color[i] = 0.25;
 	}
 	
 //	gl_FragColor = color*gl_Color;
