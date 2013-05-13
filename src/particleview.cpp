@@ -29,6 +29,7 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 ////////////////////////////////////////////////////////////
 
 void keyboard();
+void GLUTDrawLargeRedText(const R3Point&, const char *);
 
 pid_t BSound = -1;
 
@@ -1166,7 +1167,7 @@ void GLUTDrawRedText(const R3Point& p, const char *s)
     if (lighting) glEnable(GL_LIGHTING);
     
 }
-
+ 
 void GLUTDrawLargeText(const R3Point& p, const char *s)
 {
     // Setup
@@ -1283,7 +1284,7 @@ void DisplayYouLose(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .5;
-    double x = GLUTwindow_width * .20;
+    double x = GLUTwindow_width * .4;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1294,10 +1295,34 @@ void DisplayYouLose(R3Scene *scene) {
     R3Point p4 = p + 10 * vector;
     
     const char* buffer = "You Lose";
+    GLUTDrawLargeRedText(p4, buffer);
+    
+    
+}
+
+
+void DisplayYouWin(R3Scene *scene) {
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height * .5;
+    double x = GLUTwindow_width * .4;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    R3Point p4 = p + 10 * vector;
+    
+    const char* buffer = "You Win!";
     GLUTDrawLargeText(p4, buffer);
     
     
 }
+
 
 void DisplayBoundaryWarning(R3Scene *scene) {
     R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
@@ -1452,6 +1477,43 @@ void DrawCrossHairs(R3Scene *scene) {
     if (lighting) glEnable(GL_LIGHTING);
     
 }
+
+void GLUTDrawLargeRedText(const R3Point& p, const char *s)
+{
+    // Setup
+    GLboolean lighting = glIsEnabled(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
+    
+    
+    static R3Material source_material;
+    // Define source material
+    if (source_material.id != 33) {
+        source_material.ka.Reset(0.2,0.2,0.2,1);
+        source_material.kd.Reset(0,0,0,1);
+        source_material.ks.Reset(0,0,0,1);
+        source_material.kt.Reset(0,0,0,1);
+        source_material.emission.Reset(1,0,0,1);
+        source_material.shininess = 1;
+        source_material.indexofrefraction = 1;
+        source_material.texture = NULL;
+        source_material.texture_index = -1;
+        source_material.id = 33;
+    }
+    glEnable(GL_LIGHTING);
+    LoadMaterial(&source_material);
+    
+    glRasterPos3d(p[0], p[1], p[2]);
+    while (*s)
+        glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, *(s++));
+    
+    // Clean up
+    glLineWidth(1);
+    if (lighting) glEnable(GL_LIGHTING);
+    
+}
+
+
+
 
 void DrawBoostAndHealthBar(R3Scene *scene) {
 
@@ -1760,10 +1822,14 @@ void GLUTRedraw(void)
         DisplayBoundaryWarning(scene);
     
     if (scene->players[0]->health <= 0)
-        DisplayYouLose(scene);
-    
-    //draw cross hairs for aiming
-    DrawCrossHairs(scene);
+      DisplayYouLose(scene);
+    else if (scene->enemies[0]->health <= 0) {
+      DisplayYouWin(scene);
+      view2 = 0; 
+      follow = 0; 
+    }
+    else 
+       DrawCrossHairs(scene);    
     
     //Display velocity
     DisplayVelocity(scene);
