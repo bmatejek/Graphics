@@ -15,7 +15,7 @@
 #include "bullet.h"
 #include "boid.h"
 #include "raytrace.h"
-#include <time.h>
+#include <sys/time.h>
 #include <signal.h>
 
 ////////////////////////////////////////////////////////////
@@ -77,6 +77,8 @@ static bool follow = false;
 static bool view2 = true;
 static int quit = 0;
 
+static timeval last_boost_time;
+
 // GLUT variables
 
 static int GLUTwindow = 0;
@@ -85,8 +87,6 @@ static int GLUTwindow_width = 512;
 static int GLUTmouse[2] = { 0, 0 };
 static int GLUTbutton[3] = { 0, 0, 0 };
 static int GLUTmodifiers = 0;
-
-static time_t last_boost_time = time(NULL);
 
 // GLUT command list
 
@@ -1993,10 +1993,12 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
-	    time_t current_time = time(NULL);
-	    double diff_time = difftime(current_time, last_boost_time);
-	    if (diff_time > 2.0) {
-	      time(&last_boost_time);
+	    timeval current_time;
+	    gettimeofday(&current_time, NULL);
+	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
+	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
+	    if (ellapsedTime > 2000) {
+	      gettimeofday(&last_boost_time, NULL);
 	      pid_t pid;
 	      pid = fork();
 	      if (pid == 0) {
@@ -2055,13 +2057,13 @@ void keyboard()
 
 void keyUp (unsigned char key, int x, int y) {
     keyStates[key] = false; // Set the state of the current key to not pressed
-    if (key == 'g') {
+    /*if (key == 'g') {
       fprintf(stderr, "kill bsound %d", BSound);
       kill(BSound, SIGKILL);
       kill(BSound+1, SIGKILL);
       kill(BSound+2, SIGKILL);
       BSound = -1;
-    }
+      }*/
 }
 
 
@@ -2427,6 +2429,10 @@ GLuint setShaders() {
 int
 main(int argc, char **argv)
 {
+
+  gettimeofday(&last_boost_time, NULL);
+
+
 
   for (int i = 0; i < 256; i++) {
         keyStates[i] = false;
