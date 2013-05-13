@@ -73,10 +73,17 @@ void ShootBullet(R3Scene *scene) {
 	  pid = fork();
 	  if (pid == 0) {
 	    system("java BulletSound");
+	    //	    std::vector<char*> args;
+	    //	    args.push_back("java");
+	    //	    args.push_back((char*)"BulletSound");
+	    //	    args.push_back(0);
+	    //	    execvp(args[0], &args.front());
+	    //	    execv("java", &"BulletSound");
 	    exit(0);
 	  }
 	}
     }
+
     
     if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
         if (scene->players[0]->missiletime > 0) return;
@@ -158,7 +165,7 @@ void ShootBullet(R3Scene *scene) {
 	}
         
     }
-    
+      
     scene->bullets.push_back(bullet);
 }
 
