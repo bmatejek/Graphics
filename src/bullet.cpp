@@ -17,6 +17,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -82,8 +88,11 @@ void ShootBullet(R3Scene *scene) {
                 pid_t pid;
                 pid = fork();
                 if (pid == 0) {
+		  if (LINUX)
+		    system("avplay -nodisp -autoexit bullet.wav");
+		  else
                     system("afplay bullet.wav");
-                    exit(0);
+		  exit(0);
                 }
             }
             else {
@@ -159,7 +168,6 @@ void ShootBullet(R3Scene *scene) {
         double dy = bullet->position.Y();
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
-//<<<<<<< HEAD
         double ellapsedTime = 0.0;
         if (!missile_shot) {
             gettimeofday(&last_missile_sound, NULL);
@@ -175,32 +183,13 @@ void ShootBullet(R3Scene *scene) {
             pid_t pid;
             pid = fork();
             if (pid == 0) {
-                system("afplay missile.wav");
-                exit(0);
+	      if (LINUX)
+		system("avplay -nodisp -autoexit missile.wav");
+	      else 
+		system("afplay missile.wav");
+	      exit(0);
             }
         }
-//=======
-//	double ellapsedTime = 0.0;
-        /*if (!missile_shot) {
-	  gettimeofday(&last_missile_sound, NULL);
-	} else {
-	  timeval current_time;
-	  gettimeofday(&current_time, NULL);
-	  ellapsedTime = (current_time.tv_sec - last_missile_sound.tv_sec) * 1000.0;
-	  ellapsedTime += (current_time.tv_usec - last_missile_sound.tv_usec) / 1000.0;
-	}
-	if (ellapsedTime > 4000 || !missile_shot) {
-	  gettimeofday(&last_missile_sound, NULL);
-	  missile_shot = true;
-	  pid_t pid;
-	  pid = fork();
-	  if (pid == 0) {
-	    system("java MissileSound");
-	    exit(0);
-	  }
-	  }*/
-//>>>>>>> b32eba5dbe4e612219b7fa84012affbfb21ae7e8
-        
     }
     
     scene->bullets.push_back(bullet);

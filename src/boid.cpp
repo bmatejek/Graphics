@@ -16,6 +16,12 @@
 #include "boid.h"
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -186,7 +192,10 @@ void Explode(R3Scene *scene, R3Boid *boid) {
 	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("afplay boomBoid.wav");
+	  if (LINUX)
+	    system("avplay -nodisp -autoexit boomBoid.wav");
+	  else
+	    system("afplay boomBoid.wav");
 	  exit(0);
 	}
 }

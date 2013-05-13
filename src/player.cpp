@@ -16,6 +16,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -221,13 +227,16 @@ void Explode(R3Scene *scene, R3Player *player) {
 			}
 		}
 	}
-	/*pid_t pid;
+	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("afplay boomPlayer.wav");
+	  if (LINUX)
+	    system("avplay -nodisp -autoexit boomPlayer.wav");
+	  else
+	    system("afplay boomPlayer.wav");
 	  exit(0);
 	}
-	scene->players.erase(scene->players.begin());*/
+	scene->players.erase(scene->players.begin());
 }
 
 
@@ -329,12 +338,15 @@ void Explode(R3Scene *scene, R3Enemy *enemy) {
 		}
 	}
 
-	/*pid_t pid;
+	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("afplay boomEnemy.wav");
+	  if (LINUX)
+	    system("avplay -nodisp -autoexit boomEnemy.wav");
+	  else
+	    system("afplay boomEnemy.wav");
 	  exit(0);
-	  }*/
+	}
 
 	scene->enemies.erase(scene->enemies.begin());
 }
