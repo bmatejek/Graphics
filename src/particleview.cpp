@@ -912,9 +912,14 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
     //printf("%f\n", intersection);
     //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
     if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
-      scene->enemies[0]->health -= 1;
-      scene->bullets.erase(scene->bullets.begin() + i);
-      i--;
+      if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
+	scene->enemies[0]->health -= 0.1;
+      }
+      else {
+	scene->enemies[0]->health -= 5.0;
+      }
+	scene->bullets.erase(scene->bullets.begin() + i);
+	i--;
       if (scene->enemies[0]->health < 0) {
 	// PRINT WIN MESSAGE
 	Explode(scene, scene->enemies[0]);
@@ -1994,7 +1999,7 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
-	    timeval current_time;
+	    /*timeval current_time;
 	    gettimeofday(&current_time, NULL);
 	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
 	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
@@ -2006,7 +2011,7 @@ void keyboard()
 		system("java Boost");
 		exit(0);
 	      }
-	    }
+	      }*/
 
         }
         else
@@ -2120,7 +2125,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'g':
             keyStates['g'] = true;
 
-	    if (BSound == -1) {
+	    /*if (BSound == -1) {
 	      BSound = fork();
 	      fprintf(stderr, "bsound %d", BSound);
 	      if (BSound == 0) {
@@ -2133,7 +2138,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
 		//	    execv("java", &"BulletSound");
 		exit(0);
 	      }
-	    }
+	      }*/
             break;
 
             
