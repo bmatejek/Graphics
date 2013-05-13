@@ -2002,8 +2002,8 @@ void keyboard()
 	      pid_t pid;
 	      pid = fork();
 	      if (pid == 0) {
-		system("java Boost");
-		exit(0);
+              system("afplay Comet.wav");
+              exit(0);
 	      }
 	    }
 
@@ -2119,20 +2119,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'g':
             keyStates['g'] = true;
 
-	    if (BSound == -1) {
-	      BSound = fork();
-	      fprintf(stderr, "bsound %d", BSound);
-	      if (BSound == 0) {
-		system("java BulletSound");
-		//	    std::vector<char*> args;
-		//	    args.push_back("java");
-		//	    args.push_back((char*)"BulletSound");
-		//	    args.push_back(0);
-		//	    execvp(args[0], &args.front());
-		//	    execv("java", &"BulletSound");
-		exit(0);
-	      }
-	    }
             break;
 
             

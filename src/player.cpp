@@ -222,7 +222,7 @@ void Explode(R3Scene *scene, R3Player *player) {
 	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("java explosion Player");
+	  system("afplay boomPlayer");
 	  exit(0);
 	}
 	scene->players.erase(scene->players.begin());
@@ -330,7 +330,7 @@ void Explode(R3Scene *scene, R3Enemy *enemy) {
 	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("java explosion Enemy");
+	  system("afplay boomEnemy.wav");
 	  exit(0);
 	}
 

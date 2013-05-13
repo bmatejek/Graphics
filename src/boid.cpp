@@ -186,7 +186,7 @@ void Explode(R3Scene *scene, R3Boid *boid) {
 	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("java explosion Boid");
+	  system("afplay boomBoid.wav");
 	  exit(0);
 	}
 }
