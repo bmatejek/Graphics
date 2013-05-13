@@ -63,18 +63,25 @@ void ShootBullet(R3Scene *scene) {
         bullet->material = &sink_material;
 
 	// generate sound
-	double seconds_since_start = difftime(time(NULL), last_bullet_sound);
+	/*double seconds_since_start = difftime(time(NULL), last_bullet_sound);
 	if (seconds_since_start > 0.5) {
 	  time(&last_bullet_sound);
 	  pid_t pid;
 	  pid = fork();
 	  if (pid == 0) {
 	    system("java BulletSound");
+	    //	    std::vector<char*> args;
+	    //	    args.push_back("java");
+	    //	    args.push_back((char*)"BulletSound");
+	    //	    args.push_back(0);
+	    //	    execvp(args[0], &args.front());
+	    //	    execv("java", &"BulletSound");
 	    exit(0);
 	  }
-	}
+	  }*/
     }
-    
+
+    /*    
     if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
         if (scene->players[0]->missiletime > 0) return;
         scene->players[0]->missiletime = 5.0;
@@ -154,7 +161,7 @@ void ShootBullet(R3Scene *scene) {
 	}
         
     }
-    
+    */    
     scene->bullets.push_back(bullet);
 }
 

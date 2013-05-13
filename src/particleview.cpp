@@ -2,6 +2,7 @@
 
 
 
+
 ////////////////////////////////////////////////////////////
 // INCLUDE FILES
 ////////////////////////////////////////////////////////////
@@ -14,6 +15,7 @@
 #include "bullet.h"
 #include "boid.h"
 #include "raytrace.h"
+#include <signal.h>
 
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
@@ -26,6 +28,8 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 ////////////////////////////////////////////////////////////
 
 void keyboard();
+
+pid_t BSound = -1;
 
 GLint UniformLocation;
 
@@ -1866,6 +1870,7 @@ void keyboard()
 		//shoot
 		if (keyStates['G'] || keyStates['g']){
 		  ShootBullet(scene);
+		  
 		}
         
         if (keyStates['Y'] || keyStates['y']) {
@@ -1895,6 +1900,13 @@ void keyboard()
 
 void keyUp (unsigned char key, int x, int y) {
     keyStates[key] = false; // Set the state of the current key to not pressed
+    if (key == 'g') {
+      fprintf(stderr, "kill bsound %d", BSound);
+      kill(BSound, SIGKILL);
+      kill(BSound+1, SIGKILL);
+      kill(BSound+2, SIGKILL);
+      BSound = -1;
+    }
 }
 
 
@@ -1949,6 +1961,21 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'G':
         case 'g':
             keyStates['g'] = true;
+
+	    if (BSound == -1) {
+	      BSound = fork();
+	      fprintf(stderr, "bsound %d", BSound);
+	      if (BSound == 0) {
+		system("java BulletSound");
+		//	    std::vector<char*> args;
+		//	    args.push_back("java");
+		//	    args.push_back((char*)"BulletSound");
+		//	    args.push_back(0);
+		//	    execvp(args[0], &args.front());
+		//	    execv("java", &"BulletSound");
+		exit(0);
+	      }
+	    }
             break;
 
             
