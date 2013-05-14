@@ -39,4 +39,4 @@ enemy
 	0.1 0 0.0 0.0 1.0 -1
 	35 1 0
 	0.0 0 0 1
-	mesh ship_01.off
+	mesh ship_01big.off
