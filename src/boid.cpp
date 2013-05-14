@@ -279,8 +279,8 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         }
         
         // Read mesh file
-        if (!mesh->Read("../input/smallTetra.off")) {
-            fprintf(stderr, "Unable to read mesh: ../input/smallTetra.off\n");
+        if (!mesh->Read("../input/shipAfirst.off")) {
+            fprintf(stderr, "Unable to read mesh: ../input/shipAfirst.off\n");
             return;
         }
         
@@ -359,6 +359,13 @@ void killShotBoids(R3Scene *scene, double delta_time) {
                 Explode(scene, scene->boids[j]);
                 deleteBoid(scene, scene->boids[j]);
                 scene->players[0]->boidsKilled++;
+                
+                R3Bullet *temp = scene->bullets.back();
+                scene->bullets[scene->bullets.size() - 1] = scene->bullets[i];
+                scene->bullets[i] = temp;
+                
+                // delete last element
+                scene->bullets.pop_back();
                 if ((scene->players[0]->boidsKilled %5 == 0) && (scene->players[0]->boidsKilled != 0))
                     scene->players[0]->missiles++; 
                 if (scene->boids.size() < 40)
