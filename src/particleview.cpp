@@ -2331,8 +2331,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
              show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
              break; */
             
-        case 'Q':
-        case 'q':
+
         case 27: // ESCAPE
             quit = 1;
             break;
