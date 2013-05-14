@@ -2137,7 +2137,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.004;
+    double rotateAmount = 0.008;
     
     
     //boooooooooost
