@@ -985,47 +985,6 @@ void DrawEnemies(R3Scene *scene)
   GLboolean lighting = glIsEnabled(GL_LIGHTING);
   glEnable(GL_LIGHTING);
 
-  R3Particle *particle = new R3Particle();
-  double speed = 1 * RandomNumber();
-  double x1 = 0.1 * RandomNumber() - 0.05;
-  double x2 = 0.1 * RandomNumber() - 0.05;
-  double x3 = 0.1 * RandomNumber() - 0.05;
-  double mass = 0.00000001;
-  double drag = 0.0;
-  double elasticity = 0.0;
-  R3Vector velocity = -1.0 * scene->enemies[0]->direction + R3Vector(x1, x2, x3);
-  velocity.Normalize();
-	    
-  
-  for (int i = (int) round(100.0 - scene->enemies[0]->health); i > 0; i--) {
-    static R3Material en;
-    
-    if (en.id != 33) {
-      en.ka.Reset(0.2,0.2,0.2,1);
-      en.kd.Reset(1,0,0,1);
-      en.ks.Reset(1,0,0,1);
-      en.kt.Reset(0,0,0,1);
-      en.emission.Reset(1, 0, 0,1);
-      en.shininess = 1;
-      en.indexofrefraction = 1;
-      en.texture = NULL;
-      en.texture_index = -1;
-      en.id = 33;
-    } 
-    
-    particle->position = R3Point(scene->enemies[0]->shape->mesh->Center());
-    particle->velocity = speed * velocity;
-    particle->mass = mass;
-    particle->fixed = false;
-    particle->drag = drag;
-    particle->elasticity = elasticity;
-    particle->lifetimeactive = true;
-    particle->lifetime = 1.0;
-    particle->material = &en;
-    scene->particles.push_back(particle);
-  }
-  
-
   // Define source material
   static R3Material enemy_material;
   if (enemy_material.id != 33) {
@@ -2190,7 +2149,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.012;
+    double rotateAmount = 0.020;
     
     
     //boooooooooost
@@ -2671,6 +2630,13 @@ main(int argc, char **argv)
 
     glShadeModel (GL_SMOOTH);
 
+    pid_t pid;
+    pid = fork();
+    if (pid == 0) {
+      if (LINUX)
+	system("avplay -nodisp -loop 0 dream_walking.wav");
+      
+    }
 
     // Run GLUT interface
     GLUTMainLoop();
