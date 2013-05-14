@@ -115,9 +115,9 @@ void main()
 //	gl_FragColor = total*color;
 	gl_FragColor = vec4(color[0], color[1], color[2], 1.0);
 
-	vec3 EyeVert = normalize(ec_pos-vVertex);
-	float sil = max(dot(normal,EyeVert), -dot(normal,EyeVert));
-	if (sil < 0.15) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);;
+//	vec3 EyeVert = normalize(ec_pos-vVertex);
+//	float sil = max(dot(normal,EyeVert), -dot(normal,EyeVert));
+//	if (sil < 0.15) gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);;
 
 
 /*
