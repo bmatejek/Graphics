@@ -91,8 +91,8 @@ static timeval last_boost_time;
 // GLUT variables
 
 static int GLUTwindow = 0;
-static int GLUTwindow_height = 512 * 1.75;
-static int GLUTwindow_width = 512 * 1.75;
+static int GLUTwindow_height = 512 * 1.6;
+static int GLUTwindow_width = 512 * 1.6;
 static int GLUTmouse[2] = { 0, 0 };
 static int GLUTbutton[3] = { 0, 0, 0 };
 static int GLUTmodifiers = 0;
@@ -2501,8 +2501,8 @@ ParseArgs(int argc, char **argv)
             else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION;
             else if (!strcmp(*argv, "-recordandquit")) {
                 argc--; argv++; num_frames_to_record = atoi(*argv);
-                GLUTwindow_width = 256 * 1.75;
-                GLUTwindow_height = 256 * 1.75;
+                GLUTwindow_width = 256 * 1.6;
+                GLUTwindow_height = 256 * 1.6;
                 save_video = 1;
             }
             else { fprintf(stderr, "Invalid program argument: %s", *argv); exit(1); }
