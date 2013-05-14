@@ -435,6 +435,14 @@ void DrawNode(R3Scene *scene, R3Node *node)
     // Load material
     if (node->material) LoadMaterial(node->material);
     
+    if (node->shape) {
+      if (node->shape->type == R3_SPHERE_SHAPE) {
+	R3Vector cent = R3Point(0.0, 0.0, -120.0) - node->shape->sphere->Center();
+	cent.Normalize();
+	R3Vector motion = R3Vector(cent.Y(), -1.0 * cent.X(), 0.0) * .005;
+	node->shape->sphere->Translate(motion);
+      }
+    }
     // Draw shape
     if (node->shape) DrawShape(node->shape);
     
@@ -2072,7 +2080,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.02;
+    double rotateAmount = 0.006;
     
     
     //boooooooooost

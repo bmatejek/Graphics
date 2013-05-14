@@ -359,20 +359,7 @@ Read(const char *filename, R3Node *node)
             shape->cone = NULL;
             shape->mesh = mesh;
             shape->segment = NULL;
-
-            // Read position and velocity
-            R3Point p;
-            R3Vector n,w;
-            double vel; 
-            if (fscanf(fp, "%lf%lf%lf%lf%lf%lf%lf%lf%lf%lf",
-                       &p[0],&p[1],&p[2],&n[0],&n[1],&n[2],&w[0],&w[1],&w[2], &vel) != 10) {
-                fprintf(stderr, "Unable to read particle at command %d in file %s\n", command_number, filename);
-                return 0;
-            }
-            // Create player
-            R3Player *player = new R3Player();
-            player->shape = shape;
-	    player->shape->mesh->Scale(0.2, 0.2, 0.2);
+player->shape->mesh->Scale(0.2, 0.2, 0.2);
             player->pos = p;
             player->nose = n;
             player->wing = w;
@@ -388,7 +375,7 @@ Read(const char *filename, R3Node *node)
             
             player->nose.Normalize();
             player->wing.Normalize();
-	    player->shape->mesh->Rotate(M_PI, R3Line(player->shape->mesh->Center(), R3Vector(0, 1, 0)));
+            //player->shape->mesh->Scale(0.1, 0.1, 0.1);
             // Add particle to scene
             players.push_back(player);
 
@@ -518,7 +505,6 @@ Read(const char *filename, R3Node *node)
             enemy->velocity = velocity;
             enemy->angle_cutoff = angle_cutoff;
             enemy->shape = shape;
-	    //	    enemy->shape->mesh->Scale(2.0, 2.0, 2.0);
             enemy->remainder = 0;
 	    enemy->direction = R3Vector(x1, x2, x3);
 	    enemy->speed = speed;
