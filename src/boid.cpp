@@ -150,7 +150,7 @@ void deleteBoid(R3Scene *scene, R3Boid* boid) {
 
 void Explode(R3Scene *scene, R3Boid *boid) {
 	if (boid->shape->type == R3_MESH_SHAPE) {
-        int numParticlesperVertex = 15;
+        int numParticlesperVertex = 2;
 		for (unsigned int i = 0; i < boid->shape->mesh->vertices.size(); i++) {
             for (int x = 0; x < numParticlesperVertex; x++) {
                 R3Particle *particle = new R3Particle();
@@ -267,6 +267,8 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         double x = scene->players[0]->pos.X() + (distAway * cos(theta) * sin(phi));
         double y = scene->players[0]->pos.Y() + (distAway * sin(theta) * sin(phi));
         double z = scene->players[0]->pos.Z() + (distAway * cos(phi));
+  
+
         
         R3Boid *boid = new R3Boid();
         boid->pos = R3Point(x, y, z);

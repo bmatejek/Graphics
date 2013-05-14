@@ -1893,8 +1893,12 @@ void GLUTRedraw(void)
     
 
     
-    if (scene->players[0]->health <= 0)
+    if (scene->players[0]->health <= 0) {
         DisplayYouLose(scene);
+        view2 = 0;
+        follow = 0;
+        view3 = 0;
+    }
     else if (scene->enemies[0]->health <= 0) {
         DisplayYouWin(scene);
         view2 = 0;
