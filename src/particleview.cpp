@@ -985,50 +985,39 @@ void DrawEnemies(R3Scene *scene)
     enemy_material.shininess = 1;
     enemy_material.indexofrefraction = 1;
     //    enemy_material.texture = NULL;
-        enemy_material.texture = new R2Image();
-	if (!enemy_material.texture->Read("../input/paper.jpg")) {
-	  fprintf(stderr, "oops\n");
-	}
-	else {
-	  fprintf(stderr, "YAY\n");
-	}
+    enemy_material.texture = new R2Image();
+    if (!enemy_material.texture->Read("../input/paper.jpg")) {
+      fprintf(stderr, "oops\n");
+    }
     enemy_material.texture_index = -1;
     enemy_material.id = 33;
   }
-	// program just started up?
-    if (previous_time == 0) previous_time = current_time;
+  // program just started up?
+  if (previous_time == 0) previous_time = current_time;
     
-    // time passed since starting
-    double delta_time = current_time - previous_time;
-
-    killShotEnemy(scene, delta_time);
-    if (scene->enemies.size() == 0)
-      return;
-
-    // Draw all particle sources
-    glEnable(GL_LIGHTING);
-    LoadMaterial(&enemy_material);
-    for (unsigned int i = 0; i < scene->enemies.size(); i++) {
-        R3Enemy *enemy = scene->enemies[i];
-		// update the center position
-		if (scene->players.size() != 0) {
-			R3Vector direction = scene->players[i]->shape->mesh->Center() - enemy->shape->mesh->Center();
-			R3Ray *ray = new R3Ray(enemy->shape->mesh->Center() + direction * enemy->shape->mesh->bbox.ZLength() / 2, direction);
-			R3Intersect intersection = ComputeIntersect(scene, scene->root, ray);
-			direction.Normalize();
-			enemy->shape->mesh->Translate(direction.X() * enemy->speed, direction.Y() * enemy->speed, direction.Z() * enemy->speed);
-		}
-		//else {
-		//	R3Vector direction = scene->root->children[0]->shape->sphere->Center() - scene->players[i]->shape->mesh->Center();
-		//	direction.Normalize();
-		//	enemy->shape->sphere->Translate(direction * enemy->speed);
-		//}
-		DrawShape(enemy->shape);
-    }
-    // Clean up
-    if (!lighting) glDisable(GL_LIGHTING);
+  // time passed since starting
+  double delta_time = current_time - previous_time;
+  
+  killShotEnemy(scene, delta_time);
+  if (scene->enemies.size() == 0)
+    return;
+  
+  // Draw all particle sources
+  glEnable(GL_LIGHTING);
+  LoadMaterial(&enemy_material);
+  for (unsigned int i = 0; i < scene->enemies.size(); i++) {
+    R3Enemy *enemy = scene->enemies[i];
     
-    previous_time = current_time;
+    // update the center position
+    //enemy->shape->mesh->Rotate(0.005, R3Line(enemy->shape->mesh->Center(), enemy->direction));
+    enemy->shape->mesh->Rotate(0.005, R3Line(R3Point(0, 0, 0), R3Vector(0, 1, 0)));
+    //enemy->direction.Rotate(R3Vector(0, 1, 0), 0.005);
+    DrawShape(enemy->shape);
+  }
+  // Clean up
+  if (!lighting) glDisable(GL_LIGHTING);
+  
+  previous_time = current_time;
 }
 
 
@@ -2587,9 +2576,9 @@ main(int argc, char **argv)
     if (!scene) exit(-1);
 
     if (scene->enemies.size() != 0 && scene->enemies[0]->shape->type == R3_MESH_SHAPE) {
-      scene->enemies[0]->shape->mesh->Translate(-10, -40, -40);
+      scene->enemies[0]->shape->mesh->Translate(-40, -40, -120);
       scene->enemies[0]->shape->mesh->Scale(0.50, 0.50, 0.50);
-      scene->enemies[0]->shape->mesh->Rotate(1.57, R3Line(R3Point(-10, -40, -40), R3Vector(0, 0, -1)));
+      //scene->enemies[0]->shape->mesh->Rotate(1.57, R3Line(R3Point(-10, -40, -40), R3Vector(0, 0, -1)));
     }
     
     float versionGL = initGlew(true);
