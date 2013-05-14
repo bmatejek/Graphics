@@ -1014,11 +1014,11 @@ void DrawEnemies(R3Scene *scene)
   LoadMaterial(&enemy_material);
   for (unsigned int i = 0; i < scene->enemies.size(); i++) {
     R3Enemy *enemy = scene->enemies[i];
-    
+    double speed = 0.002 + 0.003 * (100 - enemy->health);
     // update the center position
-    enemy->shape->mesh->Rotate(0.002, R3Line(enemy->shape->mesh->Center(), enemy->direction));
-    enemy->shape->mesh->Rotate(0.002, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
-    enemy->direction.Rotate(R3Vector(0, 0, -1), 0.002);
+    enemy->shape->mesh->Rotate(speed, R3Line(enemy->shape->mesh->Center(), enemy->direction));
+    enemy->shape->mesh->Rotate(speed, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
+    enemy->direction.Rotate(R3Vector(0, 0, -1), speed);
     DrawShape(enemy->shape);
   }
   // Clean up
