@@ -82,6 +82,7 @@ static int num_frames_to_record = -1;
 static bool follow = false;
 static bool view2 = true;
 static bool view3 = false;
+static bool view4 = false;
 static int quit = 0;
 
 static timeval last_boost_time;
@@ -793,11 +794,11 @@ void DrawPlayers(R3Scene *scene)
     fprintf(stdout, "\ncam");
     camera.eye.Print();
     */
-    if (follow || view2 || view3) {
+    if (follow || view2 || view3 || view4) {
       //      camera.eye = scene->players[0]->shape->mesh->Center();
 	  if (scene->players.size() != 0) {
 		  camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
-		  if (view2 || view3) camera.eye = scene->players[0]->pos  -4.5 *scene->players[0]->nose ;
+		  if (view2 || view3 || view4) camera.eye = scene->players[0]->pos  -4.5 *scene->players[0]->nose ;
 		  camera.towards = scene->players[0]->nose;
 		  camera.right = scene->players[0]->wing;
 		  camera.up = camera.right;
@@ -807,6 +808,9 @@ void DrawPlayers(R3Scene *scene)
               camera.towards *= -1;
               camera.right *= -1;
               camera.up *= -1;
+          }
+          if (view4) {
+              camera.eye -= .1 * camera.towards;
           }
           
 		}
@@ -943,8 +947,6 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
         
         R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
         double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
-        //printf("%f\n", intersection);
-        //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
         if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
             if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
                 scene->enemies[0]->health -= 0.05;
@@ -1885,12 +1887,14 @@ void GLUTRedraw(void)
         view2 = 0;
         follow = 0;
         view3 = 0;
+        view4 = 1;
     }
     else if (scene->enemies[0]->health <= 0) {
         DisplayYouWin(scene);
         view2 = 0;
         follow = 0;
         view3 = 0;
+        view4 = 0;
     }
     else if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
