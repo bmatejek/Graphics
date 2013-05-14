@@ -1378,7 +1378,7 @@ void DisplayVelocity(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .95;
-    double x = GLUTwindow_width * .88;
+    double x = GLUTwindow_width * .85;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1403,7 +1403,7 @@ void DisplayBoidsKilled(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .91;
-    double x = GLUTwindow_width * .88;
+    double x = GLUTwindow_width * .85;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1428,7 +1428,7 @@ void DisplayMissileCount(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .87;
-    double x = GLUTwindow_width * .88;
+    double x = GLUTwindow_width * .85;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
