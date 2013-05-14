@@ -95,7 +95,7 @@ void ShootBullet(R3Scene *scene) {
     if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
         if (scene->players[0]->missiletime > 0) return;
         scene->players[0]->missiletime = 5.0;
-        
+        scene->players[0]->missiles--; 
         
         
         bullet = new R3Bullet();

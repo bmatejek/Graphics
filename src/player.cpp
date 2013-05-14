@@ -127,7 +127,8 @@ bool ComputeIntersection(R3Scene *scene, R3Node *node, R3Player *player) {
 
 
 void Explode(R3Scene *scene, R3Player *player) {
- 
+    
+    scene->players[0]->health = 0; 
 	if (player->shape->type == R3_MESH_SHAPE) {
 		for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
 			int percent = 25;

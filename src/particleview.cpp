@@ -590,15 +590,15 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-	//        source_material.texture = NULL;
+	        source_material.texture = NULL;
         source_material.texture = new R2Image();
-	if (!source_material.texture->Read("../input/checker.bmp")) {
+/*	if (!source_material.texture->Read("../input/checker.bmp")) {
 	  fprintf(stderr, "oops");
 	}
 	else {
 	  fprintf(stderr, "YAY\n");
 	}
-	
+*/ 	
 
 		//source_material.texture_index = -1;
 	source_material.texture_index = 0;
@@ -928,7 +928,7 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
         //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
         if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
             if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
-                scene->enemies[0]->health -= 0.1;
+                scene->enemies[0]->health -= 0.05;
             }
             else {
                 scene->enemies[0]->health -= 5.0;
@@ -1283,6 +1283,8 @@ void DisplayYouLose(R3Scene *scene) {
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
+    double depth = 2e-12;
+    
     double y = GLUTwindow_height * .5;
     double x = GLUTwindow_width * .4;
     //create ray through each pixel
@@ -1292,7 +1294,7 @@ void DisplayYouLose(R3Scene *scene) {
     R3Point p = p1 + upVector + acrossVector;
     R3Vector vector = p - camera.eye;
     vector.Normalize();
-    R3Point p4 = p + 10 * vector;
+    R3Point p4 = p + depth * vector;
     
     const char* buffer = "You Lose";
     GLUTDrawLargeRedText(p4, buffer);
@@ -1306,6 +1308,8 @@ void DisplayYouWin(R3Scene *scene) {
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
+    double depth = 2e-12;
+    
     double y = GLUTwindow_height * .5;
     double x = GLUTwindow_width * .4;
     //create ray through each pixel
@@ -1315,7 +1319,7 @@ void DisplayYouWin(R3Scene *scene) {
     R3Point p = p1 + upVector + acrossVector;
     R3Vector vector = p - camera.eye;
     vector.Normalize();
-    R3Point p4 = p + 10 * vector;
+    R3Point p4 = p + depth * vector;
     
     const char* buffer = "You Win!";
     GLUTDrawLargeText(p4, buffer);
@@ -1329,6 +1333,8 @@ void DisplayBoundaryWarning(R3Scene *scene) {
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
+    double depth = 2e-12;
+    
     double y = GLUTwindow_height * .5;
     double x = GLUTwindow_width * .20;
     //create ray through each pixel
@@ -1338,7 +1344,7 @@ void DisplayBoundaryWarning(R3Scene *scene) {
     R3Point p = p1 + upVector + acrossVector;
     R3Vector vector = p - camera.eye;
     vector.Normalize();
-    R3Point p4 = p + 10 * vector;
+    R3Point p4 = p + depth * vector;
     
     const char* buffer = "Leaving Battlefield! Turn Around!";
     GLUTDrawLargeText(p4, buffer);
@@ -1348,7 +1354,7 @@ void DisplayBoundaryWarning(R3Scene *scene) {
 
 void DisplayVelocity(R3Scene *scene) {
     
-    double depth = .000000001;
+    double depth = 2e-12;
     
     R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
@@ -1373,7 +1379,7 @@ void DisplayVelocity(R3Scene *scene) {
 
 void DisplayBoidsKilled(R3Scene *scene) {
     
-    double depth = .000000001;
+    double depth = 2e-12;
     
     R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
@@ -1392,6 +1398,31 @@ void DisplayBoidsKilled(R3Scene *scene) {
     
     char buffer [50];
     sprintf (buffer, "Boids Killed = %d", scene->players[0]->boidsKilled);
+    GLUTDrawText(p4, buffer);
+    
+}
+
+void DisplayMissileCount(R3Scene *scene) {
+    
+    double depth = 2e-12;
+    
+    R3Point p1 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
+    R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
+    
+    double y = GLUTwindow_height * .87;
+    double x = GLUTwindow_width * .78;
+    //create ray through each pixel
+    R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
+    R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
+    
+    R3Point p = p1 + upVector + acrossVector;
+    R3Vector vector = p - camera.eye;
+    vector.Normalize();
+    R3Point p4 = p + depth* vector;
+    
+    char buffer [50];
+    sprintf (buffer, "Missiles: %d", scene->players[0]->missiles);
     GLUTDrawText(p4, buffer);
     
 }
@@ -1526,7 +1557,7 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     R3Point p2 = (camera.eye + (camera.neardist * camera.towards) - (camera.neardist * tan(camera.xfov) * camera.right) + (camera.neardist * tan(camera.yfov) * camera.up));
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
-    double depth = .000000001;
+    double depth = 2e-12;
     double height = .02;
     double bottom = .025;
     double left = .05;
@@ -1823,9 +1854,7 @@ void GLUTRedraw(void)
     // Load scene lights
     LoadLights(scene);
     
-    //warn if player is leaving the scene
-    if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
-        DisplayBoundaryWarning(scene);
+
     
     if (scene->players[0]->health <= 0)
       DisplayYouLose(scene);
@@ -1834,6 +1863,8 @@ void GLUTRedraw(void)
       view2 = 0; 
       follow = 0; 
     }
+    else if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
+        DisplayBoundaryWarning(scene);
     else 
        DrawCrossHairs(scene);    
     
@@ -1842,6 +1873,9 @@ void GLUTRedraw(void)
     
     //Display number of boids killed
     DisplayBoidsKilled(scene);
+    
+    //Display number of available missiles
+    DisplayMissileCount(scene);
     
     //draw boost bar
     DrawBoostAndHealthBar(scene);
@@ -2078,7 +2112,7 @@ void keyboard()
     //boooooooooost
     if (keyStates['H'] || keyStates['h']) {
         //ran out of boost but still pressing h
-        if (scene->players[0]->boost <= 0) {
+        if (scene->players[0]->boost <= 10) {
             scene->players[0]->boost = 0;
             scene->players[0]->velocity = max(scene->players[0]->defaultVelocity, scene->players[0]->velocity * .95);
             scene->players[0]->accel = false;
@@ -2087,20 +2121,6 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
-	    /*timeval current_time;
-	    gettimeofday(&current_time, NULL);
-	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
-	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
-	    if (ellapsedTime > 2000) {
-	      gettimeofday(&last_boost_time, NULL);
-	      pid_t pid;
-	      pid = fork();
-	      if (pid == 0) {
-              system("afplay Comet.wav");
-              exit(0);
-	      }
-	      }*/
-
         }
         else
             scene->players[0]->boost = min(scene->players[0]->boost + .33, (double)100);
@@ -2117,15 +2137,17 @@ void keyboard()
 			scene->players[0]->shape->mesh->Rotate(1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
 			scene->players[0]->nose.Rotate(scene->players[0]->wing, 1.0 * rotateAmount);
 		}
-
+        
 		//shoot
 		if (keyStates['G'] || keyStates['g']){
-		  ShootBullet(scene);
-		  
+            if (scene->players[0]->missiles <= 0)
+                scene->players[0]->currentbullet = R3_REGULAR_BULLET;
+            ShootBullet(scene);
+            
 		}
         
         if (keyStates['Y'] || keyStates['y']) {
-
+            
             
             
             
@@ -2181,15 +2203,15 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'y':
             
             // bullet toggle
-            if (scene->players[0]->currentbullet == R3_REGULAR_BULLET) {
+            if (scene->players[0]->currentbullet == R3_REGULAR_BULLET && scene->players[0]->missiles != 0) {
                 scene->players[0]->currentbullet = R3_MISSILE_BULLET;
             }
             else if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
                 scene->players[0]->currentbullet = R3_REGULAR_BULLET;
             }
-            else {
-                fprintf(stderr,"Why do you not have a bullettype?");
-            }
+//            else {
+  //              fprintf(stderr,"Why do you not have a bullettype?");
+    //        }
             break;
             
         case 'S':
