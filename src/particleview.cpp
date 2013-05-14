@@ -604,16 +604,11 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-	source_material.texture = NULL;
-	//        source_material.texture = new R2Image();
-	//if (!source_material.texture->Read("../input/paper.jpg")) {
-	//  fprintf(stderr, "oops\n");
-	//	}
-	//else {
-	//  fprintf(stderr, "YAY\n");
-	//}
-	
-
+	//	source_material.texture = NULL;
+	source_material.texture = new R2Image();
+	if (!source_material.texture->Read("../input/boid.jpg")) {
+	  fprintf(stderr, "trouble loading mesh\n");
+	}
 		//source_material.texture_index = -1;
 	source_material.texture_index = 0;
         source_material.id = 33;
