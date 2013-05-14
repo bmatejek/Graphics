@@ -1902,9 +1902,6 @@ void GLUTRedraw(void)
     else if (view2 || follow)
         DrawCrossHairs(scene);
     
-
-
-    
         
         //Display velocity
     DisplayVelocity(scene);
