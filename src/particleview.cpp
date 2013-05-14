@@ -90,8 +90,8 @@ static timeval last_boost_time;
 // GLUT variables
 
 static int GLUTwindow = 0;
-static int GLUTwindow_height = 512;
-static int GLUTwindow_width = 512;
+static int GLUTwindow_height = 512 * 1.75;
+static int GLUTwindow_width = 512 * 1.75;
 static int GLUTmouse[2] = { 0, 0 };
 static int GLUTbutton[3] = { 0, 0, 0 };
 static int GLUTmodifiers = 0;
@@ -1307,7 +1307,7 @@ void DisplayYouLose(R3Scene *scene) {
     double depth = 2e-12;
     
     double y = GLUTwindow_height * .5;
-    double x = GLUTwindow_width * .4;
+    double x = GLUTwindow_width * .45;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1332,7 +1332,7 @@ void DisplayYouWin(R3Scene *scene) {
     double depth = 2e-12;
     
     double y = GLUTwindow_height * .5;
-    double x = GLUTwindow_width * .4;
+    double x = GLUTwindow_width * .45;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1357,7 +1357,7 @@ void DisplayBoundaryWarning(R3Scene *scene) {
     double depth = 2e-12;
     
     double y = GLUTwindow_height * .5;
-    double x = GLUTwindow_width * .20;
+    double x = GLUTwindow_width * .30;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1382,7 +1382,7 @@ void DisplayVelocity(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .95;
-    double x = GLUTwindow_width * .78;
+    double x = GLUTwindow_width * .88;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1407,7 +1407,7 @@ void DisplayBoidsKilled(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .91;
-    double x = GLUTwindow_width * .78;
+    double x = GLUTwindow_width * .88;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1432,7 +1432,7 @@ void DisplayMissileCount(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .87;
-    double x = GLUTwindow_width * .78;
+    double x = GLUTwindow_width * .88;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1464,6 +1464,7 @@ void DrawCrossHairs(R3Scene *scene) {
     }
     for (unsigned int i = 0; i < scene->enemies.size(); i++) {
         R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
+        
         double current = meshIntersection(scene->enemies[i]->shape->mesh, ray);
         if ((current < intersection) && (current != -1))
             intersection = current;
@@ -1471,7 +1472,7 @@ void DrawCrossHairs(R3Scene *scene) {
 
     double factor = .0057 * intersection + .029;
     
-    R3Point startPos = scene->players[0]->pos + .95*intersection*scene->players[0]->nose;
+    R3Point startPos = scene->players[0]->pos + .8*intersection*scene->players[0]->nose;
     R3Point verticalTop = startPos + factor*camera.up;
     R3Point verticalBottom = startPos - factor*camera.up;
     R3Point horizRight = startPos + factor*camera.right;
@@ -1886,7 +1887,7 @@ void GLUTRedraw(void)
     }
     else if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
-    else 
+    else if (view2 || follow)
        DrawCrossHairs(scene);    
     
     //Display velocity
@@ -2374,23 +2375,6 @@ void GLUTCommand(int cmd)
 
 void GLUTCreateMenu(void)
 {
-    // Display sub-menu
-    int display_menu = glutCreateMenu(GLUTCommand);
-    glutAddMenuEntry("Particles (P)", DISPLAY_PARTICLES_TOGGLE_COMMAND);
-    glutAddMenuEntry("Particle springs (R)", DISPLAY_PARTICLE_SPRINGS_TOGGLE_COMMAND);
-    glutAddMenuEntry("Particle sources and sinks (S)", DISPLAY_PARTICLE_SOURCES_AND_SINKS_TOGGLE_COMMAND);
-    glutAddMenuEntry("Faces (F)", DISPLAY_FACE_TOGGLE_COMMAND);
-    glutAddMenuEntry("Edges (E)", DISPLAY_EDGE_TOGGLE_COMMAND);
-    glutAddMenuEntry("Bounding boxes (B)", DISPLAY_BBOXES_TOGGLE_COMMAND);
-    glutAddMenuEntry("Lights (L)", DISPLAY_LIGHTS_TOGGLE_COMMAND);
-    glutAddMenuEntry("Camera (C)", DISPLAY_CAMERA_TOGGLE_COMMAND);
-    
-    // Main menu
-    glutCreateMenu(GLUTCommand);
-    glutAddSubMenu("Display", display_menu);
-    glutAddMenuEntry("Save Image (F1)", SAVE_IMAGE_COMMAND);
-    glutAddMenuEntry("Capture Video (F2)", SAVE_VIDEO_COMMAND);
-    glutAddMenuEntry("Quit", QUIT_COMMAND);
     
     // Attach main menu to right mouse button
     glutAttachMenu(GLUT_RIGHT_BUTTON);
@@ -2403,7 +2387,10 @@ void GLUTInit(int *argc, char **argv)
     // Open window
     glutInit(argc, argv);
     glutInitWindowPosition(100, 100);
+    
     glutInitWindowSize(GLUTwindow_width, GLUTwindow_height);
+    
+//    glutInitWindowSize(2*GLUTwindow_width, 2*GLUTwindow_height);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH); // | GLUT_STENCIL
     GLUTwindow = glutCreateWindow("OpenGL Viewer");
     
@@ -2487,8 +2474,8 @@ ParseArgs(int argc, char **argv)
             else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION;
             else if (!strcmp(*argv, "-recordandquit")) {
                 argc--; argv++; num_frames_to_record = atoi(*argv);
-                GLUTwindow_width = 256;
-                GLUTwindow_height = 256;
+                GLUTwindow_width = 256 * 1.75;
+                GLUTwindow_height = 256 * 1.75;
                 save_video = 1;
             }
             else { fprintf(stderr, "Invalid program argument: %s", *argv); exit(1); }

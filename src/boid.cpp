@@ -247,12 +247,17 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         shape->segment = NULL;
         boid->shape = shape;
         
+        
+        double error = .5;
+        double v1 = (double)rand() / RAND_MAX;
+        double mult1 = .6 + (v1 * error);
+        
         //create boid
         R3Vector towardsPlayer = scene->players[0]->pos - boid->pos;
         towardsPlayer.Normalize();
         boid->velocity = towardsPlayer;
         boid->velocity.Normalize();
-        boid->speed = .6 * scene->players[0]->defaultVelocity;
+        boid->speed = mult1 * .6 * scene->players[0]->defaultVelocity;
         boid->health = 100;
         R3Material *material = new R3Material();
         material->kd[0] = 0;
