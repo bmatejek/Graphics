@@ -387,7 +387,7 @@ void updateBoidVelocity(R3Scene *scene, R3Boid *boid) {
 
 //delete boids shot by player
 void killShotBoids(R3Scene *scene, double delta_time) {
-    double distAway = 15;
+    double distAway = 40;
     
     for (int i = 0; i < (int)scene->bullets.size(); i++) {
         for (int j = 0; j < (int)scene->boids.size(); j++) {

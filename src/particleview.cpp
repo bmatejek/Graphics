@@ -2308,6 +2308,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'M':
         case 'm':
             scene->players[0]->missiles += 10;
+            scene->players[0]->boidsKilled += 50;
             break;
             
             
