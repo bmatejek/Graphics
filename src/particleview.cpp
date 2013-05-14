@@ -952,7 +952,7 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
                 scene->enemies[0]->health -= 0.05;
             }
             else {
-                scene->enemies[0]->health -= 5.0;
+                scene->enemies[0]->health -= 15.0;
             }
             scene->bullets.erase(scene->bullets.begin() + i);
             i--;
@@ -2331,12 +2331,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
              show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
              break; */
             
-        case 'Q':
-        case 'q':
-        case 27: // ESCAPE
-            quit = 1;
-            break;
-
     case 'k':
       useShader=!useShader;
       cout<<"\rShader is "<<(useShader?"on ":"off")<<flush;
