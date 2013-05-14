@@ -1012,7 +1012,7 @@ void DrawEnemies(R3Scene *scene)
   LoadMaterial(&enemy_material);
   for (unsigned int i = 0; i < scene->enemies.size(); i++) {
     R3Enemy *enemy = scene->enemies[i];
-    double speed = 0.002 + 0.003 * (100 - enemy->health);
+    double speed = 0.001 + 0.002 * (100 - enemy->health);
     // update the center position
     enemy->shape->mesh->Rotate(speed, R3Line(enemy->shape->mesh->Center(), enemy->direction));
     enemy->shape->mesh->Rotate(speed, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
@@ -2135,7 +2135,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.008;
+    double rotateAmount = 0.012;
     
     
     //boooooooooost
