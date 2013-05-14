@@ -1015,7 +1015,7 @@ void DrawEnemies(R3Scene *scene)
   LoadMaterial(&enemy_material);
   for (unsigned int i = 0; i < scene->enemies.size(); i++) {
     R3Enemy *enemy = scene->enemies[i];
-    double speed = 0.001 + 0.002 * (100 - enemy->health);
+    double speed = 0.001 + 0.002 * ((100 - enemy->health) / 100);
     // update the center position
     enemy->shape->mesh->Rotate(speed, R3Line(enemy->shape->mesh->Center(), enemy->direction));
     enemy->shape->mesh->Rotate(speed, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
