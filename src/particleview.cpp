@@ -625,7 +625,8 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->boids.size(); i++) {
         R3Boid *boid = scene->boids[i];
-        boid->shape->mesh->Draw();
+        if (R3Distance(boid->pos,scene->players[0]->pos) > 25) boid->shape->mesh->Draw();
+        else boid->shape2->mesh->Draw();
     }
     
     // Clean up
@@ -952,7 +953,7 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
                 scene->enemies[0]->health -= 0.05;
             }
             else {
-                scene->enemies[0]->health -= 5.0;
+                scene->enemies[0]->health -= 15.0;
             }
             scene->bullets.erase(scene->bullets.begin() + i);
             i--;
@@ -2331,11 +2332,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
              show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
              break; */
             
-
-        case 27: // ESCAPE
-            quit = 1;
-            break;
-
     case 'k':
       useShader=!useShader;
       cout<<"\rShader is "<<(useShader?"on ":"off")<<flush;

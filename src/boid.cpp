@@ -305,6 +305,31 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         shape->segment = NULL;
         boid->shape = shape;
         
+        //create mesh
+        R3Mesh *mesh2 = new R3Mesh();
+        if (!mesh2) {
+            fprintf(stderr, "Unable to allocate mesh\n");
+            return;
+        }
+        
+        // Read mesh file
+        if (!mesh2->Read("../input/shipAsecondsmall.off")) {
+            fprintf(stderr, "Unable to read mesh: ../input/shipAsecond.off\n");
+            return;
+        }
+        
+        
+        // Create shape
+        R3Shape *shape2 = new R3Shape();
+        shape2->type = R3_MESH_SHAPE;
+        shape2->box = NULL;
+        shape2->sphere = NULL;
+        shape2->cylinder = NULL;
+        shape2->cone = NULL;
+        shape2->mesh = mesh2;
+        shape2->segment = NULL;
+        boid->shape2 = shape2;
+        
         
         double error = .5;
         double v1 = (double)rand() / RAND_MAX;
@@ -317,6 +342,7 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         boid->velocity.Normalize();
         boid->speed = mult1 * .6 * scene->players[0]->defaultVelocity;
         boid->health = 100;
+        boid->highres = false;
         R3Material *material = new R3Material();
         material->kd[0] = 0;
         material->kd[1] = 0;
@@ -326,6 +352,9 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         //update mesh properties
         boid->shape->mesh->Translate(x, y, z);
         boid->shape->mesh->Center() = boid->pos;
+        
+        boid->shape2->mesh->Translate(x, y, z);
+        boid->shape2->mesh->Center() = boid->pos;
         
         scene->boids.push_back(boid);
     }
@@ -424,9 +453,12 @@ void UpdateBoids(R3Scene *scene, double delta_time) {
         double dx = delta_time* scene->boids[i]->speed * scene->boids[i]->velocity.X();
         double dy = delta_time* scene->boids[i]->speed *scene->boids[i]->velocity.Y();
         double dz = delta_time* scene->boids[i]->speed * scene->boids[i]->velocity.Z();
+        
         scene->boids[i]->shape->mesh->Translate(dx, dy, dz);
         scene->boids[i]->shape->mesh->Center() += delta_time * (scene->boids[i]->speed * scene->boids[i]->velocity);
         
+        scene->boids[i]->shape2->mesh->Translate(dx, dy, dz);
+        scene->boids[i]->shape2->mesh->Center() += delta_time * (scene->boids[i]->speed * scene->boids[i]->velocity);
         updateBoidVelocity(scene, scene->boids[i]);
     }
 }
