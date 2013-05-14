@@ -77,7 +77,7 @@ static int show_particles = 1;
 static int show_players = 1;
 static int show_particle_springs = 1;
 static int show_particle_sources_and_sinks = 1;
-static int play_sounds = 0;
+//static int play_sounds = 0;
 static int save_image = 0;
 static int save_video = 0;
 static int num_frames_to_record = -1;
@@ -951,10 +951,19 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
         if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
             if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
                 scene->enemies[0]->health -= 0.05;
+                if (scene->bullets.size() % 10 == 0) {
+                    if (scene->boids.size() < 25) {
+                        GenerateBoids(scene,1,20);
+                    }
+                }
             }
             else {
                 scene->enemies[0]->health -= 15.0;
+                if (scene->boids.size() < 25) {
+                    GenerateBoids(scene,1,20);
+                }
             }
+            
             scene->bullets.erase(scene->bullets.begin() + i);
             i--;
             if (scene->enemies[0]->health < 0) {
