@@ -17,6 +17,12 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -81,8 +87,11 @@ void ShootBullet(R3Scene *scene) {
                 pid_t pid;
                 pid = fork();
                 if (pid == 0) {
+		  if (LINUX)
+		    system("avplay -nodisp -autoexit bullet.wav");
+		  else
                     system("afplay bullet.wav");
-                    exit(0);
+		  exit(0);
                 }
             }
             else {
@@ -158,7 +167,6 @@ void ShootBullet(R3Scene *scene) {
         double dy = bullet->position.Y();
         double dz = bullet->position.Z();
         bullet->shape->mesh->Translate(dx,dy,dz);
-//<<<<<<< HEAD
         double ellapsedTime = 0.0;
         if (!missile_shot) {
             gettimeofday(&last_missile_sound, NULL);
@@ -174,12 +182,18 @@ void ShootBullet(R3Scene *scene) {
             pid_t pid;
             pid = fork();
             if (pid == 0) {
-                system("afplay missile.wav");
-                exit(0);
+	      if (LINUX)
+		system("avplay -nodisp -autoexit missile.wav");
+	      else 
+		system("afplay missile.wav");
+	      exit(0);
             }
         }
+<<<<<<< HEAD
 
         
+=======
+>>>>>>> 000dc2dcb799359b32e2d71c411da21aff94d652
     }
     
     scene->bullets.push_back(bullet);

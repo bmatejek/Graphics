@@ -18,6 +18,12 @@
 #include <sys/time.h>
 #include <signal.h>
 
+#if defined(__APPLE__)
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 ////////////////////////////////////////////////////////////
 // GLOBAL CONSTANTS
 ////////////////////////////////////////////////////////////
@@ -2121,6 +2127,26 @@ void keyboard()
         else if (scene->players[0]->accel) {
             scene->players[0]->boost -= 3;
             scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
+<<<<<<< HEAD
+=======
+	    timeval current_time;
+	    gettimeofday(&current_time, NULL);
+	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
+	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
+	    if (ellapsedTime > 2000) {
+	      gettimeofday(&last_boost_time, NULL);
+	      pid_t pid;
+	      pid = fork();
+	      if (pid == 0) {
+		if (LINUX)
+		  system("avplay -nodisp -autoexit Comet.wav");
+		else
+		  system("afplay Comet.wav");
+              exit(0);
+	      }
+	    }
+
+>>>>>>> 000dc2dcb799359b32e2d71c411da21aff94d652
         }
         else
             scene->players[0]->boost = min(scene->players[0]->boost + .33, (double)100);
