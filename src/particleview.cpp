@@ -1009,9 +1009,9 @@ void DrawEnemies(R3Scene *scene)
     R3Enemy *enemy = scene->enemies[i];
     
     // update the center position
-    //enemy->shape->mesh->Rotate(0.005, R3Line(enemy->shape->mesh->Center(), enemy->direction));
-    enemy->shape->mesh->Rotate(0.005, R3Line(R3Point(0, 0, 0), R3Vector(0, 1, 0)));
-    //enemy->direction.Rotate(R3Vector(0, 1, 0), 0.005);
+    enemy->shape->mesh->Rotate(0.005, R3Line(enemy->shape->mesh->Center(), enemy->direction));
+    enemy->shape->mesh->Rotate(0.005, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
+    enemy->direction.Rotate(R3Vector(0, 0, -1), 0.005);
     DrawShape(enemy->shape);
   }
   // Clean up
@@ -2563,9 +2563,10 @@ main(int argc, char **argv)
     if (!scene) exit(-1);
 
     if (scene->enemies.size() != 0 && scene->enemies[0]->shape->type == R3_MESH_SHAPE) {
-      scene->enemies[0]->shape->mesh->Translate(-40, -40, -120);
+      scene->enemies[0]->shape->mesh->Translate(50, 0, -120);
+      scene->enemies[0]->shape->mesh->Rotate(3 * M_PI / 2, R3Line(scene->enemies[0]->shape->mesh->Center(), R3Vector(1, 0, 0)));
+      scene->enemies[0]->direction = R3Vector(0, -1, 0);
       scene->enemies[0]->shape->mesh->Scale(0.50, 0.50, 0.50);
-      //scene->enemies[0]->shape->mesh->Rotate(1.57, R3Line(R3Point(-10, -40, -40), R3Vector(0, 0, -1)));
     }
     
     float versionGL = initGlew(true);
