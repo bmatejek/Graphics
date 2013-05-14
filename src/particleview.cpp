@@ -435,6 +435,14 @@ void DrawNode(R3Scene *scene, R3Node *node)
     // Load material
     if (node->material) LoadMaterial(node->material);
     
+    if (node->shape) {
+      if (node->shape->type == R3_SPHERE_SHAPE) {
+	R3Vector cent = R3Point(0.0, 0.0, -120.0) - node->shape->sphere->Center();
+	cent.Normalize();
+	R3Vector motion = R3Vector(cent.Y(), -1.0 * cent.X(), 0.0) * .05;
+	node->shape->sphere->Translate(motion);
+      }
+    }
     // Draw shape
     if (node->shape) DrawShape(node->shape);
     
@@ -590,21 +598,21 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(1,1,0,1);
-        source_material.ks.Reset(1,1,0,1);
+        source_material.kd.Reset(1,1,1,1);
+        source_material.ks.Reset(1,1,1,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-	        source_material.texture = NULL;
-        source_material.texture = new R2Image();
-/*	if (!source_material.texture->Read("../input/checker.bmp")) {
-	  fprintf(stderr, "oops");
-	}
-	else {
-	  fprintf(stderr, "YAY\n");
-	}
-*/ 	
+	source_material.texture = NULL;
+	//        source_material.texture = new R2Image();
+	//if (!source_material.texture->Read("../input/paper.jpg")) {
+	//  fprintf(stderr, "oops\n");
+	//	}
+	//else {
+	//  fprintf(stderr, "YAY\n");
+	//}
+	
 
 		//source_material.texture_index = -1;
 	source_material.texture_index = 0;
@@ -976,7 +984,14 @@ void DrawEnemies(R3Scene *scene)
     enemy_material.emission.Reset(0,0,0,1);
     enemy_material.shininess = 1;
     enemy_material.indexofrefraction = 1;
-    enemy_material.texture = NULL;
+    //    enemy_material.texture = NULL;
+        enemy_material.texture = new R2Image();
+	if (!enemy_material.texture->Read("../input/paper.jpg")) {
+	  fprintf(stderr, "oops\n");
+	}
+	else {
+	  fprintf(stderr, "YAY\n");
+	}
     enemy_material.texture_index = -1;
     enemy_material.id = 33;
   }
@@ -1449,6 +1464,7 @@ void DrawCrossHairs(R3Scene *scene) {
     }
     for (unsigned int i = 0; i < scene->enemies.size(); i++) {
         R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
+        
         double current = meshIntersection(scene->enemies[i]->shape->mesh, ray);
         if ((current < intersection) && (current != -1))
             intersection = current;
@@ -2112,7 +2128,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.02;
+    double rotateAmount = 0.006;
     
     
     //boooooooooost

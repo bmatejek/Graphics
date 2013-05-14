@@ -183,9 +183,9 @@ void ShootBullet(R3Scene *scene) {
             pid = fork();
             if (pid == 0) {
 	      if (LINUX)
-		system("avplay -nodisp -autoexit missile.wav");
+		system("avplay -nodisp -autoexit Missile.wav");
 	      else 
-		system("afplay missile.wav");
+		system("afplay Missile.wav");
 	      exit(0);
             }
         }
