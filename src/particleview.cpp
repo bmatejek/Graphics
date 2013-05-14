@@ -439,7 +439,7 @@ void DrawNode(R3Scene *scene, R3Node *node)
       if (node->shape->type == R3_SPHERE_SHAPE) {
 	R3Vector cent = R3Point(0.0, 0.0, -120.0) - node->shape->sphere->Center();
 	cent.Normalize();
-	R3Vector motion = R3Vector(cent.Y(), -1.0 * cent.X(), 0.0) * .005;
+	R3Vector motion = R3Vector(cent.Y(), -1.0 * cent.X(), 0.0) * .05;
 	node->shape->sphere->Translate(motion);
       }
     }
