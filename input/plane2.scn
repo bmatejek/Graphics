@@ -10,6 +10,8 @@ material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 marsResize.jpg
 material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 stars2.jpg
 material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 moonResize.jpg
 material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 europamapResize.jpg
+material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 moonScale.jpg
+material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 ioScale.jpg
 
 # A mesh with default material (-1) read from ico.off
 player   -1   f.off 0 0 0 0 0 -1 1 0 0 3.5
@@ -25,10 +27,16 @@ sphere
  0 0 0 -120 40
 
 sphere
- 2 -80 80 -120 8
+ 2 -80 80 -120 12
+
+sphere 
+ 4 -180 0 -120 6
+
+sphere
+ 5 160 0 -120 5
 	
 enemy
 	0.1 0 0.0 0.0 1.0 -1
 	35 1 0
 	0.0 0 0 1
-	mesh 77.off
+	mesh ship_01.off
