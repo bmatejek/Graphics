@@ -85,6 +85,55 @@ double meshIntersection(R3Mesh *mesh, R3Ray *ray) {
     return 1e80;
 }
 
+double boxIntersection(R3Box bbox, R3Ray *ray) {
+    R3Box *box = &bbox;
+
+    double minIntersection = 1e80; 
+    
+    //define planes
+    vector<R3Plane *> planes;
+    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(0,0,1), box->Corner(0,1,0)));
+    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(0,1,0), box->Corner(1,0,0)));
+    planes.push_back(new R3Plane(box->Corner(0,0,0), box->Corner(1,0,0), box->Corner(0,0,1)));
+    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(0,1,1), box->Corner(0,0,1)));
+    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(0,1,0), box->Corner(0,1,1)));
+    planes.push_back(new R3Plane(box->Corner(1,1,1), box->Corner(1,1,0), box->Corner(1,0,0)));
+    
+    double epsilon = 2e-12;
+    
+    for (int i = 0; i < (int)planes.size(); i++) {
+        double denominator = ray->Vector().Dot(planes[i]->Normal());
+        if (denominator == 0)
+            continue;
+        
+        double numerator = planes[i]->Normal().Dot(planes[i]->Point() - ray->Start());
+        double t = numerator/denominator;
+        
+        R3Point toCheck = ray->Start() + (ray->Vector() * t);
+        
+        if ((toCheck.X() <= box->XMin() - epsilon) || toCheck.X() > box->XMax() + epsilon)
+            continue;
+        
+        if ((toCheck.Y() <= box->YMin() - epsilon) || toCheck.Y() > box->YMax() + epsilon)
+            continue;
+        
+        if ((toCheck.Z() <= box->ZMin() - epsilon) || toCheck.Z() > box->ZMax() + epsilon)
+            continue;
+        
+        if (t <= 0)
+            continue;
+        
+        if (t < minIntersection) {
+            minIntersection = t; 
+        }
+    }
+    
+    for (int i = 0; i < (int)planes.size(); i++)
+        delete planes[i];
+    
+    return minIntersection;
+}
+
 ////////////////////////////////////////////////////////////
 // Explode Boids
 ////////////////////////////////////////////////////////////
