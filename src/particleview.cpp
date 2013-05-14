@@ -1,8 +1,6 @@
 // Source file for the scene file viewer
 
 
-
-
 ////////////////////////////////////////////////////////////
 // INCLUDE FILES
 ////////////////////////////////////////////////////////////
@@ -1016,9 +1014,9 @@ void DrawEnemies(R3Scene *scene)
     R3Enemy *enemy = scene->enemies[i];
     
     // update the center position
-    enemy->shape->mesh->Rotate(0.005, R3Line(enemy->shape->mesh->Center(), enemy->direction));
-    enemy->shape->mesh->Rotate(0.005, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
-    enemy->direction.Rotate(R3Vector(0, 0, -1), 0.005);
+    enemy->shape->mesh->Rotate(0.002, R3Line(enemy->shape->mesh->Center(), enemy->direction));
+    enemy->shape->mesh->Rotate(0.002, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
+    enemy->direction.Rotate(R3Vector(0, 0, -1), 0.002);
     DrawShape(enemy->shape);
   }
   // Clean up
