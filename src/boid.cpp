@@ -300,6 +300,13 @@ void killShotBoids(R3Scene *scene, double delta_time) {
                 if (scene->boids.size() < 50)
                     GenerateBoids(scene, 2, distAway);
                 scene->players[0]->boidsKilled++;
+                
+                R3Bullet *temp = scene->bullets.back();
+                scene->bullets[scene->bullets.size() - 1] = scene->bullets[i];
+                scene->bullets[i] = temp;
+                
+                // delete last element
+                scene->bullets.pop_back();
             }
         }
     }
