@@ -42,6 +42,8 @@ ReadShape(FILE *fp, int command_number, const char *filename)
     // Initialize result
     R3Shape *shape = NULL;
     
+
+    
     // Read shape type
     char shape_type[1024];
     if (fscanf(fp, "%s", shape_type) != 1) {
@@ -225,6 +227,8 @@ Read(const char *filename, R3Node *node)
         fprintf(stderr, "Unable to open file %s", filename);
         return 0;
     }
+    
+
     
     // Create array of materials
     vector<R3Material *> materials;

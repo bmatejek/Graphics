@@ -406,7 +406,7 @@ void killShotBoids(R3Scene *scene, double delta_time) {
                 scene->bullets.pop_back();
                 if ((scene->players[0]->boidsKilled %5 == 0) && (scene->players[0]->boidsKilled != 0))
                     scene->players[0]->missiles++; 
-                if (scene->boids.size() < 40)
+                if (scene->boids.size() < 25)
                     GenerateBoids(scene, 2, distAway);
             }
         }
@@ -440,7 +440,7 @@ void UpdateBoids(R3Scene *scene, double delta_time) {
             scene->players[0]->health -= 5;
             Explode(scene, scene->boids[i]);
             deleteBoid(scene, scene->boids[i]);
-            if (scene->boids.size() < 40)
+            if (scene->boids.size() < 25)
                 GenerateBoids(scene, 1, distAway);
         }
     }

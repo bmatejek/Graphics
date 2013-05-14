@@ -787,6 +787,9 @@ void DrawPlayers(R3Scene *scene)
     UpdatePlayers(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     UpdateBullets(scene, current_time - time_lost_taking_videos, delta_time, integration_type);
     
+    
+
+    
     // Generate new particles
     //GenerateParticles(scene, current_time - time_lost_taking_videos, delta_time);
 
@@ -1750,8 +1753,8 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     static R3Material source_material1;
     if (source_material1.id != 33) {
         source_material1.ka.Reset(0.2,0.2,0.2,1);
-        source_material1.kd.Reset(0,0,1,1);
-        source_material1.ks.Reset(0,1,0,1);
+        source_material1.kd.Reset(0,0,0,1);
+        source_material1.ks.Reset(0,0,0,1);
         source_material1.kt.Reset(0,0,0,1);
         source_material1.emission.Reset(0,0,1,1);
         source_material1.shininess = 1;
@@ -1858,6 +1861,8 @@ void DrawBoostAndHealthBar(R3Scene *scene) {
     if (lighting) glEnable(GL_LIGHTING);
 }
 
+void setUpNewLevel(R3Scene *);
+
 
 
 void GLUTRedraw(void)
@@ -1895,14 +1900,18 @@ void GLUTRedraw(void)
         view2 = 0;
         follow = 0;
         view3 = 0;
-        view4 = 0;
+        view4 = 0; 
     }
     else if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
     else if (view2 || follow)
         DrawCrossHairs(scene);
     
-    //Display velocity
+
+
+    
+        
+        //Display velocity
     DisplayVelocity(scene);
     
     //Display number of boids killed
@@ -2296,6 +2305,12 @@ void GLUTKeyboard(unsigned char key, int x, int y)
             break;
             
             
+        case 'M':
+        case 'm':
+            scene->players[0]->missiles += 10;
+            break;
+            
+            
             //boid test code
         case 'B':
         case 'b':
@@ -2568,6 +2583,10 @@ GLuint setShaders() {
 ////////////////////////////////////////////////////////////
 // MAIN
 ////////////////////////////////////////////////////////////
+
+void setUpNewLevel(R3Scene *scene) {
+    scene = ReadScene(input_scene_name);
+}
 
 int
 main(int argc, char **argv)
