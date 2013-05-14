@@ -150,9 +150,16 @@ void deleteBoid(R3Scene *scene, R3Boid* boid) {
 
 void Explode(R3Scene *scene, R3Boid *boid) {
 	if (boid->shape->type == R3_MESH_SHAPE) {
-        int numParticlesperVertex = 15;
+
 		for (unsigned int i = 0; i < boid->shape->mesh->vertices.size(); i++) {
-            for (int x = 0; x < numParticlesperVertex; x++) {
+            
+            int percent = 10;
+            //int percent = player->shape->mesh->vertices.size() / 150;
+            if (scene->players[0]->shape->mesh->vertices.size() < 300) {
+                percent = 5;
+            }
+            if (i % percent == 0) {
+
                 R3Particle *particle = new R3Particle();
                 double speed = 1 * (double)rand() / RAND_MAX;;
                 double x1 = 10 * (double)rand() / RAND_MAX;;
@@ -267,6 +274,8 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         double x = scene->players[0]->pos.X() + (distAway * cos(theta) * sin(phi));
         double y = scene->players[0]->pos.Y() + (distAway * sin(theta) * sin(phi));
         double z = scene->players[0]->pos.Z() + (distAway * cos(phi));
+  
+
         
         R3Boid *boid = new R3Boid();
         boid->pos = R3Point(x, y, z);
@@ -354,7 +363,7 @@ void killShotBoids(R3Scene *scene, double delta_time) {
     for (int i = 0; i < (int)scene->bullets.size(); i++) {
         for (int j = 0; j < (int)scene->boids.size(); j++) {
             R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
-            double intersection = meshIntersection(scene->boids[j]->shape->mesh, ray);
+            double intersection = boxIntersection(scene->boids[j]->shape->mesh->bbox, ray);
             if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
                 Explode(scene, scene->boids[j]);
                 deleteBoid(scene, scene->boids[j]);

@@ -1453,7 +1453,7 @@ void DrawCrossHairs(R3Scene *scene) {
     bool updatedInter = false; 
     for (unsigned int i = 0; i < scene->boids.size(); i++) {
         R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
-        double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
+        double current = boxIntersection(scene->boids[i]->shape->mesh->bbox, ray);
         if ((current < intersection) && (current != -1)) {
             intersection = current;
             updatedInter = true; 
@@ -1880,8 +1880,12 @@ void GLUTRedraw(void)
     
 
     
-    if (scene->players[0]->health <= 0)
+    if (scene->players[0]->health <= 0) {
         DisplayYouLose(scene);
+        view2 = 0;
+        follow = 0;
+        view3 = 0;
+    }
     else if (scene->enemies[0]->health <= 0) {
         DisplayYouWin(scene);
         view2 = 0;

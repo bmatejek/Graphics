@@ -136,12 +136,12 @@ void Explode(R3Scene *scene, R3Player *player) {
     scene->players[0]->health = 0; 
     if (player->shape->type == R3_MESH_SHAPE) {
       for (unsigned int i = 0; i < player->shape->mesh->vertices.size(); i++) {
-	int percent = 25;
-	//int percent = player->shape->mesh->vertices.size() / 150;
-	if (player->shape->mesh->vertices.size() < 300) {
-	  percent = 10;
-	}
-	if (i % percent == 0) {
+          int percent = 25;
+          //int percent = player->shape->mesh->vertices.size() / 150;
+          if (player->shape->mesh->vertices.size() < 300) {
+              percent = 10;
+          }
+          if (i % percent == 0) {
 	  R3Particle *particle = new R3Particle();
 	  double speed = 1 * RandomNumber();
 	  double x1 = 10 * RandomNumber();
