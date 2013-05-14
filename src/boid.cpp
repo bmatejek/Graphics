@@ -150,9 +150,16 @@ void deleteBoid(R3Scene *scene, R3Boid* boid) {
 
 void Explode(R3Scene *scene, R3Boid *boid) {
 	if (boid->shape->type == R3_MESH_SHAPE) {
-        int numParticlesperVertex = 15;
+
 		for (unsigned int i = 0; i < boid->shape->mesh->vertices.size(); i++) {
-            for (int x = 0; x < numParticlesperVertex; x++) {
+            
+            int percent = 10;
+            //int percent = player->shape->mesh->vertices.size() / 150;
+            if (scene->players[0]->shape->mesh->vertices.size() < 300) {
+                percent = 5;
+            }
+            if (i % percent == 0) {
+
                 R3Particle *particle = new R3Particle();
                 double speed = 1 * (double)rand() / RAND_MAX;;
                 double x1 = 10 * (double)rand() / RAND_MAX;;
@@ -267,6 +274,8 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         double x = scene->players[0]->pos.X() + (distAway * cos(theta) * sin(phi));
         double y = scene->players[0]->pos.Y() + (distAway * sin(theta) * sin(phi));
         double z = scene->players[0]->pos.Z() + (distAway * cos(phi));
+  
+
         
         R3Boid *boid = new R3Boid();
         boid->pos = R3Point(x, y, z);
@@ -296,6 +305,31 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         shape->segment = NULL;
         boid->shape = shape;
         
+        //create mesh
+        R3Mesh *mesh2 = new R3Mesh();
+        if (!mesh2) {
+            fprintf(stderr, "Unable to allocate mesh\n");
+            return;
+        }
+        
+        // Read mesh file
+        if (!mesh2->Read("../input/shipAsecondsmall.off")) {
+            fprintf(stderr, "Unable to read mesh: ../input/shipAsecond.off\n");
+            return;
+        }
+        
+        
+        // Create shape
+        R3Shape *shape2 = new R3Shape();
+        shape2->type = R3_MESH_SHAPE;
+        shape2->box = NULL;
+        shape2->sphere = NULL;
+        shape2->cylinder = NULL;
+        shape2->cone = NULL;
+        shape2->mesh = mesh2;
+        shape2->segment = NULL;
+        boid->shape2 = shape2;
+        
         
         double error = .5;
         double v1 = (double)rand() / RAND_MAX;
@@ -308,6 +342,7 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         boid->velocity.Normalize();
         boid->speed = mult1 * .6 * scene->players[0]->defaultVelocity;
         boid->health = 100;
+        boid->highres = false;
         R3Material *material = new R3Material();
         material->kd[0] = 0;
         material->kd[1] = 0;
@@ -317,6 +352,9 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         //update mesh properties
         boid->shape->mesh->Translate(x, y, z);
         boid->shape->mesh->Center() = boid->pos;
+        
+        boid->shape2->mesh->Translate(x, y, z);
+        boid->shape2->mesh->Center() = boid->pos;
         
         scene->boids.push_back(boid);
     }
@@ -354,7 +392,7 @@ void killShotBoids(R3Scene *scene, double delta_time) {
     for (int i = 0; i < (int)scene->bullets.size(); i++) {
         for (int j = 0; j < (int)scene->boids.size(); j++) {
             R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
-            double intersection = meshIntersection(scene->boids[j]->shape->mesh, ray);
+            double intersection = boxIntersection(scene->boids[j]->shape->mesh->bbox, ray);
             if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
                 Explode(scene, scene->boids[j]);
                 deleteBoid(scene, scene->boids[j]);
@@ -415,9 +453,12 @@ void UpdateBoids(R3Scene *scene, double delta_time) {
         double dx = delta_time* scene->boids[i]->speed * scene->boids[i]->velocity.X();
         double dy = delta_time* scene->boids[i]->speed *scene->boids[i]->velocity.Y();
         double dz = delta_time* scene->boids[i]->speed * scene->boids[i]->velocity.Z();
+        
         scene->boids[i]->shape->mesh->Translate(dx, dy, dz);
         scene->boids[i]->shape->mesh->Center() += delta_time * (scene->boids[i]->speed * scene->boids[i]->velocity);
         
+        scene->boids[i]->shape2->mesh->Translate(dx, dy, dz);
+        scene->boids[i]->shape2->mesh->Center() += delta_time * (scene->boids[i]->speed * scene->boids[i]->velocity);
         updateBoidVelocity(scene, scene->boids[i]);
     }
 }

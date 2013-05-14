@@ -1,8 +1,6 @@
 // Source file for the scene file viewer
 
 
-
-
 ////////////////////////////////////////////////////////////
 // INCLUDE FILES
 ////////////////////////////////////////////////////////////
@@ -84,6 +82,7 @@ static int num_frames_to_record = -1;
 static bool follow = false;
 static bool view2 = true;
 static bool view3 = false;
+static bool view4 = false;
 static int quit = 0;
 
 static timeval last_boost_time;
@@ -626,7 +625,8 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->boids.size(); i++) {
         R3Boid *boid = scene->boids[i];
-        boid->shape->mesh->Draw();
+        if (R3Distance(boid->pos,scene->players[0]->pos) > 25) boid->shape->mesh->Draw();
+        else boid->shape2->mesh->Draw();
     }
     
     // Clean up
@@ -795,11 +795,11 @@ void DrawPlayers(R3Scene *scene)
     fprintf(stdout, "\ncam");
     camera.eye.Print();
     */
-    if (follow || view2 || view3) {
+    if (follow || view2 || view3 || view4) {
       //      camera.eye = scene->players[0]->shape->mesh->Center();
 	  if (scene->players.size() != 0) {
 		  camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
-		  if (view2 || view3) camera.eye = scene->players[0]->pos  -4.5 *scene->players[0]->nose ;
+		  if (view2 || view3 || view4) camera.eye = scene->players[0]->pos  -4.5 *scene->players[0]->nose ;
 		  camera.towards = scene->players[0]->nose;
 		  camera.right = scene->players[0]->wing;
 		  camera.up = camera.right;
@@ -809,6 +809,9 @@ void DrawPlayers(R3Scene *scene)
               camera.towards *= -1;
               camera.right *= -1;
               camera.up *= -1;
+          }
+          if (view4) {
+              camera.eye -= .1 * camera.towards;
           }
           
 		}
@@ -945,14 +948,12 @@ void killShotEnemy(R3Scene *scene, double delta_time) {
         
         R3Ray *ray = new R3Ray(scene->bullets[i]->position, scene->bullets[i]->velocity);
         double intersection = meshIntersection(scene->enemies[0]->shape->mesh, ray);
-        //printf("%f\n", intersection);
-        //printf("%f\n", scene->bullets[i]->velocity.Length() * delta_time);
         if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
             if (scene->bullets[i]->type == R3_REGULAR_BULLET) {
                 scene->enemies[0]->health -= 0.05;
             }
             else {
-                scene->enemies[0]->health -= 5.0;
+                scene->enemies[0]->health -= 15.0;
             }
             scene->bullets.erase(scene->bullets.begin() + i);
             i--;
@@ -1014,11 +1015,11 @@ void DrawEnemies(R3Scene *scene)
   LoadMaterial(&enemy_material);
   for (unsigned int i = 0; i < scene->enemies.size(); i++) {
     R3Enemy *enemy = scene->enemies[i];
-    
+    double speed = 0.001 + 0.002 * ((100 - enemy->health) / 100);
     // update the center position
-    enemy->shape->mesh->Rotate(0.005, R3Line(enemy->shape->mesh->Center(), enemy->direction));
-    enemy->shape->mesh->Rotate(0.005, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
-    enemy->direction.Rotate(R3Vector(0, 0, -1), 0.005);
+    enemy->shape->mesh->Rotate(speed, R3Line(enemy->shape->mesh->Center(), enemy->direction));
+    enemy->shape->mesh->Rotate(speed, R3Line(R3Point(0, 0, 0), R3Vector(0, 0, -1)));
+    enemy->direction.Rotate(R3Vector(0, 0, -1), speed);
     DrawShape(enemy->shape);
   }
   // Clean up
@@ -1378,7 +1379,7 @@ void DisplayVelocity(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .95;
-    double x = GLUTwindow_width * .88;
+    double x = GLUTwindow_width * .85;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1403,7 +1404,7 @@ void DisplayBoidsKilled(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .91;
-    double x = GLUTwindow_width * .88;
+    double x = GLUTwindow_width * .85;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1428,7 +1429,7 @@ void DisplayMissileCount(R3Scene *scene) {
     R3Point p3 = (camera.eye + (camera.neardist * camera.towards) + (camera.neardist * tan(camera.xfov) * camera.right) - (camera.neardist * tan(camera.yfov) * camera.up));
     
     double y = GLUTwindow_height * .87;
-    double x = GLUTwindow_width * .88;
+    double x = GLUTwindow_width * .85;
     //create ray through each pixel
     R3Vector upVector = (p2 - p1) * ((y + .5)/GLUTwindow_height);
     R3Vector acrossVector = (p3 - p1) * ((x + .5)/GLUTwindow_width);
@@ -1455,7 +1456,7 @@ void DrawCrossHairs(R3Scene *scene) {
     bool updatedInter = false; 
     for (unsigned int i = 0; i < scene->boids.size(); i++) {
         R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
-        double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
+        double current = boxIntersection(scene->boids[i]->shape->mesh->bbox, ray);
         if ((current < intersection) && (current != -1)) {
             intersection = current;
             updatedInter = true; 
@@ -1882,13 +1883,19 @@ void GLUTRedraw(void)
     
 
     
-    if (scene->players[0]->health <= 0)
+    if (scene->players[0]->health <= 0) {
         DisplayYouLose(scene);
+        view2 = 0;
+        follow = 0;
+        view3 = 0;
+        view4 = 1;
+    }
     else if (scene->enemies[0]->health <= 0) {
         DisplayYouWin(scene);
         view2 = 0;
         follow = 0;
         view3 = 0;
+        view4 = 0;
     }
     else if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
@@ -2133,7 +2140,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.004;
+    double rotateAmount = 0.012;
     
     
     //boooooooooost
@@ -2325,12 +2332,6 @@ void GLUTKeyboard(unsigned char key, int x, int y)
              show_particle_sources_and_sinks = !show_particle_sources_and_sinks;
              break; */
             
-        case 'Q':
-        case 'q':
-        case 27: // ESCAPE
-            quit = 1;
-            break;
-
     case 'k':
       useShader=!useShader;
       cout<<"\rShader is "<<(useShader?"on ":"off")<<flush;
