@@ -12,24 +12,23 @@ material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 moonResize.jpg
 material  1 1 1  1 1 1  1 1 1  0 0 0  0 0 0  10 1 europamapResize.jpg
 
 # A mesh with default material (-1) read from ico.off
-player   -1    77.off 0 0 0 0 0 -1 1 0 0 1.0
-
+player   -1   f.off 0 0 0 0 0 -1 1 0 0 3.5
 
 ### this sphere has to be first
 sphere 
-  1 0 0 0 200
+ 1 0 0 0 200
  
 sphere
-  2 -30 -40 -10 14
+ 3 -50 -50 -120 14
 
 sphere
- 3 0 0 -120 35
+ 0 0 0 -120 40
 
 sphere
- 0 -60 60 -150 20
+ 2 -80 80 -120 8
 	
 enemy
 	0.1 0 0.0 0.0 1.0 -1
 	35 1 0
 	0.0 0 0 1
-	mesh ship_01.off
+	mesh 77.off

@@ -33,8 +33,9 @@ using namespace std;
 #define GRAV_CONSTANT 6.67428e-11
 #define ADAPTIVE_THRESHOLD 1e-2
 #define eps 2e-12
-#define MISSILE_SCALE_FACTOR 0.1
+#define MISSILE_SCALE_FACTOR 0.3
 #define MISSILE_ROTATE_FACTOR 0.1
+
 
 static timeval last_bullet_sound;
 static timeval last_missile_sound;
@@ -42,8 +43,6 @@ static bool bullet_shot = false;
 static bool missile_shot = false;
 
 void ShootBullet(R3Scene *scene) {
-    //fprintf(stderr,"%d\n",scene->bullets.size());
-    // generate a bullet from the plane
     
     
     R3Bullet *bullet;
@@ -105,7 +104,7 @@ void ShootBullet(R3Scene *scene) {
     if (scene->players[0]->currentbullet == R3_MISSILE_BULLET) {
         if (scene->players[0]->missiletime > 0) return;
         scene->players[0]->missiletime = 5.0;
-        
+        scene->players[0]->missiles--; 
         
         
         bullet = new R3Bullet();
@@ -184,9 +183,9 @@ void ShootBullet(R3Scene *scene) {
             pid = fork();
             if (pid == 0) {
 	      if (LINUX)
-		system("avplay -nodisp -autoexit missile.wav");
+		system("avplay -nodisp -autoexit Missile.wav");
 	      else 
-		system("afplay missile.wav");
+		system("afplay Missile.wav");
 	      exit(0);
             }
         }
