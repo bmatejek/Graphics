@@ -17,8 +17,6 @@ varying vec3 vertex_light_half_vector2;
 uniform sampler2D color_texture;
 uniform int texton;
 
-varying vec3 ec_pos;
-varying vec3 vVertex;
 varying vec4 lightDir;
 
 uniform vec4 _WorldSpaceLightPos0;

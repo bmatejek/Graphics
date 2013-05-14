@@ -3,17 +3,39 @@ Ethan Leeman, Brian Matejek, Phil Rosen, Mark Whelan
 Features:
 3D perspective viewing and objects
 Lighting and smooth shading
-User Input
-Computer control over come elements of the scene 
-texture mapping
-multiple views
-on-screen control panel
-level of detail control
-procedural and physically-based modeling
-collision detection
-simulated dynamics
-vertex and fragment shader
-sound
+
+User Input:
+The user can control the game in several ways. The plane is controlled useing the w-a-s-d keys. pressing 'g' fires either missiles or rockets. Pressing 'y' toggels between firing missiles and bullets. Pressing the 'h' button boosts the player. The player can only boost for a small amount of time before running out of boost. 
+
+Computer control over come elements of the scene:
+The computer controls a fleet of boids that attempt to kill the player. These boids fly in the direction of the user at all times and detonate on impact. There is also a main enemy that orbits a planet in the scene. 
+
+Texture Mapping:
+Textures are mapped to planets, boids, and the main enemy. 
+
+Multiple Views:
+The user can change the view in several ways. Pressing 'x' switches to first person view. Pressing 'b' makes the camera point in the backward direction of the plane. Pressing 'z' from another view changes the user to a 3-rd person view. Pressing 'z' when already in 3rd person view makes the camera stationary and makes the user fly away. 
+
+On-screen Control Panel:
+The screen displays various information. The bottom of the screen has a health and boost bar displaying remaining boost and health respectively. The top of the screen contains a red health bar of the main enemy ship. The top right of the screen displays the current velocity, the number of boids killed, and the number of missiles available to fire. 
+
+Level of Detail Control:
+The boids are rendered in higher resolution when they come closer to the player.
+
+Procedural and Physically-Based Modeling:
+Particle systems are in place for bullets and explosions. 
+
+Collision Detection:
+The game detects collisions between all game objects. This includes bullets (particles), spheres, and meshes. 
+
+Simulated Dynamics:
+The planets are orbiting each other, including moons which orbit the orbitting planets. Also fired rockets rotate.  
+
+Vertex and Fragment Shader:
+Pressing 'k' toggles toon shading.
+
+Sound:
+The game contains background music which plays for the duration. The game also includes sounds that occur when bullets are fired, missiles are fired, explosions occur, or the plane boosts. 
 
 
 
