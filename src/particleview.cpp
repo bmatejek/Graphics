@@ -2627,8 +2627,12 @@ main(int argc, char **argv)
     pid = fork();
     if (pid == 0) {
       if (LINUX)
-	system("avplay -nodisp -loop 0 dream_walking.wav");
-      
+          system("avplay -nodisp -loop 0 dream_walking.wav");
+      else {
+          while(1) {
+              system("afplay dream_walking.wav");
+          }
+        }
     }
 
     // Run GLUT interface
