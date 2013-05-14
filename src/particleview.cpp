@@ -2157,7 +2157,7 @@ void keyboard()
         }
         //boosting
         else if (scene->players[0]->accel) {
-            scene->players[0]->boost -= 1.5;
+            scene->players[0]->boost -= 0.5;
             scene->players[0]->velocity = min(4*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
             
             
