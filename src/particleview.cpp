@@ -1455,7 +1455,7 @@ void DrawCrossHairs(R3Scene *scene) {
     bool updatedInter = false; 
     for (unsigned int i = 0; i < scene->boids.size(); i++) {
         R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
-        double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
+        double current = boxIntersection(scene->boids[i]->shape->mesh->bbox, ray);
         if ((current < intersection) && (current != -1)) {
             intersection = current;
             updatedInter = true; 
