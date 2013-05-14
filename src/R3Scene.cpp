@@ -378,13 +378,14 @@ Read(const char *filename, R3Node *node)
             player->wing = w;
             player->velocity = vel;
             player->defaultVelocity = vel;
-            player->boost = 0;
+            player->boost = 100;
             player->accel = false;
             player->health = 100;
             player->bulletheat = 0.0;
             player->currentbullet = R3_REGULAR_BULLET;
             player->missiletime = -1;
             player->boidsKilled = 0;
+            player->missiles = 0; 
             
             player->nose.Normalize();
             player->wing.Normalize();
