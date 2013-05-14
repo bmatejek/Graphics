@@ -42,7 +42,9 @@ pid_t BSound = -1;
 GLint UniformLocation;
 
 bool useShader=false;
-//vertex shader handle                                                                                                                                                             
+//vertex shader handle                                                          
+
+pid_t child;                                                                                                   
 static GLuint v;
 //fragment shader handle                                                                                                                                                           
 static GLuint f;
@@ -2200,14 +2202,6 @@ void keyboard()
             
 		}
         
-        if (keyStates['Y'] || keyStates['y']) {
-            
-            
-            
-            
-            
-        }
-        
 		if (keyStates['S'] || keyStates['s']){
 			scene->players[0]->shape->mesh->Rotate(-1.0 * rotateAmount, R3Line(scene->players[0]->pos, scene->players[0]->wing));
 			scene->players[0]->nose.Rotate(scene->players[0]->wing, -1.0 * rotateAmount);
@@ -2289,8 +2283,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'g':
             keyStates['g'] = true;
             break;
-            
-            
+        
         case 'H':
         case 'h':
             keyStates['h'] = true;
@@ -2622,18 +2615,6 @@ main(int argc, char **argv)
     cout<<"Shader program "<<shader<<endl;
 
     glShadeModel (GL_SMOOTH);
-
-    pid_t pid;
-    pid = fork();
-    if (pid == 0) {
-      if (LINUX)
-          system("avplay -nodisp -loop 0 dream_walking.wav");
-      else {
-          while(1) {
-              system("afplay dream_walking.wav");
-          }
-        }
-    }
 
     // Run GLUT interface
     GLUTMainLoop();
