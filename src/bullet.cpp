@@ -189,11 +189,6 @@ void ShootBullet(R3Scene *scene) {
 	      exit(0);
             }
         }
-<<<<<<< HEAD
-
-        
-=======
->>>>>>> 000dc2dcb799359b32e2d71c411da21aff94d652
     }
     
     scene->bullets.push_back(bullet);
