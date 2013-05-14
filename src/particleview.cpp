@@ -582,20 +582,20 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(1,1,0,1);
-        source_material.ks.Reset(1,1,0,1);
+        source_material.kd.Reset(1,1,1,1);
+        source_material.ks.Reset(1,1,1,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
         source_material.indexofrefraction = 1;
-	//        source_material.texture = NULL;
-        source_material.texture = new R2Image();
-	if (!source_material.texture->Read("../input/checker.bmp")) {
-	  fprintf(stderr, "oops");
-	}
-	else {
-	  fprintf(stderr, "YAY\n");
-	}
+	source_material.texture = NULL;
+	//        source_material.texture = new R2Image();
+	//if (!source_material.texture->Read("../input/paper.jpg")) {
+	//  fprintf(stderr, "oops\n");
+	//	}
+	//else {
+	//  fprintf(stderr, "YAY\n");
+	//}
 	
 
 		//source_material.texture_index = -1;
@@ -967,7 +967,14 @@ void DrawEnemies(R3Scene *scene)
     enemy_material.emission.Reset(0,0,0,1);
     enemy_material.shininess = 1;
     enemy_material.indexofrefraction = 1;
-    enemy_material.texture = NULL;
+    //    enemy_material.texture = NULL;
+        enemy_material.texture = new R2Image();
+	if (!enemy_material.texture->Read("../input/paper.jpg")) {
+	  fprintf(stderr, "oops\n");
+	}
+	else {
+	  fprintf(stderr, "YAY\n");
+	}
     enemy_material.texture_index = -1;
     enemy_material.id = 33;
   }
