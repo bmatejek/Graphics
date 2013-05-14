@@ -2532,14 +2532,11 @@ GLuint setShaders() {
   v = glCreateShader(GL_VERTEX_SHADER);
   f = glCreateShader(GL_FRAGMENT_SHADER);
 
-  if (!v || !f) fprintf(stderr, "well, shit");
-
 
   vs = textFileRead("src/toon.vert");
   fs = textFileRead("src/toon.frag");
 
   if (!vs || !fs) {
-    fprintf(stderr, "weird");
     vs = textFileRead("./toon.vert");
     fs = textFileRead("./toon.frag");
   }
