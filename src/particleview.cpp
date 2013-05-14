@@ -626,7 +626,8 @@ void RenderBoids(R3Scene *scene, double current_time, double delta_time)
     LoadMaterial(&source_material);
     for (int i = 0; i < (int)scene->boids.size(); i++) {
         R3Boid *boid = scene->boids[i];
-        boid->shape->mesh->Draw();
+        if (R3Distance(boid->pos,scene->players[0]->pos) > 25) boid->shape->mesh->Draw();
+        else boid->shape2->mesh->Draw();
     }
     
     // Clean up
