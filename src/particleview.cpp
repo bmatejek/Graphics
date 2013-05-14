@@ -83,6 +83,7 @@ static int save_video = 0;
 static int num_frames_to_record = -1;
 static bool follow = false;
 static bool view2 = true;
+static bool view3 = false;
 static int quit = 0;
 
 static timeval last_boost_time;
@@ -90,8 +91,8 @@ static timeval last_boost_time;
 // GLUT variables
 
 static int GLUTwindow = 0;
-static int GLUTwindow_height = 512 * 1.75;
-static int GLUTwindow_width = 512 * 1.75;
+static int GLUTwindow_height = 512 * 1.6;
+static int GLUTwindow_width = 512 * 1.6;
 static int GLUTmouse[2] = { 0, 0 };
 static int GLUTbutton[3] = { 0, 0, 0 };
 static int GLUTmodifiers = 0;
@@ -739,8 +740,8 @@ void RenderPlayers(R3Scene *scene, double current_time, double delta_time)
     static R3Material source_material;
     if (source_material.id != 33) {
         source_material.ka.Reset(0.2,0.2,0.2,1);
-        source_material.kd.Reset(1,0,1,1);
-        source_material.ks.Reset(0,0,0,1);
+        source_material.kd.Reset(0,0,1,1);
+        source_material.ks.Reset(0,1,0,1);
         source_material.kt.Reset(0,0,0,1);
         source_material.emission.Reset(0,0,0,1);
         source_material.shininess = 1;
@@ -794,16 +795,22 @@ void DrawPlayers(R3Scene *scene)
     fprintf(stdout, "\ncam");
     camera.eye.Print();
     */
-    if (follow || view2) {
+    if (follow || view2 || view3) {
       //      camera.eye = scene->players[0]->shape->mesh->Center();
 	  if (scene->players.size() != 0) {
 		  camera.eye = scene->players[0]->pos + 2.5 *scene->players[0]->nose;
-		  if (view2) camera.eye = scene->players[0]->pos  -4 *scene->players[0]->nose ;
+		  if (view2 || view3) camera.eye = scene->players[0]->pos  -4.5 *scene->players[0]->nose ;
 		  camera.towards = scene->players[0]->nose;
 		  camera.right = scene->players[0]->wing;
 		  camera.up = camera.right;
 		  camera.up.Cross(camera.towards);
-		  if (view2) camera.eye += .7*camera.up;
+		  if (view2 || view3) camera.eye += .7*camera.up;
+          if (view3) {
+              camera.towards *= -1;
+              camera.right *= -1;
+              camera.up *= -1;
+          }
+          
 		}
     }
     
@@ -1444,24 +1451,32 @@ void DrawCrossHairs(R3Scene *scene) {
     glEnable(GL_LIGHTING);
     
     
-    double intersection = 100;
+    double intersection = 200;
+    bool updatedInter = false; 
     for (unsigned int i = 0; i < scene->boids.size(); i++) {
-    R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
-    double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
-    if ((current < intersection) && (current != -1))
-        intersection = current; 
+        R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
+        double current = meshIntersection(scene->boids[i]->shape->mesh, ray);
+        if ((current < intersection) && (current != -1)) {
+            intersection = current;
+            updatedInter = true; 
+        }
     }
     for (unsigned int i = 0; i < scene->enemies.size(); i++) {
         R3Ray *ray = new R3Ray(scene->players[0]->pos, scene->players[0]->nose);
         
-        double current = meshIntersection(scene->enemies[i]->shape->mesh, ray);
-        if ((current < intersection) && (current != -1))
+        double current = boxIntersection(scene->enemies[i]->shape->mesh->bbox, ray);
+        if (current < intersection) {
             intersection = current;
+            updatedInter = true;
+        }
     }
+    
+    if (!updatedInter)
+        intersection = 50; 
 
     double factor = .0057 * intersection + .029;
     
-    R3Point startPos = scene->players[0]->pos + .8*intersection*scene->players[0]->nose;
+    R3Point startPos = scene->players[0]->pos + .9*intersection*scene->players[0]->nose;
     R3Point verticalTop = startPos + factor*camera.up;
     R3Point verticalBottom = startPos - factor*camera.up;
     R3Point horizRight = startPos + factor*camera.right;
@@ -1483,19 +1498,19 @@ void DrawCrossHairs(R3Scene *scene) {
         source_material.texture_index = -1;
         source_material.id = 33;
     }
-    if (intersection < 100)
+    if (updatedInter)
         source_material.emission.Reset(1,0,0,1);
     else
         source_material.emission.Reset(0,1,0,1);
     
     
-    if (intersection < 100) {
+    if (updatedInter) {
         char buffer [50];
         sprintf (buffer, "%4.2f", intersection);
         GLUTDrawRedText(horizRight, buffer);
     }
     
-    if (intersection < 100)
+    if (updatedInter)
         source_material.emission.Reset(1,0,0,1);
     else
         source_material.emission.Reset(0,1,0,1);
@@ -1868,16 +1883,17 @@ void GLUTRedraw(void)
 
     
     if (scene->players[0]->health <= 0)
-      DisplayYouLose(scene);
+        DisplayYouLose(scene);
     else if (scene->enemies[0]->health <= 0) {
-      DisplayYouWin(scene);
-      view2 = 0; 
-      follow = 0; 
+        DisplayYouWin(scene);
+        view2 = 0;
+        follow = 0;
+        view3 = 0;
     }
     else if (R3Distance(scene->center, scene->players[0]->pos) > .9 * scene->radius)
         DisplayBoundaryWarning(scene);
     else if (view2 || follow)
-       DrawCrossHairs(scene);    
+        DrawCrossHairs(scene);
     
     //Display velocity
     DisplayVelocity(scene);
@@ -2117,7 +2133,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.006;
+    double rotateAmount = 0.004;
     
     
     //boooooooooost
@@ -2130,28 +2146,30 @@ void keyboard()
         }
         //boosting
         else if (scene->players[0]->accel) {
-            scene->players[0]->boost -= 3;
-            scene->players[0]->velocity = min(5*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
-	    timeval current_time;
-	    gettimeofday(&current_time, NULL);
-	    double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
-	    ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
-	    if (ellapsedTime > 2000) {
-	      gettimeofday(&last_boost_time, NULL);
-	      pid_t pid;
-	      pid = fork();
-	      if (pid == 0) {
-		if (LINUX)
-		  system("avplay -nodisp -autoexit Comet.wav");
-		else
-		  system("afplay Comet.wav");
-              exit(0);
-	      }
-	    }
+            scene->players[0]->boost -= 1.5;
+            scene->players[0]->velocity = min(4*scene->players[0]->defaultVelocity, scene->players[0]->velocity * 1.5);
+            
+            
+            timeval current_time;
+            gettimeofday(&current_time, NULL);
+            double ellapsedTime = (current_time.tv_sec - last_boost_time.tv_sec) * 1000.0;
+            ellapsedTime += (current_time.tv_usec - last_boost_time.tv_usec) / 1000.0;
+            if (ellapsedTime > 2000) {
+                gettimeofday(&last_boost_time, NULL);
+                pid_t pid;
+                pid = fork();
+                if (pid == 0) {
+                    if (LINUX)
+                        system("avplay -nodisp -autoexit Comet.wav");
+                    else
+                        system("afplay Comet.wav");
+                    exit(0);
+                }
+            }
 
         }
         else
-            scene->players[0]->boost = min(scene->players[0]->boost + .33, (double)100);
+            scene->players[0]->boost = min(scene->players[0]->boost + .1, (double)100);
         
     }
     else { //regaining boost power
@@ -2263,7 +2281,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'g':
             keyStates['g'] = true;
             break;
-
+            
             
         case 'H':
         case 'h':
@@ -2271,25 +2289,34 @@ void GLUTKeyboard(unsigned char key, int x, int y)
             break;
             
             
-        //boid test code
+            //boid test code
         case 'B':
         case 'b':
-            show_bboxes = !show_bboxes;
-   //         GenerateBoids(scene, 2, 40.);
+            view3 = !view3;
+            if (view3) {
+                view2 = false;
+                follow = false;
+            }
+            else
+                view2 = true;
             break;
             
         case 'X':
         case 'x':
             follow = !follow;
-            if (follow)
+            if (follow) {
                 view2 = false;
+                view3 = false; 
+            }
             break;
             
         case 'Z':
         case 'z':
             view2 = !view2;
-            if (view2)
-                follow = false; 
+            if (view2) {
+                follow = false;
+                view3 = false; 
+            }
             break;
 
             /*
@@ -2463,8 +2490,8 @@ ParseArgs(int argc, char **argv)
             else if (!strcmp(*argv, "-adaptive_step_size")) integration_type = ADAPTIVE_STEP_SIZE_INTEGRATION;
             else if (!strcmp(*argv, "-recordandquit")) {
                 argc--; argv++; num_frames_to_record = atoi(*argv);
-                GLUTwindow_width = 256 * 1.75;
-                GLUTwindow_height = 256 * 1.75;
+                GLUTwindow_width = 256 * 1.6;
+                GLUTwindow_height = 256 * 1.6;
                 save_video = 1;
             }
             else { fprintf(stderr, "Invalid program argument: %s", *argv); exit(1); }
