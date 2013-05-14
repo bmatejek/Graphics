@@ -16,6 +16,12 @@
 #include "boid.h"
 #include <unistd.h>
 
+#if defined(__APPLE__)
+#define LINUX 0
+#else
+#define LINUX 1
+#endif
+
 using namespace std;
 #ifdef _WIN32
 #   include <windows.h>
@@ -186,7 +192,10 @@ void Explode(R3Scene *scene, R3Boid *boid) {
 	pid_t pid;
 	pid = fork();
 	if (pid == 0) {
-	  system("java explosion Boid");
+	  if (LINUX)
+	    system("avplay -nodisp -autoexit boomBoid.wav");
+	  else
+	    system("afplay boomBoid.wav");
 	  exit(0);
 	}
 }
@@ -262,17 +271,24 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
 //update boid 
 void updateBoidVelocity(R3Scene *scene, R3Boid *boid) {
     
-    double error = .15;
-    double v = (double)rand() / RAND_MAX;
-    double multiplier = 1 + (v * error);
-
+    double error = .6;
+    double v1 = (double)rand() / RAND_MAX;
+    double v2 = (double)rand() / RAND_MAX;
+    double v3 = (double)rand() / RAND_MAX;
+    double mult1 = 1 + (v1 * error);
+    double mult2 = 1 + (v2 * error);
+    double mult3 = 1 + (v3 * error);
+    
     boid->velocity = scene->players[0]->pos - boid->pos;
     
-    boid->velocity.Normalize();
-    
-    boid->velocity.SetX(boid->velocity.X() * multiplier);
-    boid->velocity.SetY(boid->velocity.Y() * multiplier);
-    boid->velocity.SetZ(boid->velocity.Z() * multiplier);
+    if (boid->velocity.Length() > 6) {
+        
+        boid->velocity.Normalize();
+        
+        boid->velocity.SetX(boid->velocity.X() * mult1);
+        boid->velocity.SetY(boid->velocity.Y() * mult2);
+        boid->velocity.SetZ(boid->velocity.Z() * mult3);
+    }
     
     boid->velocity.Normalize();
 }
@@ -288,9 +304,11 @@ void killShotBoids(R3Scene *scene, double delta_time) {
             if (intersection < scene->bullets[i]->velocity.Length() * delta_time) {
                 Explode(scene, scene->boids[j]);
                 deleteBoid(scene, scene->boids[j]);
-                if (scene->boids.size() < 50)
-                    GenerateBoids(scene, 2, distAway);
                 scene->players[0]->boidsKilled++;
+                if ((scene->players[0]->boidsKilled %5 == 0) && (scene->players[0]->boidsKilled != 0))
+                    scene->players[0]->missiles++; 
+                if (scene->boids.size() < 40)
+                    GenerateBoids(scene, 2, distAway);
             }
         }
     }
@@ -323,7 +341,7 @@ void UpdateBoids(R3Scene *scene, double delta_time) {
             scene->players[0]->health -= 5;
             Explode(scene, scene->boids[i]);
             deleteBoid(scene, scene->boids[i]);
-            if (scene->boids.size() < 50)
+            if (scene->boids.size() < 40)
                 GenerateBoids(scene, 1, distAway);
         }
     }
