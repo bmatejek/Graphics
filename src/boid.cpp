@@ -281,7 +281,7 @@ void GenerateBoids(R3Scene *scene, int quantity, double distAway){
         }
         
         // Read mesh file
-        if (!mesh->Read("../input/shipAfirstsmall.off")) {
+        if (!mesh->Read("../input/smallTetra.off")) {
             fprintf(stderr, "Unable to read mesh: ../input/shipAfirst.off\n");
             return;
         }
