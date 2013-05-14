@@ -35,6 +35,8 @@ static const double VIDEO_FRAME_DELAY = 1./25.; // 25 FPS
 void keyboard();
 void GLUTDrawLargeRedText(const R3Point&, const char *);
 
+double RandomNumber(void);
+
 pid_t BSound = -1;
 
 GLint UniformLocation;
@@ -987,8 +989,6 @@ void DrawEnemies(R3Scene *scene)
   GLboolean lighting = glIsEnabled(GL_LIGHTING);
   glEnable(GL_LIGHTING);
 
-
-
   // Define source material
   static R3Material enemy_material;
   if (enemy_material.id != 33) {
@@ -1911,9 +1911,6 @@ void GLUTRedraw(void)
     else if (view2 || follow)
         DrawCrossHairs(scene);
     
-
-
-    
         
         //Display velocity
     DisplayVelocity(scene);
@@ -2153,7 +2150,7 @@ void GLUTSpecial(int key, int x, int y)
 
 void keyboard()
 {
-    double rotateAmount = 0.012;
+    double rotateAmount = 0.020;
     
     
     //boooooooooost
@@ -2312,6 +2309,7 @@ void GLUTKeyboard(unsigned char key, int x, int y)
         case 'M':
         case 'm':
             scene->players[0]->missiles += 10;
+            scene->players[0]->boidsKilled += 50;
             break;
             
             
@@ -2634,6 +2632,17 @@ main(int argc, char **argv)
 
     glShadeModel (GL_SMOOTH);
 
+    pid_t pid;
+    pid = fork();
+    if (pid == 0) {
+      if (LINUX)
+          system("avplay -nodisp -loop 0 dream_walking.wav");
+      else {
+          while(1) {
+              system("afplay dream_walking.wav");
+          }
+        }
+    }
 
     // Run GLUT interface
     GLUTMainLoop();
